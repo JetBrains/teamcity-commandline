@@ -4,9 +4,12 @@ import java.io.File;
 import java.io.IOException;
 import java.net.URL;
 import java.net.URLClassLoader;
+import java.text.MessageFormat;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Enumeration;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.jar.JarEntry;
 import java.util.jar.JarFile;
 import java.util.regex.Matcher;
@@ -14,6 +17,7 @@ import java.util.regex.Pattern;
 
 import jetbrains.buildServer.util.FileUtil;
 
+import com.jetbrains.teamcity.Logger;
 import com.jetbrains.teamcity.Server;
 import com.jetbrains.teamcity.Storage;
 import com.jetbrains.teamcity.resources.VCSAccess;
@@ -21,7 +25,7 @@ import com.jetbrains.teamcity.resources.VCSAccess;
 
 class CommandRegistry {
 	
-	public static final Pattern COMMAND_EXTENSION_JAR_PATTERN = Pattern.compile(".*tc\\.command*");
+	public static final Pattern COMMAND_EXTENSION_JAR_PATTERN = Pattern.compile(".*tc\\.command.*");
 	
 	private static CommandRegistry ourInstance;
 	
@@ -41,6 +45,14 @@ class CommandRegistry {
 		register(new Unshare());		
 		//scan for new
 		//TODO: register found command
+		final Collection<ICommand> extensions = findCommand();
+		for(final ICommand command : extensions){
+			register(command);
+		}
+	}
+
+	private Collection<ICommand> findCommand() {
+		final HashSet<ICommand> result = new HashSet<ICommand>();
 		if(getClass().getClassLoader() instanceof URLClassLoader){
 			final URLClassLoader loader = (URLClassLoader) getClass().getClassLoader();
 			for(URL url : loader.getURLs()){
@@ -52,21 +64,27 @@ class CommandRegistry {
 						if(isSimpleClass(child.getPath())){//do not touch inner classes
 							final String classFilePath = FileUtil.getRelativePath(file, child);
 							final String className = getClassName(classFilePath);
-							isCommand(className);
+							final ICommand instance = createCommand(className);
+							if(instance != null){
+								result.add(instance);
+							}
 						}
 					}
 				} else {
 					//jars
-					System.err.println(file);
 					try {
 						final JarFile jar = new JarFile(file);
-						if(!isIgnored(jar)){
+						if(!isCommandExtensionJar(jar.getName())){
+							Logger.log(CommandRegistry.class.getName(), MessageFormat.format("New commans jar found: {0}", jar.getName()));
 							final Enumeration<JarEntry> entries = jar.entries();
 							while(entries.hasMoreElements()){
 								final String fileName = entries.nextElement().getName();
 								if(isSimpleClass(fileName)){
 									final String className = getClassName(fileName);
-									isCommand(className);
+									final ICommand instance = createCommand(className);
+									if(instance != null){
+										result.add(instance);
+									}
 								}
 							}
 						}
@@ -76,26 +94,27 @@ class CommandRegistry {
 				}
 			}
 		}
+		return result;
 	}
 
-	private boolean isIgnored(JarFile jar) {
-		Matcher matcher = COMMAND_EXTENSION_JAR_PATTERN.matcher(jar.getName());
+	boolean isCommandExtensionJar(final String jarName) {
+		Matcher matcher = COMMAND_EXTENSION_JAR_PATTERN.matcher(jarName);
 		return !matcher.matches();
 	}
 
-	private boolean isCommand(final String className) {
+	private ICommand createCommand(final String className) {
 		try {
 			if(!isIgnored(className)){//do not instantiate self
 				final Class<?> clazz = getClass().getClassLoader().loadClass(className);
 				Object instance = clazz.newInstance();
 				if(instance instanceof ICommand){
-					return true;
+					return (ICommand) instance;
 				}
 			}
 		} catch (Throwable e) {
 			//do nothing
 		}
-		return false;
+		return null;
 	}
 
 	private boolean isSimpleClass(final String fileName) {
