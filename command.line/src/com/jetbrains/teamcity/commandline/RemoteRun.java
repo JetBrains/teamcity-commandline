@@ -92,7 +92,7 @@ public class RemoteRun implements ICommand {
 			}
 			return;
 		}
-		System.out.println(getHelp());
+		System.out.println(getUsageDescription());
 	}
 
 
@@ -260,8 +260,14 @@ public class RemoteRun implements ICommand {
 	}
 
 	@Override
-	public String getHelp() {
+	public String getUsageDescription() {
 		return MessageFormat.format("{0}: use -c|--configuration [configuration_id] -m|--message [message] [-n|--nowait] file [file ...]| @filelist", getId()); 
 	}
+	
+	@Override
+	public String getDescription() {
+		return "Fires Personal Build";
+	}
+	
 
 }

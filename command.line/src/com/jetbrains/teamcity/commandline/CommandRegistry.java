@@ -7,6 +7,7 @@ import java.net.URLClassLoader;
 import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -49,6 +50,10 @@ class CommandRegistry {
 		for(final ICommand command : extensions){
 			register(command);
 		}
+	}
+	
+	Collection<ICommand> commands(){
+		return Collections.<ICommand>unmodifiableCollection(ourRegistry.values());
 	}
 
 	private Collection<ICommand> findCommand() {

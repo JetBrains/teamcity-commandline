@@ -60,7 +60,7 @@ public class Share implements ICommand {
 			}
 			return;
 		}
-		System.out.println(getHelp());
+		System.out.println(getUsageDescription());
 	}
 
 	private IVCSRoot share(final String localPath, final VcsRoot root) {
@@ -78,8 +78,14 @@ public class Share implements ICommand {
 	}
 
 	@Override
-	public String getHelp() {
+	public String getUsageDescription() {
 		return MessageFormat.format("{0}: use -v [vcs_root_id] -l [local_path]", getId()); 
 	}
+	
+	@Override
+	public String getDescription() {
+		return "Associates local folder with known TeamCity VcsRoot";
+	}
+	
 
 }

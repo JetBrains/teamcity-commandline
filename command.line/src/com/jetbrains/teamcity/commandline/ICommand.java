@@ -15,6 +15,8 @@ public interface ICommand {
 
 	public boolean isConnectionRequired();
 	
-	public String getHelp();
+	public String getUsageDescription();
+
+	public String getDescription();
 	
 }

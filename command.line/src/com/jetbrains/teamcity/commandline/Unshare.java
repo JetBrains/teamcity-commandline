@@ -22,7 +22,7 @@ public class Unshare implements ICommand {
 			VCSAccess.getInstance().unshare(shareId);
 			return;
 		}
-		System.out.println(getHelp());
+		System.out.println(getUsageDescription());
 	}
 
 	@Override
@@ -36,8 +36,14 @@ public class Unshare implements ICommand {
 	}
 
 	@Override
-	public String getHelp() {
+	public String getUsageDescription() {
 		return MessageFormat.format("{0}: use -s|--share [share_id]", getId()); 
 	}
+	
+	@Override
+	public String getDescription() {
+		return "Removes association of local folder with TeamCity VcsRoot";
+	}
+	
 
 }

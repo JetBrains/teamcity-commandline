@@ -43,7 +43,7 @@ public class List implements ICommand {
 			}
 			
 		} else {
-			System.out.println(getHelp());
+			System.out.println(getUsageDescription());
 			//TODO: list all or provide help???
 		}
 	}
@@ -59,8 +59,13 @@ public class List implements ICommand {
 	}
 
 	@Override
-	public String getHelp() {
+	public String getUsageDescription() {
 		return MessageFormat.format("{0}: use -p[rojects],-c[onfigurations],-v[csroots] switches", getId()); 
+	}
+
+	@Override
+	public String getDescription() {
+		return "Shows information for known TeamCity projects, configurations or vcsroots";
 	}
 
 }
