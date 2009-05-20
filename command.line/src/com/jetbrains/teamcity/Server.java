@@ -79,22 +79,6 @@ public class Server {
 		return mySession.getUserId();
 	}
 	
-	public static void main(String[] args) throws Exception{
-		final Server server = new Server(new URL("http://localhost:88"));
-		server.connect();
-		server.logon("admin", "admin");
-		System.out.println("Login success");
-		final RemoteBuildServer serverProxy = server.getServerProxy();
-		final Vector builds = serverProxy.getRegisteredProjects(false);
-		//----------
-		System.out.println("Projects\n" + server.getProjects());
-		System.out.println("Configurations\n" + server.getConfigurations());
-		System.out.println("VcsRoots\n" + server.getVcsRoots());
-		//----------
-		server.logout();
-		System.out.println("Logout success");
-	}
-	
 	@SuppressWarnings("unchecked")
 	public synchronized Collection<ProjectData> getProjects() throws ECommunicationException {
 		if(myProjects == null){

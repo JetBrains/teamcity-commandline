@@ -1,7 +1,8 @@
 package com.jetbrains.teamcity.commandline;
 
 import java.text.MessageFormat;
-import java.util.Collection;
+import java.util.Comparator;
+import java.util.TreeSet;
 
 import javax.naming.directory.InvalidAttributesException;
 
@@ -29,8 +30,14 @@ class Help implements ICommand {
 				return;
 			}
 		}
+		
 		System.out.println("Available commands:");
-		final Collection<ICommand> knownCommands = CommandRegistry.getInstance().commands();
+		final TreeSet<ICommand> knownCommands = new TreeSet<ICommand>(new Comparator<ICommand>(){
+			@Override
+			public int compare(ICommand o1, ICommand o2) {
+				return o1.getId().compareTo(o2.getId());
+			}});
+		knownCommands.addAll(CommandRegistry.getInstance().commands());
 		for(final ICommand command : knownCommands){
 			System.out.println(MessageFormat.format("\t{0}\t\t{1}", String.valueOf(command.getId()), String.valueOf(command.getDescription())));
 		}

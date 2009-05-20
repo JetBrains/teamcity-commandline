@@ -3,6 +3,8 @@ package com.jetbrains.teamcity.resources;
 import java.io.File;
 import java.io.IOException;
 import java.io.Serializable;
+import java.net.MalformedURLException;
+import java.net.URL;
 import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -35,11 +37,22 @@ public class VCSAccess {
 	
 	};
 	
+	static Storage.IKey<ArrayList<ICredential>> CREDENTIAL_KEY = new Storage.IKey<ArrayList<ICredential>>(){
+		
+		private static final long serialVersionUID = 6509717225043443905L;
+
+		@Override
+		public Object getKey() {
+			return VCSAccess.class.getName() + ".CREDENTIAL";
+		}
+	};
 	
 
 	private static VCSAccess ourInstance;
 	
 	private ArrayList<IVCSRoot> myShares;
+	
+	private ArrayList<ICredential> myCredentials;
 
 	public static synchronized VCSAccess getInstance(){
 		if(ourInstance == null){
@@ -49,11 +62,19 @@ public class VCSAccess {
 	}
 
 	private VCSAccess(){
+		//roots
 		final Collection<IVCSRoot> shares = Storage.getInstance().get(SHARES_KEY);
 		if(shares != null){
 			myShares = new ArrayList<IVCSRoot>(shares);
 		} else {
 			myShares = new ArrayList<IVCSRoot>();
+		}
+		//credentials
+		ArrayList<ICredential> credentials = Storage.getInstance().get(CREDENTIAL_KEY);
+		if(credentials != null){
+			myCredentials = new ArrayList<ICredential>(credentials);
+		} else {
+			myCredentials = new ArrayList<ICredential>();
 		}
 		
 	}
@@ -124,7 +145,9 @@ public class VCSAccess {
 	
 	synchronized void clear(){
 		myShares.clear();
-		Storage.getInstance().put(SHARES_KEY, myShares, true);
+		myCredentials.clear();
+		Storage.getInstance().put(SHARES_KEY, myShares, false);
+		Storage.getInstance().put(CREDENTIAL_KEY, myCredentials, true);
 	}
 	
 	private void validate(String localRoot) throws IllegalArgumentException {
@@ -203,25 +226,87 @@ public class VCSAccess {
 		
 	}
 	
-	public static void main(String[] args) throws Exception {
+	static class TeamCityCredential implements ICredential, Serializable {
+
+		private static final long serialVersionUID = 468772737075052773L;
 		
-		Logger.log(VCSAccess.class.getName(), "Dump:");
-		for(IVCSRoot root :getInstance().roots()){
-			Logger.log(VCSAccess.class.getName(), root.getLocal());
+		private String myPassword;
+		private String myServer;
+		private String myUser;
+		
+		TeamCityCredential(final String url, final String user, final String password){
+			myPassword = password;//TODO: crypt it
+			myServer = url;
+			myUser = user;
+		}
+
+		@Override
+		public String getPassword() {
+			return myPassword;
+		}
+
+		@Override
+		public String getServer() {
+			return myServer;
+		}
+
+		@Override
+		public String getUser() {
+			return myUser;
 		}
 		
-		getInstance().share("c:\\1\\", 1l);
-		getInstance().share("c:\\1", 1l);
-		getInstance().share("c:\\2\\2", 2l);
-		getInstance().share("c:\\2\\2\\3", 3l);
-		
-		for(IVCSRoot root :getInstance().roots()){
-			Logger.log(VCSAccess.class.getName(), root.getLocal());
+		@Override
+		public String toString() {
+			return MessageFormat.format("{0}:{1}:*************", myServer, myUser, myPassword);
 		}
-		
 		
 	}
 	
+	public ICredential findCredential(final String host){
+		for(ICredential credential : myCredentials){
+			try {
+				if(new URL(credential.getServer()).equals(new URL(host))){
+					return credential;
+				}
+			} catch (MalformedURLException e) {
+				Logger.log(VCSAccess.class.getName(), e);
+			}
+		}
+		return null;
+	}
+	
+	public void setCredential(final String url, final String user, final String password){
+		final TeamCityCredential account = new TeamCityCredential(url, user, password);//make serializable
+		//check
+		try{
+			final ICredential existing = findCredential(account.getServer());
+			if(existing == null){
+				myCredentials.add(account);
+			} else {
+				Logger.log(VCSAccess.class.getName(), MessageFormat.format("will replace existing credential \"{0}\" with new one \"{1}\"", String.valueOf(existing), String.valueOf(account)));
+				myCredentials.remove(existing);
+				myCredentials.add(account);
+			}
+		} finally {
+			Storage.getInstance().put(CREDENTIAL_KEY, myCredentials, true);
+		}
+	}
+	
+	public void removeCredential(final String host){
+		//check
+		try{
+			final ICredential existing = findCredential(host);
+			if(existing != null){
+				myCredentials.remove(existing);
+			}
+		} finally {
+			Storage.getInstance().put(CREDENTIAL_KEY, myCredentials, true);
+		}
+	}
+	
+	public Collection<ICredential> credentials(){
+		return Collections.<ICredential>unmodifiableCollection(myCredentials); //do not allow modification
+	}
 	
 	
 }

@@ -17,7 +17,7 @@ public abstract class URLFactory {
 	public static URLFactory getFactory(IVCSRoot localRoot, final VcsRoot remoteRoot) {
 		final String vcs = remoteRoot.getVcsName();
 		if ("cvs".equalsIgnoreCase(vcs)) {
-			return new SCVUrlFactory(localRoot, remoteRoot);
+			return new CVSUrlFactory(localRoot, remoteRoot);
 		} else if ("svn".equalsIgnoreCase(vcs)) {
 			return new SVNUrlFactory(remoteRoot);
 		} else if ("perforce".equalsIgnoreCase(vcs)) {
@@ -28,7 +28,7 @@ public abstract class URLFactory {
 
 	public abstract String getUrl(File file) throws IOException ;
 
-	static class SCVUrlFactory extends URLFactory {
+	static class CVSUrlFactory extends URLFactory {
 
 		private String myCvsRoot;
 		private String myModule;
@@ -36,7 +36,7 @@ public abstract class URLFactory {
 
 //		private VcsRoot myRoot;
 
-		public SCVUrlFactory(IVCSRoot localRoot, VcsRoot remoteRoot) {
+		public CVSUrlFactory(IVCSRoot localRoot, VcsRoot remoteRoot) {
 			myLocalRoot = new File(localRoot.getLocal());
 			myCvsRoot = remoteRoot.getProperties().get("cvs-root");
 			myModule = remoteRoot.getProperties().get("module-name");

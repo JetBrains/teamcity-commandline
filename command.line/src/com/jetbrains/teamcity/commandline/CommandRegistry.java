@@ -41,6 +41,8 @@ class CommandRegistry {
 		//register default
 		register(new Help());
 		register(new List());
+		register(new Login());
+		register(new Logout());
 		register(new RemoteRun());
 		register(new Share());
 		register(new Unshare());		

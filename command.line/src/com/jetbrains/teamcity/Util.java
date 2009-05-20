@@ -126,5 +126,18 @@ public class Util {
 			return result;
 		}
 	}
+
+	public static String normalizeUrl(final String url) {
+		return url.endsWith("/") ? url : url + "/";
+	}
+	
+	public static String encode(String str){
+		return null;
+	}
+	
+	public static String decode(String str){
+		return null;
+	}
+	
 	
 }

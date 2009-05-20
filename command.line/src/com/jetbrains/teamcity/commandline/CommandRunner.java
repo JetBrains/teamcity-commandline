@@ -29,14 +29,20 @@ public class CommandRunner {
 	}
 	
 	private static Server openConnection(final String[] args) throws MalformedURLException, ECommunicationException, EAuthorizationException {
-		Logger.log(CommandRunner.class.getName(), "Connectiong server...");
 		final String host = Util.getArgumentValue(args, "--host");
-		final String user = Util.getArgumentValue(args, "--user");
-		final String password = Util.getArgumentValue(args, "--password");
+		final String user;
+		final String password;
+		if(Util.hasArgument(args, "--user", "--password")){
+			user = Util.getArgumentValue(args, "--user");
+			password = Util.getArgumentValue(args, "--password");
+		} else {
+			//try to load from .tcpass
+			user = null;
+			password = null;
+		}
 		final Server server = new Server(new URL(host));
 		server.connect();
 		server.logon(user, password);
-		Logger.log(CommandRunner.class.getName(), "Done.");
 		return server;
 	}
 

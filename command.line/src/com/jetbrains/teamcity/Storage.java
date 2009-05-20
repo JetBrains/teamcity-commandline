@@ -11,13 +11,14 @@ import java.io.ObjectOutputStream;
 import java.io.Serializable;
 import java.util.HashMap;
 
+//TODO: support parallel working!!!
 public class Storage {
 
 	public static final String TC_STORAGE_PROPERTY_NAME = "tc.storage";
+	public static final String TC_STORAGE_DEFAULT_FILENAME = ".tcstorage";
 
 	private static Storage ourInstance;
 
-	@SuppressWarnings("unchecked")
 	private HashMap<Object, Serializable> myStorage = new HashMap<Object, Serializable>();
 
 	private String myStorageFile;
@@ -30,7 +31,7 @@ public class Storage {
 			myStorageFile = storageFile;
 		} else {//set to default
 			final String home = System.getProperty("user.home");
-			myStorageFile = home + File.separator + ".tc.storage";
+			myStorageFile = home + File.separator + TC_STORAGE_DEFAULT_FILENAME;
 		}
 		//load storage
 		try {
