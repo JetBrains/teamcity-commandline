@@ -112,58 +112,42 @@ public class VCSAccessTest {
 		
 	}
 	
-	/**
-	 * do not allow share inner  
-	 */
-	@Test(expected=IllegalArgumentException.class)
-	public void wrong_share_inner() throws Exception {
+	@Test
+	public void share_inner() throws Exception {
 		//prepare
-		VCSAccess.getInstance().clear();
+		final VCSAccess access = VCSAccess.getInstance();
+		access.clear();
 		
 		final String sharePath1 = "." + File.separator + "abc";
 		final File sharedFolder1 = new File(sharePath1);//.getAbsoluteFile();
 		sharedFolder1.mkdir();
+		final File sharedFile1 = new File(sharedFolder1, "shared.1");
+		sharedFile1.createNewFile();
 		
 		final String sharePath2 = "." + File.separator + "abc" + File.separator + "cde";
 		final File sharedFolder2 = new File(sharePath2);//.getAbsoluteFile();
 		sharedFolder2.mkdir();
+		final File sharedFile2 = new File(sharedFolder2, "shared.2");
+		sharedFile2.createNewFile();
 		
 		//test
 		try{
-			VCSAccess.getInstance().share(sharePath1, -1l);
-			VCSAccess.getInstance().share(sharePath2, -2l);
+			final IVCSRoot root1 = access.share(sharePath1, -1l);
+			final IVCSRoot root2 = access.share(sharePath2, -2l);
+			
+			final IVCSRoot foundRoot1 = access.getRoot(sharedFile1.getPath());
+			assertNotNull(foundRoot1);
+			assertEquals(root1, foundRoot1);
+			
+			final IVCSRoot foundRoot2 = access.getRoot(sharedFile2.getPath());
+			assertNotNull(foundRoot2);
+			assertEquals(root2, foundRoot2);
+			
 		} finally {
 			//clean
-			VCSAccess.getInstance().clear();
-			sharedFolder2.delete();
-			sharedFolder1.delete();
-		}
-		
-	}
-	
-	/**
-	 * do not allow share inner  
-	 */
-	@Test(expected=IllegalArgumentException.class)
-	public void wrong_share_outer() throws Exception {
-		//prepare
-		VCSAccess.getInstance().clear();
-		
-		final String sharePath1 = "." + File.separator + "abc";
-		final File sharedFolder1 = new File(sharePath1);//.getAbsoluteFile();
-		sharedFolder1.mkdir();
-		
-		final String sharePath2 = "." + File.separator + "abc" + File.separator + "cde";
-		final File sharedFolder2 = new File(sharePath2);//.getAbsoluteFile();
-		sharedFolder2.mkdir();
-		
-		//test
-		try{
-			VCSAccess.getInstance().share(sharePath2, -2l);
-			VCSAccess.getInstance().share(sharePath1, -1l);
-		} finally {
-			//clean
-			VCSAccess.getInstance().clear();
+			access.clear();
+			sharedFile1.delete();
+			sharedFile2.delete();
 			sharedFolder2.delete();
 			sharedFolder1.delete();
 		}

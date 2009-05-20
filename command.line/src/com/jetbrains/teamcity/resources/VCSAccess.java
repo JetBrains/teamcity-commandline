@@ -9,6 +9,8 @@ import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.Comparator;
+import java.util.TreeSet;
 
 import com.jetbrains.teamcity.Logger;
 import com.jetbrains.teamcity.Storage;
@@ -86,18 +88,28 @@ public class VCSAccess {
 	public IVCSRoot getRoot(String forPath) throws IllegalArgumentException {
 		try {
 			forPath = new File(forPath.trim()).getCanonicalPath();
+			//make sure the deepest candidate will the last
+			final TreeSet<IVCSRoot> rootCandidate = new TreeSet<IVCSRoot>(new Comparator<IVCSRoot>(){
+				@Override
+				public int compare(IVCSRoot o1, IVCSRoot o2) {
+					return o1.getLocal().toLowerCase().compareTo(o2.getLocal().toLowerCase());
+				}});
+			//scan all to get all hierarchial roots
 			for(final IVCSRoot root : myShares){
 				final String existsRootPath = root.getLocal();
 				String parentPath = forPath.toLowerCase();
 				while(parentPath != null){
 					if(parentPath.equalsIgnoreCase(existsRootPath)){
-						return root;
+						rootCandidate.add(root);
 					}
 					parentPath = new File(parentPath).getParent();
 					if(parentPath!= null){
 						parentPath = parentPath.toLowerCase();
 					}
 				}
+			}
+			if(!rootCandidate.isEmpty()){
+				return rootCandidate.last();
 			}
 			return null;
 			
@@ -160,19 +172,6 @@ public class VCSAccess {
 		if(!file.isDirectory()){
 			throw new IllegalArgumentException(MessageFormat.format("Only folder can be shared: {0}", localRoot));
 		}
-		//do not allow share inner
-		final IVCSRoot tcRoot = getRoot(localRoot);
-		if(tcRoot != null){//TODO: just skip if equals???
-			throw new IllegalArgumentException(MessageFormat.format("There already is outer sharing for {0}: {1}", localRoot, tcRoot.getLocal()));
-		}
-		//do not allow share outer
-		final String lowerCase = localRoot.toLowerCase();
-		for(final IVCSRoot root: roots()){
-			if(root.getLocal().toLowerCase().contains(lowerCase)){
-				throw new IllegalArgumentException(MessageFormat.format("There already is inner sharing for {0}: {1}", localRoot, root.getLocal()));	
-			}
-		}
-		
 	}
 	
 	

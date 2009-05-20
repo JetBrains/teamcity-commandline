@@ -17,7 +17,7 @@ public class TestCommand implements ICommand {
 	}
 
 	@Override
-	public String getHelp() {
+	public String getUsageDescription() {
 		return "";
 	}
 
@@ -29,6 +29,11 @@ public class TestCommand implements ICommand {
 	@Override
 	public boolean isConnectionRequired() {
 		return false;
+	}
+
+	@Override
+	public String getDescription() {
+		return "Test command";
 	}
 
 }
