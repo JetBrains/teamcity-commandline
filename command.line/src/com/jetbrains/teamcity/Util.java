@@ -127,10 +127,6 @@ public class Util {
 		}
 	}
 
-	public static String normalizeUrl(final String url) {
-		return url.endsWith("/") ? url : url + "/";
-	}
-	
 	public static String encode(String str){
 		return null;
 	}
