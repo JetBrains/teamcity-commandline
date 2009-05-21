@@ -2,12 +2,15 @@ package com.jetbrains.teamcity.commandline;
 
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.text.MessageFormat;
 
 import com.jetbrains.teamcity.EAuthorizationException;
 import com.jetbrains.teamcity.ECommunicationException;
 import com.jetbrains.teamcity.Logger;
 import com.jetbrains.teamcity.Server;
 import com.jetbrains.teamcity.Util;
+import com.jetbrains.teamcity.resources.ICredential;
+import com.jetbrains.teamcity.resources.VCSAccess;
 
 public class CommandRunner {
 	
@@ -37,8 +40,13 @@ public class CommandRunner {
 			password = Util.getArgumentValue(args, "--password");
 		} else {
 			//try to load from .tcpass
-			user = null;
-			password = null;
+			final ICredential credential = VCSAccess.getInstance().findCredential(host);
+			if(credential != null){
+				user = credential.getUser();
+				password = credential.getPassword();
+			} else {
+				throw new EAuthorizationException(MessageFormat.format("You are currently not logged in to \"{}\". Run \"login\" command or ise \"--user\" & \"--password\" switches", host));
+			}
 		}
 		final Server server = new Server(new URL(host));
 		server.connect();

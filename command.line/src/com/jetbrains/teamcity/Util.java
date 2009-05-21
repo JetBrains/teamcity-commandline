@@ -51,7 +51,7 @@ public class Util {
 			throw new IllegalArgumentException(MessageFormat.format("Null is not supported as argument: {0}, {1}", root, to));
 		}
 		if(to.isAbsolute()){
-			return FileUtil.getRelativePath(root, to);
+			return FileUtil.getRelativePath(root, to).replace("\\", "/");
 		} else {
 			throw new IllegalArgumentException(MessageFormat.format("Relative path is not supported yet: {0}", to));
 		}

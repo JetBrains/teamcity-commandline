@@ -109,7 +109,6 @@ public class RemoteRun implements ICommand {
 			if(result.hasFailures()){
 				throw new ERemoteError(result.getFailureReason(myConfigurationId));
 			}
-//			System.out.println(result);
 		} catch (IOException e) {
 			throw new ECommunicationException(e);
 		}
@@ -222,16 +221,22 @@ public class RemoteRun implements ICommand {
 	}
 
 	private Collection<File> getFiles(String[] args) throws IllegalArgumentException {
-		Logger.log(RemoteRun.class.getName(), "Collecting files...");
-		String pos = args[0];
-		int i = 0;
-		while (!pos.equals(CONFIGURATION_PARAM) && i < args.length) {
-			i++;
-			pos = args[i];
+		int i = 1;//skip command
+		while (i < args.length) {
+			final String currentToken = args[i].toLowerCase();
+			if(args[i].startsWith("-")){
+				if(args[i].toLowerCase().equals(NO_WAIT_SWITCH) || currentToken.equals(NO_WAIT_SWITCH_LONG)){
+					i++; //single token
+				} else {
+					i++; //arg
+					i++; //args value
+				}
+			} else {
+				//reach files
+				break;
+			}
 		}
-		//skip configuration number
-		i++;
-		i++;
+		
 		final HashSet<File> result = new HashSet<File>();
 		for (; i < args.length; i++) {
 			final String path = args[i];
@@ -244,7 +249,7 @@ public class RemoteRun implements ICommand {
 			//filter out system files 
 			result.addAll(Util.SVN_FILES_FILTER.accept(Util.CVS_FILES_FILTER.accept(files)));
 		}
-		Logger.log(RemoteRun.class.getName(), "Done.");
+		Logger.log(RemoteRun.class.getName(), MessageFormat.format("Collected {0} files for Remote Run", result.size()));
 		return result;
 	}
 

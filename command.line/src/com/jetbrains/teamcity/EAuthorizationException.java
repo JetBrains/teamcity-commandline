@@ -7,6 +7,10 @@ public class EAuthorizationException extends Exception {
 	public EAuthorizationException(final Throwable e) {
 		super(e);
 	}
+	
+	public EAuthorizationException(final String message) {
+		super(message);
+	}
 
 	public EAuthorizationException(final String message, final Throwable e) {
 		super(message, e);

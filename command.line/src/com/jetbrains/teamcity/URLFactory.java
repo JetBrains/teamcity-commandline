@@ -3,7 +3,9 @@ package com.jetbrains.teamcity;
 import java.io.File;
 import java.io.IOException;
 import java.text.MessageFormat;
+import java.util.List;
 
+import jetbrains.buildServer.util.FileUtil;
 import jetbrains.buildServer.vcs.VcsRoot;
 
 import com.jetbrains.teamcity.resources.IVCSRoot;
@@ -19,7 +21,7 @@ public abstract class URLFactory {
 		if ("cvs".equalsIgnoreCase(vcs)) {
 			return new CVSUrlFactory(localRoot, remoteRoot);
 		} else if ("svn".equalsIgnoreCase(vcs)) {
-			return new SVNUrlFactory(remoteRoot);
+			return new SVNUrlFactory(localRoot, remoteRoot);
 		} else if ("perforce".equalsIgnoreCase(vcs)) {
 			return new PerforceUrlFactory(localRoot, remoteRoot);
 		}
@@ -54,16 +56,37 @@ public abstract class URLFactory {
 	}
 
 	static class SVNUrlFactory extends URLFactory {
+		
+		// svn://5c05b1c6-6b6d-794d-98af-4f7900fed0f9|trunk/tc-test-rusps-app-svn/src/all/New.java
 
-		private VcsRoot myRoot;
+		private File myLocalRoot;
+		private String myRootId;
 
-		public SVNUrlFactory(VcsRoot root) {
-			myRoot = root;
+		public SVNUrlFactory(IVCSRoot localRoot, VcsRoot root) {
+			myLocalRoot = new File(localRoot.getLocal());
+			//ugly hack: get uuid from local 
+			final File entries = new File(myLocalRoot.getAbsolutePath() + File.separator + ".svn" + File.separator + "entries");
+			if(entries.exists()){
+				try {
+					final List<String> entriesContent = FileUtil.readFile(entries);
+					if(entriesContent != null && entriesContent.size()>27){
+						final String repoUUID = entriesContent.get(26);
+						final String url = entriesContent.get(4);
+						final String repoUrl = entriesContent.get(5);
+						final String localRootSegment = url.substring(repoUrl.length() + 1, url.length());
+						myRootId = MessageFormat.format("svn://{0}|{1}", repoUUID, localRootSegment);
+					}
+				} catch (IOException e) {
+					Logger.log(SVNUrlFactory.class.getName(), e);
+				}
+			}
 		}
 
 		@Override
-		public String getUrl(File file) {
-			return null;
+		public String getUrl(File file) throws IOException {
+			final String relativePath = Util.getRelativePath(myLocalRoot, file);
+			final String url = MessageFormat.format("{0}/{1}", myRootId, relativePath);
+			return url;
 		}
 
 	}
