@@ -2,11 +2,14 @@ package com.jetbrains.teamcity.commandline;
 
 import javax.naming.directory.InvalidAttributesException;
 
+import org.junit.Ignore;
+
 import com.jetbrains.teamcity.EAuthorizationException;
 import com.jetbrains.teamcity.ECommunicationException;
 import com.jetbrains.teamcity.ERemoteError;
 import com.jetbrains.teamcity.Server;
 
+@Ignore
 public class TestCommand implements ICommand {
 
 	@Override

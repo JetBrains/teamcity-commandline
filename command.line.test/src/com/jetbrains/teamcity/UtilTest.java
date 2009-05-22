@@ -73,21 +73,21 @@ public class UtilTest {
 		
 		File root =  new File("c:\\1");
 		File child = new File("c:\\1\\1\\1.java");
-		assertEquals("1\\1.java", Util.getRelativePath(root, child));
+		assertEquals("1/1.java", Util.getRelativePath(root, child));
 		
 		//extra slash
 		root =  new File("c:\\1\\");
-		assertEquals("1\\1.java", Util.getRelativePath(root, child));
+		assertEquals("1/1.java", Util.getRelativePath(root, child));
 		
 		//path is not absolute
 		root =  new File("c:\\1");
 		child = new File("1\\1\\1.java");
-		assertEquals("1\\1\\1.java", Util.getRelativePath(root, child));
+		assertEquals("1/1/1.java", Util.getRelativePath(root, child));
 		
 		//path is not absolute
 		root =  new File("c:\\1");
 		child = new File("..\\1\\1.java");
-		assertEquals("..\\1\\1.java", Util.getRelativePath(root, child));
+		assertEquals("../1/1.java", Util.getRelativePath(root, child));
 		
 	}
 

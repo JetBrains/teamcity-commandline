@@ -53,7 +53,7 @@ public class Util {
 		if(to.isAbsolute()){
 			return FileUtil.getRelativePath(root, to).replace("\\", "/");
 		} else {
-			throw new IllegalArgumentException(MessageFormat.format("Relative path is not supported yet: {0}", to));
+			return to.getPath().replace("\\", "/");
 		}
 	}
 

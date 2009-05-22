@@ -21,7 +21,7 @@ class Help implements ICommand {
 
 	@Override
 	public void execute(Server server, String[] args) throws EAuthorizationException, ECommunicationException, ERemoteError, InvalidAttributesException {
-		System.out.println("TeamCity Commandline tool v0.0.0.1. Copyright 2000-2009 JetBrains s.r.o.");
+		System.out.println("TeamCity Commandline utility v0.0.0.1. Copyright 2000-2009 JetBrains s.r.o.");
 		if(Util.hasArgument(args, HELP_PARAM, HELP_PARAM_LONG) ){
 			final String commandId = Util.getArgumentValue(args, HELP_PARAM, HELP_PARAM_LONG);
 			final ICommand command = CommandRegistry.getInstance().getCommand(commandId);

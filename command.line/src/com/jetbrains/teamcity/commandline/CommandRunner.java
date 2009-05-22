@@ -26,6 +26,7 @@ public class CommandRunner {
 				command.execute(null, args);	
 			}
 		} catch (Throwable e){
+			System.err.println(e.getMessage());
 			Logger.log(CommandRunner.class.getName(), e);
 			System.exit(-1);
 		}
@@ -33,25 +34,29 @@ public class CommandRunner {
 	
 	private static Server openConnection(final String[] args) throws MalformedURLException, ECommunicationException, EAuthorizationException {
 		final String host = Util.getArgumentValue(args, "--host");
-		final String user;
-		final String password;
-		if(Util.hasArgument(args, "--user", "--password")){
-			user = Util.getArgumentValue(args, "--user");
-			password = Util.getArgumentValue(args, "--password");
-		} else {
-			//try to load from .tcpass
-			final ICredential credential = VCSAccess.getInstance().findCredential(host);
-			if(credential != null){
-				user = credential.getUser();
-				password = credential.getPassword();
+		if(host != null){
+			final String user;
+			final String password;
+			if(Util.hasArgument(args, "--user", "--password")){
+				user = Util.getArgumentValue(args, "--user");
+				password = Util.getArgumentValue(args, "--password");
 			} else {
-				throw new EAuthorizationException(MessageFormat.format("You are currently not logged in to \"{}\". Run \"login\" command or ise \"--user\" & \"--password\" switches", host));
+				//try to load from saved
+				final ICredential credential = VCSAccess.getInstance().findCredential(host);
+				if(credential != null){
+					user = credential.getUser();
+					password = credential.getPassword();
+				} else {
+					throw new EAuthorizationException(MessageFormat.format("You are currently not logged in to \"{0}\". Run \"login\" command or specify \"--user\" & \"--password\"", host));
+				}
 			}
+			final Server server = new Server(new URL(host));
+			server.connect();
+			server.logon(user, password);
+			return server;
+		} else {
+			throw new IllegalArgumentException("No host specified. Use \"--host [url]\"");
 		}
-		final Server server = new Server(new URL(host));
-		server.connect();
-		server.logon(user, password);
-		return server;
 	}
 
 

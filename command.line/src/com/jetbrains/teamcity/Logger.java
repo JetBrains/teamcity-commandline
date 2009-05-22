@@ -1,17 +1,17 @@
 package com.jetbrains.teamcity;
 
-import java.text.MessageFormat;
+
 
 public class Logger {
 	
+	private static com.intellij.openapi.diagnostic.Logger ourLogger = com.intellij.openapi.diagnostic.Logger.getInstance(Logger.class.getName());
+	
 	public static void log(Object source, Throwable e) {
-		//TODO: implement it
-		e.printStackTrace();
+		ourLogger.error(e);
 	}
 	
 	public static void log(Object source, String message) {
-		//TODO: implement it
-		System.out.println(MessageFormat.format("{0}: {1}", String.valueOf(source), message));
+		ourLogger.debug(message);
 	}
 
 }
