@@ -22,29 +22,49 @@ public class List implements ICommand {
 	@Override
 	public void execute(final Server server, String[] args) throws EAuthorizationException, ECommunicationException, ERemoteError, InvalidAttributesException {
 		if(Util.hasArgument(args, "-p", "--projects")){
-			final Collection<ProjectData> projects = server.getProjects();
-			System.out.println(MessageFormat.format("id\tname\tstatus\tdescription", ""));
-			for(final ProjectData project :projects){
-				System.out.println(MessageFormat.format("{0}\t{1}\t{2}\t{3}", project.getProjectId(), project.getName(), project.getStatus(), project.getDescription()));
-			}
+			printProjects(server);
 			
 		} else if (Util.hasArgument(args, "-c", "--configurations")){
-			final Collection<BuildTypeData> configurations = server.getConfigurations();
-			System.out.println(MessageFormat.format("id\tname\tstatus\tdescription", ""));
-			for(final BuildTypeData config :configurations){
-				System.out.println(MessageFormat.format("{0}\t{1}\t{2}\t{3}", config.getId(), config.getName(), config.getStatus(), config.getDescription()));
-			}
+			printConfigurations(server);
 			
 		}else if (Util.hasArgument(args, "-v", "--vcsroots")){
-			final Collection<VcsRoot> roots = server.getVcsRoots();
-			System.out.println(MessageFormat.format("id\tname\tvcsname\tproperties", ""));
-			for(final VcsRoot root :roots){
-				System.out.println(MessageFormat.format("{0}\t{1}\t{2}\t{3}", root.getId(), root.getName(), root.getVcsName(), root.getProperties()));
-			}
+			printVcsRoots(server);
 			
 		} else {
 			System.out.println(getUsageDescription());
-			//TODO: list all or provide help???
+			System.out.println();
+			System.out.println("projects:");
+			printProjects(server);
+			System.out.println("configurations:");
+			printConfigurations(server);
+			System.out.println("vcsroots:");
+			printVcsRoots(server);
+		}
+	}
+
+	private void printVcsRoots(final Server server)
+			throws ECommunicationException {
+		final Collection<VcsRoot> roots = server.getVcsRoots();
+		System.out.println(MessageFormat.format("id\tname\tvcsname\tproperties", ""));
+		for(final VcsRoot root :roots){
+			System.out.println(MessageFormat.format("{0}\t{1}\t{2}\t{3}", root.getId(), root.getName(), root.getVcsName(), root.getProperties()));
+		}
+	}
+
+	private void printConfigurations(final Server server)
+			throws ECommunicationException {
+		final Collection<BuildTypeData> configurations = server.getConfigurations();
+		System.out.println(MessageFormat.format("id\tname\tstatus\tdescription", ""));
+		for(final BuildTypeData config :configurations){
+			System.out.println(MessageFormat.format("{0}\t{1}\t{2}\t{3}", config.getId(), config.getName(), config.getStatus(), config.getDescription()));
+		}
+	}
+
+	private void printProjects(final Server server) throws ECommunicationException {
+		final Collection<ProjectData> projects = server.getProjects();
+		System.out.println(MessageFormat.format("id\tname\tstatus\tdescription", ""));
+		for(final ProjectData project :projects){
+			System.out.println(MessageFormat.format("{0}\t{1}\t{2}\t{3}", project.getProjectId(), project.getName(), project.getStatus(), project.getDescription()));
 		}
 	}
 

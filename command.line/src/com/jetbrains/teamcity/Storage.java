@@ -134,14 +134,17 @@ public class Storage {
 			this.myStorageFile = myStorageFile + ".xml";
 		}
 		
+		//TODO: move to utils		
 		private <T> T deserializeObject(final Object typeData) {
 			return XStreamWrapper.<T>deserializeObject((String)typeData, ourXStreamHolder);
 		}
 		
+		//TODO: move to utils		
 		private String serializeObject(final Object typeData) {
 			return XStreamWrapper.serializeObject(typeData, ourXStreamHolder);
 		}
 		
+		//TODO: move to utils		
 		private static XStreamHolder ourXStreamHolder = new XStreamHolder() {
 			protected void configureXStream(XStream xStream) {
 				ServerXStreamFormat.formatXStream(xStream);

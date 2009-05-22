@@ -154,7 +154,6 @@ public class Server {
 
 		@Override
 		public void onProcessCanceled() {
-			// TODO Auto-generated method stub
 		}
 		
 	}

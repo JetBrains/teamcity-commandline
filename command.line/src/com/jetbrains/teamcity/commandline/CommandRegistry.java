@@ -47,7 +47,6 @@ class CommandRegistry {
 		register(new Share());
 		register(new Unshare());		
 		//scan for new
-		//TODO: register found command
 		final Collection<ICommand> extensions = findCommand();
 		for(final ICommand command : extensions){
 			register(command);

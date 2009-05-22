@@ -1,6 +1,5 @@
 package com.jetbrains.teamcity.commandline;
 
-import java.io.Serializable;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.text.MessageFormat;
@@ -92,15 +91,6 @@ public class Login implements ICommand {
 	@Override
 	public boolean isConnectionRequired() {
 		return false;
-	}
-	
-	//TODO extract public interface
-	static class Credential implements Serializable{
-		
-		private static final long serialVersionUID = -5321431687692376078L;
-		
-		
-		
 	}
 
 }
