@@ -6,6 +6,9 @@ import static org.junit.Assert.assertNull;
 
 import java.io.File;
 import java.util.Collection;
+import java.util.Map;
+
+import jetbrains.buildServer.vcs.VcsRoot;
 
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
@@ -16,6 +19,65 @@ import com.jetbrains.teamcity.Storage;
 public class VCSAccessTest {
 	
 	private static String ourExistingProp;
+	
+	private static class TestVcsRoot implements VcsRoot{
+
+		@Override
+		public String convertToPresentableString() {
+			return null;
+		}
+
+		@Override
+		public String convertToString() {
+			return null;
+		}
+
+		@Override
+		public VcsRoot createSecureCopy() {
+			return null;
+		}
+
+		@Override
+		public long getId() {
+			return 0;
+		}
+
+		@Override
+		public String getName() {
+			return null;
+		}
+
+		@Override
+		public Map<String, String> getProperties() {
+			return null;
+		}
+
+		@Override
+		public long getPropertiesHash() {
+			return 0;
+		}
+
+		@Override
+		public String getProperty(String arg0) {
+			return null;
+		}
+
+		@Override
+		public String getProperty(String arg0, String arg1) {
+			return null;
+		}
+
+		@Override
+		public long getRootVersion() {
+			return 0;
+		}
+
+		@Override
+		public String getVcsName() {
+			return null;
+		}
+		
+	}
 
 	@BeforeClass
 	public static void setup() throws Exception {
@@ -42,7 +104,7 @@ public class VCSAccessTest {
 		sharedFolder.mkdir();
 		//test
 		try{
-			IVCSRoot root = VCSAccess.getInstance().share(sharePath, -1l);
+			IVCSRoot root = VCSAccess.getInstance().share(sharePath, new TestVcsRoot());
 			assertNotNull(root);
 			assertEquals(sharedFolder.getCanonicalPath(), new File(root.getLocal()).getCanonicalPath());
 		} finally {
@@ -61,7 +123,7 @@ public class VCSAccessTest {
 		sharedFolder.mkdir();
 		//test
 		try{
-			IVCSRoot root = VCSAccess.getInstance().share(sharePath, -1l);
+			IVCSRoot root = VCSAccess.getInstance().share(sharePath, new TestVcsRoot());
 			assertNotNull(root);
 			final Collection<IVCSRoot> roots = VCSAccess.getInstance().roots();
 			assertNotNull(roots);
@@ -91,8 +153,8 @@ public class VCSAccessTest {
 		
 		//test
 		try{
-			final IVCSRoot root1 = VCSAccess.getInstance().share(sharePath1, -1l);
-			VCSAccess.getInstance().share(sharePath2, -2l);
+			final IVCSRoot root1 = VCSAccess.getInstance().share(sharePath1, new TestVcsRoot());
+			VCSAccess.getInstance().share(sharePath2, new TestVcsRoot());
 			
 			VCSAccess.getInstance().unshare(root1.getId());
 			
@@ -132,8 +194,8 @@ public class VCSAccessTest {
 		
 		//test
 		try{
-			final IVCSRoot root1 = access.share(sharePath1, -1l);
-			final IVCSRoot root2 = access.share(sharePath2, -2l);
+			final IVCSRoot root1 = access.share(sharePath1, new TestVcsRoot());
+			final IVCSRoot root2 = access.share(sharePath2, new TestVcsRoot());
 			
 			final IVCSRoot foundRoot1 = access.getRoot(sharedFile1.getPath());
 			assertNotNull(foundRoot1);
@@ -163,7 +225,7 @@ public class VCSAccessTest {
 		sharedFolder.mkdir();
 		//test
 		try{
-			VCSAccess.getInstance().share(sharePath, -1l);
+			VCSAccess.getInstance().share(sharePath, new TestVcsRoot());
 			IVCSRoot found = VCSAccess.getInstance().getRoot(".\\abc");
 			assertNotNull(found);
 			found = VCSAccess.getInstance().getRoot(".\\abc\\");

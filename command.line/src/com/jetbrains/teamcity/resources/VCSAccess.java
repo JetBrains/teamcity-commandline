@@ -10,7 +10,10 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
+import java.util.Map;
 import java.util.TreeSet;
+
+import jetbrains.buildServer.vcs.VcsRoot;
 
 import com.jetbrains.teamcity.Logger;
 import com.jetbrains.teamcity.Storage;
@@ -118,7 +121,7 @@ public class VCSAccess {
 		}
 	}
 	
-	public synchronized IVCSRoot share(String localRoot, final Long remoteRootId) throws IllegalArgumentException {
+	public synchronized IVCSRoot share(String localRoot, final VcsRoot remote) throws IllegalArgumentException {
 		try {
 			localRoot = new File(localRoot).getCanonicalPath();
 			//check exists
@@ -130,14 +133,13 @@ public class VCSAccess {
 			}
 			//create new and persist
 			final Long newShareID = lastShareId + 1; 
-			final TeamCityRoot newRoot = new TeamCityRoot(newShareID.toString(), localRoot, remoteRootId);
+			final TeamCityRoot newRoot = new TeamCityRoot(newShareID.toString(), localRoot, remote);
 			myShares.add(newRoot);
 			Storage.getInstance().put(SHARES_KEY, myShares, false);
 			Storage.getInstance().put(SHARES_COUNTER_KEY, newShareID);
 			return newRoot;
 			
 		} catch (IOException e) {
-			
 			throw new IllegalArgumentException(e);
 		}
 	}
@@ -177,17 +179,24 @@ public class VCSAccess {
 	
 	static class TeamCityRoot implements IVCSRoot, Serializable {
 		
-		private static final long serialVersionUID = 6205458474965309988L;
+		private static final long serialVersionUID = -5096247011911645590L;
 		
 		private Long myRemote;
 		private String myLocal;
-
 		private String myId;
+		private Map<String, String> myProperies;
 
-		TeamCityRoot(final String id, final String local, final Long remote){
+		private String myVcs;
+
+		TeamCityRoot(final String id, final String local, final VcsRoot remote){
 			myId = id;
 			myLocal = local;
-			myRemote = remote;
+			myRemote = remote.getId();
+			myVcs = remote.getVcsName();
+			myProperies = Collections
+					.unmodifiableMap(remote.getProperties() == null ? 
+							Collections.<String, String> emptyMap() : 
+							remote.getProperties());
 		}
 		
 		@Override
@@ -221,6 +230,16 @@ public class VCSAccess {
 		@Override
 		public String getId() {
 			return myId;
+		}
+
+		@Override
+		public Map<String, String> getProperties() {
+			return myProperies;
+		}
+
+		@Override
+		public String getVcs() {
+			return myVcs;
 		}
 		
 	}

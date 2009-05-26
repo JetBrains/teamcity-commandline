@@ -64,7 +64,7 @@ public class Share implements ICommand {
 	}
 
 	private IVCSRoot share(final String localPath, final VcsRoot root) {
-		return VCSAccess.getInstance().share(localPath, root.getId());
+		return VCSAccess.getInstance().share(localPath, root);
 	}
 
 	@Override

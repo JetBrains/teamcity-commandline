@@ -6,7 +6,6 @@ import java.text.MessageFormat;
 import java.util.List;
 
 import jetbrains.buildServer.util.FileUtil;
-import jetbrains.buildServer.vcs.VcsRoot;
 
 import com.jetbrains.teamcity.resources.IVCSRoot;
 
@@ -16,14 +15,14 @@ public abstract class URLFactory {
 
 	}
 
-	public static URLFactory getFactory(IVCSRoot localRoot, final VcsRoot remoteRoot) {
-		final String vcs = remoteRoot.getVcsName();
+	public static URLFactory getFactory(IVCSRoot localRoot) {
+		final String vcs = localRoot.getVcs();
 		if ("cvs".equalsIgnoreCase(vcs)) {
-			return new CVSUrlFactory(localRoot, remoteRoot);
+			return new CVSUrlFactory(localRoot);
 		} else if ("svn".equalsIgnoreCase(vcs)) {
-			return new SVNUrlFactory(localRoot, remoteRoot);
+			return new SVNUrlFactory(localRoot);
 		} else if ("perforce".equalsIgnoreCase(vcs)) {
-			return new PerforceUrlFactory(localRoot, remoteRoot);
+			return new PerforceUrlFactory(localRoot);
 		}
 		return null;
 	}
@@ -38,10 +37,10 @@ public abstract class URLFactory {
 
 //		private VcsRoot myRoot;
 
-		public CVSUrlFactory(IVCSRoot localRoot, VcsRoot remoteRoot) {
+		public CVSUrlFactory(IVCSRoot localRoot) {
 			myLocalRoot = new File(localRoot.getLocal());
-			myCvsRoot = remoteRoot.getProperties().get("cvs-root");
-			myModule = remoteRoot.getProperties().get("module-name");
+			myCvsRoot = localRoot.getProperties().get("cvs-root");
+			myModule = localRoot.getProperties().get("module-name");
 //			cvs://:pserver:kdonskov@localhost:/cvs|tc-test/src/all/CVS.java
 			//C:\work\tc-test\tc-test-CVS\src
 		}
@@ -62,7 +61,7 @@ public abstract class URLFactory {
 		private File myLocalRoot;
 		private String myRootId;
 
-		public SVNUrlFactory(IVCSRoot localRoot, VcsRoot root) {
+		public SVNUrlFactory(IVCSRoot localRoot) {
 			myLocalRoot = new File(localRoot.getLocal());
 			//ugly hack: get uuid from local 
 			final File entries = new File(myLocalRoot.getAbsolutePath() + File.separator + ".svn" + File.separator + "entries");
@@ -103,9 +102,9 @@ public abstract class URLFactory {
 		private File myLocalRoot;
 		private String myPort;
 
-		public PerforceUrlFactory(IVCSRoot localRoot, VcsRoot root) {
+		public PerforceUrlFactory(IVCSRoot localRoot) {
 			myLocalRoot = new File(localRoot.getLocal());
-			myPort = root.getProperties().get("port");
+			myPort = localRoot.getProperties().get("port");
 		}
 
 		@Override

@@ -161,7 +161,7 @@ public class RemoteRun implements ICommand {
 			patcher = new LowLevelPatchBuilderImpl(os);
 			//
 			for(final Entry<IVCSRoot, ArrayList<File>> entry : map.entrySet()){
-				final URLFactory factory = URLFactory.getFactory(entry.getKey(), myServer.getVcsRoot(entry.getKey().getRemote())); 
+				final URLFactory factory = URLFactory.getFactory(entry.getKey()); 
 				for(final File file : entry.getValue()){
 					LowLevelPatchBuilder.WriteFileContent content = new PatchBuilderImpl.StreamWriteFileContent(new BufferedInputStream(new FileInputStream(file)), file.length());
 					final String fileUrl = factory.getUrl(file);
@@ -200,8 +200,6 @@ public class RemoteRun implements ICommand {
 		file.getParentFile().mkdirs();
 		return file;
 	}
-	
-
 
 	private HashMap<IVCSRoot, ArrayList<File>> getRootMap(final Collection<File> files) throws IllegalArgumentException {
 		final HashMap<IVCSRoot, ArrayList<File>> result = new HashMap<IVCSRoot, ArrayList<File>>();

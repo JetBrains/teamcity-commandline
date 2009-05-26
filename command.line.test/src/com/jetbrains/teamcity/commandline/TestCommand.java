@@ -16,7 +16,6 @@ public class TestCommand implements ICommand {
 	public void execute(Server server, String[] args)
 			throws EAuthorizationException, ECommunicationException,
 			ERemoteError, InvalidAttributesException {
-		// TODO Auto-generated method stub
 	}
 
 	@Override
