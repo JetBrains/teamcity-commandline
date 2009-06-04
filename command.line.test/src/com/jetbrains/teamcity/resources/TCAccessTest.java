@@ -16,63 +16,52 @@ import org.junit.Test;
 
 import com.jetbrains.teamcity.Storage;
 
-public class VCSAccessTest {
+public class TCAccessTest {
 	
 	private static String ourExistingProp;
 	
 	private static class TestVcsRoot implements VcsRoot{
 
-		@Override
 		public String convertToPresentableString() {
 			return null;
 		}
 
-		@Override
 		public String convertToString() {
 			return null;
 		}
 
-		@Override
 		public VcsRoot createSecureCopy() {
 			return null;
 		}
 
-		@Override
 		public long getId() {
 			return 0;
 		}
 
-		@Override
 		public String getName() {
 			return null;
 		}
 
-		@Override
 		public Map<String, String> getProperties() {
 			return null;
 		}
 
-		@Override
 		public long getPropertiesHash() {
 			return 0;
 		}
 
-		@Override
 		public String getProperty(String arg0) {
 			return null;
 		}
 
-		@Override
 		public String getProperty(String arg0, String arg1) {
 			return null;
 		}
 
-		@Override
 		public long getRootVersion() {
 			return 0;
 		}
 
-		@Override
 		public String getVcsName() {
 			return null;
 		}
@@ -98,18 +87,18 @@ public class VCSAccessTest {
 	@Test
 	public void share() throws Exception {
 		//prepare
-		VCSAccess.getInstance().clear();
+		TCAccess.getInstance().clear();
 		final String sharePath = "." + File.separator + "abc";
 		final File sharedFolder = new File(sharePath);//.getAbsoluteFile();
 		sharedFolder.mkdir();
 		//test
 		try{
-			IVCSRoot root = VCSAccess.getInstance().share(sharePath, new TestVcsRoot());
+			IShare root = TCAccess.getInstance().share(sharePath, new TestVcsRoot());
 			assertNotNull(root);
 			assertEquals(sharedFolder.getCanonicalPath(), new File(root.getLocal()).getCanonicalPath());
 		} finally {
 			//clean
-			VCSAccess.getInstance().clear();
+			TCAccess.getInstance().clear();
 			sharedFolder.delete();
 		}
 	}
@@ -117,23 +106,23 @@ public class VCSAccessTest {
 	@Test
 	public void roots() throws Exception {
 		//prepare
-		VCSAccess.getInstance().clear();
+		TCAccess.getInstance().clear();
 		final String sharePath = "." + File.separator + "abc";
 		final File sharedFolder = new File(sharePath);//.getAbsoluteFile();
 		sharedFolder.mkdir();
 		//test
 		try{
-			IVCSRoot root = VCSAccess.getInstance().share(sharePath, new TestVcsRoot());
+			IShare root = TCAccess.getInstance().share(sharePath, new TestVcsRoot());
 			assertNotNull(root);
-			final Collection<IVCSRoot> roots = VCSAccess.getInstance().roots();
+			final Collection<IShare> roots = TCAccess.getInstance().roots();
 			assertNotNull(roots);
 			assertEquals(1, roots.size());
-			for(IVCSRoot r : roots){
+			for(IShare r : roots){
 				assertEquals(root, r);
 			}
 		} finally {
 			//clean
-			VCSAccess.getInstance().clear();
+			TCAccess.getInstance().clear();
 			sharedFolder.delete();
 		}
 	}
@@ -141,7 +130,7 @@ public class VCSAccessTest {
 	@Test
 	public void unshare() throws Exception {
 		//prepare
-		VCSAccess.getInstance().clear();
+		TCAccess.getInstance().clear();
 		
 		final String sharePath1 = "." + File.separator + "abc";
 		final File sharedFolder1 = new File(sharePath1);
@@ -153,21 +142,21 @@ public class VCSAccessTest {
 		
 		//test
 		try{
-			final IVCSRoot root1 = VCSAccess.getInstance().share(sharePath1, new TestVcsRoot());
-			VCSAccess.getInstance().share(sharePath2, new TestVcsRoot());
+			final IShare root1 = TCAccess.getInstance().share(sharePath1, new TestVcsRoot());
+			TCAccess.getInstance().share(sharePath2, new TestVcsRoot());
 			
-			VCSAccess.getInstance().unshare(root1.getId());
+			TCAccess.getInstance().unshare(root1.getId());
 			
 			//check removed
-			IVCSRoot r1 = VCSAccess.getInstance().getRoot(sharePath1);
+			IShare r1 = TCAccess.getInstance().getRoot(sharePath1);
 			assertNull(r1);
 			//check exists
-			IVCSRoot r2 = VCSAccess.getInstance().getRoot(sharePath2);
+			IShare r2 = TCAccess.getInstance().getRoot(sharePath2);
 			assertNotNull(r2);
 			
 		} finally {
 			//clean
-			VCSAccess.getInstance().clear();
+			TCAccess.getInstance().clear();
 			sharedFolder2.delete();
 			sharedFolder1.delete();
 		}
@@ -177,7 +166,7 @@ public class VCSAccessTest {
 	@Test
 	public void share_inner() throws Exception {
 		//prepare
-		final VCSAccess access = VCSAccess.getInstance();
+		final TCAccess access = TCAccess.getInstance();
 		access.clear();
 		
 		final String sharePath1 = "." + File.separator + "abc";
@@ -194,14 +183,14 @@ public class VCSAccessTest {
 		
 		//test
 		try{
-			final IVCSRoot root1 = access.share(sharePath1, new TestVcsRoot());
-			final IVCSRoot root2 = access.share(sharePath2, new TestVcsRoot());
+			final IShare root1 = access.share(sharePath1, new TestVcsRoot());
+			final IShare root2 = access.share(sharePath2, new TestVcsRoot());
 			
-			final IVCSRoot foundRoot1 = access.getRoot(sharedFile1.getPath());
+			final IShare foundRoot1 = access.getRoot(sharedFile1.getPath());
 			assertNotNull(foundRoot1);
 			assertEquals(root1, foundRoot1);
 			
-			final IVCSRoot foundRoot2 = access.getRoot(sharedFile2.getPath());
+			final IShare foundRoot2 = access.getRoot(sharedFile2.getPath());
 			assertNotNull(foundRoot2);
 			assertEquals(root2, foundRoot2);
 			
@@ -219,34 +208,34 @@ public class VCSAccessTest {
 	@Test
 	public void getRoot() throws Exception {
 		//prepare
-		VCSAccess.getInstance().clear();
+		TCAccess.getInstance().clear();
 		final String sharePath = "." + File.separator + "abc";
 		final File sharedFolder = new File(sharePath);//.getAbsoluteFile();
 		sharedFolder.mkdir();
 		//test
 		try{
-			VCSAccess.getInstance().share(sharePath, new TestVcsRoot());
-			IVCSRoot found = VCSAccess.getInstance().getRoot(".\\abc");
+			TCAccess.getInstance().share(sharePath, new TestVcsRoot());
+			IShare found = TCAccess.getInstance().getRoot(".\\abc");
 			assertNotNull(found);
-			found = VCSAccess.getInstance().getRoot(".\\abc\\");
+			found = TCAccess.getInstance().getRoot(".\\abc\\");
 			assertNotNull(found);
-			found = VCSAccess.getInstance().getRoot("./abc");
+			found = TCAccess.getInstance().getRoot("./abc");
 			assertNotNull(found);
-			found = VCSAccess.getInstance().getRoot("./abc/");
+			found = TCAccess.getInstance().getRoot("./abc/");
 			assertNotNull(found);
-			found = VCSAccess.getInstance().getRoot("./AbC ");
+			found = TCAccess.getInstance().getRoot("./AbC ");
 			assertNotNull(found);
-			found = VCSAccess.getInstance().getRoot("./aBc/ ");
+			found = TCAccess.getInstance().getRoot("./aBc/ ");
 			assertNotNull(found);
-			found = VCSAccess.getInstance().getRoot("/aBc/ ");
+			found = TCAccess.getInstance().getRoot("/aBc/ ");
 			assertNull(found);
-			found = VCSAccess.getInstance().getRoot("./cde/");
+			found = TCAccess.getInstance().getRoot("./cde/");
 			assertNull(found);
-			found = VCSAccess.getInstance().getRoot("./aBc/Def\\J.k ");
+			found = TCAccess.getInstance().getRoot("./aBc/Def\\J.k ");
 			assertNotNull(found);
 		} finally {
 			//clean
-			VCSAccess.getInstance().clear();
+			TCAccess.getInstance().clear();
 			sharedFolder.delete();
 		}
 	}

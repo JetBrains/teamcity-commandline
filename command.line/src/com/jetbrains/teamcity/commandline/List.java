@@ -19,7 +19,6 @@ public class List implements ICommand {
 
 	private static final String ID = "info";
 
-	@Override
 	public void execute(final Server server, String[] args) throws EAuthorizationException, ECommunicationException, ERemoteError, InvalidAttributesException {
 		if(Util.hasArgument(args, "-p", "--projects")){
 			printProjects(server);
@@ -68,22 +67,18 @@ public class List implements ICommand {
 		}
 	}
 
-	@Override
 	public String getId() {
 		return ID;
 	}
 
-	@Override
 	public boolean isConnectionRequired() {
 		return true;
 	}
 
-	@Override
 	public String getUsageDescription() {
 		return MessageFormat.format("{0}: use -p[rojects],-c[onfigurations],-v[csroots] switches", getId()); 
 	}
 
-	@Override
 	public String getDescription() {
 		return "Shows information for known TeamCity projects, configurations or vcsroots";
 	}

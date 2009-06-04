@@ -19,7 +19,6 @@ class Help implements ICommand {
 	private static final String HELP_PARAM = "-h";
 	private static final String HELP_PARAM_LONG = "--help";
 
-	@Override
 	public void execute(Server server, String[] args) throws EAuthorizationException, ECommunicationException, ERemoteError, InvalidAttributesException {
 		System.out.println("TeamCity Commandline utility v0.0.0.1. Copyright 2000-2009 JetBrains s.r.o.");
 		if(Util.hasArgument(args, HELP_PARAM, HELP_PARAM_LONG) ){
@@ -33,7 +32,6 @@ class Help implements ICommand {
 		
 		System.out.println("Available commands:");
 		final TreeSet<ICommand> knownCommands = new TreeSet<ICommand>(new Comparator<ICommand>(){
-			@Override
 			public int compare(ICommand o1, ICommand o2) {
 				return o1.getId().compareTo(o2.getId());
 			}});
@@ -45,22 +43,18 @@ class Help implements ICommand {
 		System.out.println("use -h|--help [command] for command usage information");
 	}
 
-	@Override
 	public String getId() {
 		return ID;
 	}
 
-	@Override
 	public boolean isConnectionRequired() {
 		return false;
 	}
 
-	@Override
 	public String getUsageDescription() {
 		return null;
 	}
 
-	@Override
 	public String getDescription() {
 		return "Prints this screen";
 	}

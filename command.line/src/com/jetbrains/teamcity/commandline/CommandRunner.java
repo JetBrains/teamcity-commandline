@@ -10,7 +10,7 @@ import com.jetbrains.teamcity.Logger;
 import com.jetbrains.teamcity.Server;
 import com.jetbrains.teamcity.Util;
 import com.jetbrains.teamcity.resources.ICredential;
-import com.jetbrains.teamcity.resources.VCSAccess;
+import com.jetbrains.teamcity.resources.TCAccess;
 
 public class CommandRunner {
 	
@@ -42,7 +42,7 @@ public class CommandRunner {
 				password = Util.getArgumentValue(args, "--password");
 			} else {
 				//try to load from saved
-				final ICredential credential = VCSAccess.getInstance().findCredential(host);
+				final ICredential credential = TCAccess.getInstance().findCredential(host);
 				if(credential != null){
 					user = credential.getUser();
 					password = credential.getPassword();

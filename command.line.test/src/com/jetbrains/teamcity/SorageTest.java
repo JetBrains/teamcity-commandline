@@ -34,7 +34,6 @@ public class SorageTest {
 	public void put() throws Exception {
 		IKey<Long> testKey = new Storage.IKey<Long>(){
 			private static final long serialVersionUID = 6509717225043443905L;
-			@Override
 			public Object getKey() {
 				return "TestKey";
 			}
@@ -50,7 +49,6 @@ public class SorageTest {
 	public void put_owerride() throws Exception {
 		IKey<Long> testKey = new Storage.IKey<Long>(){
 			private static final long serialVersionUID = 6509717225043443905L;
-			@Override
 			public Object getKey() {
 				return "TestKey";
 			}
@@ -69,7 +67,6 @@ public class SorageTest {
 			
 			private static final long serialVersionUID = 1L;
 
-			@Override
 			public Object getKey() {
 				return "TestKey1";
 			}
@@ -79,7 +76,6 @@ public class SorageTest {
 			
 			private static final long serialVersionUID = 1L;
 			
-			@Override
 			public Object getKey() {
 				return "TestKey2";
 			}

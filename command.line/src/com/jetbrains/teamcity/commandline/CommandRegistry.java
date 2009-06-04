@@ -21,7 +21,7 @@ import jetbrains.buildServer.util.FileUtil;
 import com.jetbrains.teamcity.Logger;
 import com.jetbrains.teamcity.Server;
 import com.jetbrains.teamcity.Storage;
-import com.jetbrains.teamcity.resources.VCSAccess;
+import com.jetbrains.teamcity.resources.TCAccess;
 
 
 class CommandRegistry {
@@ -133,7 +133,7 @@ class CommandRegistry {
 
 	private boolean isIgnored(final String className) {
 		if (getClass().getName().equals(className)
-				|| VCSAccess.class.getName().equals(className)
+				|| TCAccess.class.getName().equals(className)
 				|| Storage.class.getName().equals(className)
 				|| Server.class.getName().equals(className)
 				|| CommandRunner.class.getName().equals(className)) {

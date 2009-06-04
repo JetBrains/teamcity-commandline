@@ -33,7 +33,6 @@ public class Storage {
 
 	private String myStorageFile;
 
-	@SuppressWarnings("unchecked")
 	private Storage() {
 		//init storage
 		final String storageFile = System.getProperty(TC_STORAGE_PROPERTY_NAME);
@@ -95,7 +94,6 @@ public class Storage {
 
 		private String myStorageFile;
 
-		@Override
 		public Map<Object, Serializable> load(HashMap<Object, Serializable> storage) {
 			try {
 				storage.clear();
@@ -109,7 +107,6 @@ public class Storage {
 			return storage;
 		}
 
-		@Override
 		public void save(HashMap<Object, Serializable> storage) {
 			try {
 				final ObjectOutput out = new ObjectOutputStream(new FileOutputStream(getStorageFile()));
@@ -151,7 +148,6 @@ public class Storage {
 			}
 		};
 
-		@Override
 		public Map<Object, Serializable> load(HashMap<Object, Serializable> storage) {
 			try {
 				storage.clear();
@@ -165,7 +161,6 @@ public class Storage {
 			return storage;
 		}
 
-		@Override
 		public void save(HashMap<Object, Serializable> storage) {
 			final String xml = serializeObject(storage);
 			FileUtil.writeFile(new File(getStorageFile()), xml);

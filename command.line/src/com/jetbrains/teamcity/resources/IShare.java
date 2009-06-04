@@ -3,7 +3,7 @@ package com.jetbrains.teamcity.resources;
 import java.util.Map;
 
 
-public interface IVCSRoot {
+public interface IShare {
 	
 	public String getId();
 

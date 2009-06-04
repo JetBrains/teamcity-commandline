@@ -7,7 +7,7 @@ import java.util.List;
 
 import jetbrains.buildServer.util.FileUtil;
 
-import com.jetbrains.teamcity.resources.IVCSRoot;
+import com.jetbrains.teamcity.resources.IShare;
 
 public abstract class URLFactory {
 
@@ -15,7 +15,7 @@ public abstract class URLFactory {
 
 	}
 
-	public static URLFactory getFactory(IVCSRoot localRoot) {
+	public static URLFactory getFactory(IShare localRoot) {
 		final String vcs = localRoot.getVcs();
 		if ("cvs".equalsIgnoreCase(vcs)) {
 			return new CVSUrlFactory(localRoot);
@@ -37,7 +37,7 @@ public abstract class URLFactory {
 
 //		private VcsRoot myRoot;
 
-		public CVSUrlFactory(IVCSRoot localRoot) {
+		public CVSUrlFactory(IShare localRoot) {
 			myLocalRoot = new File(localRoot.getLocal());
 			myCvsRoot = localRoot.getProperties().get("cvs-root");
 			myModule = localRoot.getProperties().get("module-name");
@@ -61,7 +61,7 @@ public abstract class URLFactory {
 		private File myLocalRoot;
 		private String myRootId;
 
-		public SVNUrlFactory(IVCSRoot localRoot) {
+		public SVNUrlFactory(IShare localRoot) {
 			myLocalRoot = new File(localRoot.getLocal());
 			//ugly hack: get uuid from local 
 			final File entries = new File(myLocalRoot.getAbsolutePath() + File.separator + ".svn" + File.separator + "entries");
@@ -102,7 +102,7 @@ public abstract class URLFactory {
 		private File myLocalRoot;
 		private String myPort;
 
-		public PerforceUrlFactory(IVCSRoot localRoot) {
+		public PerforceUrlFactory(IShare localRoot) {
 			myLocalRoot = new File(localRoot.getLocal());
 			myPort = localRoot.getProperties().get("port");
 		}

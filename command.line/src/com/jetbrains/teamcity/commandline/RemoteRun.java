@@ -42,8 +42,8 @@ import com.jetbrains.teamcity.Logger;
 import com.jetbrains.teamcity.Server;
 import com.jetbrains.teamcity.URLFactory;
 import com.jetbrains.teamcity.Util;
-import com.jetbrains.teamcity.resources.IVCSRoot;
-import com.jetbrains.teamcity.resources.VCSAccess;
+import com.jetbrains.teamcity.resources.IShare;
+import com.jetbrains.teamcity.resources.TCAccess;
 
 public class RemoteRun implements ICommand {
 
@@ -62,12 +62,11 @@ public class RemoteRun implements ICommand {
 	
 	private String myConfigurationId;
 	private Collection<File> myFiles;
-	private HashMap<IVCSRoot, ArrayList<File>> myRootMap;
+	private HashMap<IShare, ArrayList<File>> myRootMap;
 	private Server myServer;
 	private String myComments = "<no comments>";
 	private boolean isNoWait = false;
 
-	@Override
 	public void execute(final Server server, String[] args) throws EAuthorizationException, ECommunicationException, ERemoteError, InvalidAttributesException {
 		if(Util.hasArgument(args, CONFIGURATION_PARAM, CONFIGURATION_PARAM_LONG) ){
 			myServer = server;
@@ -96,7 +95,7 @@ public class RemoteRun implements ICommand {
 	}
 
 
-	private void fireRemoteRun(final HashMap<IVCSRoot, ArrayList<File>> map) throws ECommunicationException, ERemoteError {
+	private void fireRemoteRun(final HashMap<IShare, ArrayList<File>> map) throws ECommunicationException, ERemoteError {
 		final int currentUser = myServer.getCurrentUser();
 		try {
 			//prepare change list & patch for remote run
@@ -116,7 +115,7 @@ public class RemoteRun implements ICommand {
 	}
 	
 	
-	private long createChangeList(String serverURL, int userId, String configuration, HashMap<IVCSRoot,ArrayList<File>> map) throws IOException, ECommunicationException {
+	private long createChangeList(String serverURL, int userId, String configuration, HashMap<IShare,ArrayList<File>> map) throws IOException, ECommunicationException {
 		
 		final File patch = createPatch(createPatchFile(serverURL), map);
 		patch.deleteOnExit();
@@ -153,14 +152,14 @@ public class RemoteRun implements ICommand {
 	}
 
 
-	private File createPatch(File patchFile, final HashMap<IVCSRoot, ArrayList<File>> map) throws IOException, ECommunicationException {
+	private File createPatch(File patchFile, final HashMap<IShare, ArrayList<File>> map) throws IOException, ECommunicationException {
 		DataOutputStream os = null;
 		LowLevelPatchBuilderImpl patcher = null;
 		try{
 			os = new DataOutputStream(new BufferedOutputStream(new FileOutputStream(patchFile)));
 			patcher = new LowLevelPatchBuilderImpl(os);
 			//
-			for(final Entry<IVCSRoot, ArrayList<File>> entry : map.entrySet()){
+			for(final Entry<IShare, ArrayList<File>> entry : map.entrySet()){
 				final URLFactory factory = URLFactory.getFactory(entry.getKey()); 
 				for(final File file : entry.getValue()){
 					LowLevelPatchBuilder.WriteFileContent content = new PatchBuilderImpl.StreamWriteFileContent(new BufferedInputStream(new FileInputStream(file)), file.length());
@@ -201,10 +200,10 @@ public class RemoteRun implements ICommand {
 		return file;
 	}
 
-	private HashMap<IVCSRoot, ArrayList<File>> getRootMap(final Collection<File> files) throws IllegalArgumentException {
-		final HashMap<IVCSRoot, ArrayList<File>> result = new HashMap<IVCSRoot, ArrayList<File>>();
+	private HashMap<IShare, ArrayList<File>> getRootMap(final Collection<File> files) throws IllegalArgumentException {
+		final HashMap<IShare, ArrayList<File>> result = new HashMap<IShare, ArrayList<File>>();
 		for(final File file : files){
-			final IVCSRoot root = VCSAccess.getInstance().getRoot(file.getAbsolutePath());
+			final IShare root = TCAccess.getInstance().getRoot(file.getAbsolutePath());
 			if(root == null){
 				throw new IllegalArgumentException(MessageFormat.format("Path is not shared: {0}", file.getAbsolutePath()));
 			}
@@ -252,22 +251,18 @@ public class RemoteRun implements ICommand {
 	}
 
 
-	@Override
 	public String getId() {
 		return ID;
 	}
 
-	@Override
 	public boolean isConnectionRequired() {
 		return true;
 	}
 
-	@Override
 	public String getUsageDescription() {
 		return MessageFormat.format("{0}: use -c|--configuration [configuration_id] -m|--message [message] [-n|--nowait] file [file ...]| @filelist", getId()); 
 	}
 	
-	@Override
 	public String getDescription() {
 		return "Fires Personal Build";
 	}

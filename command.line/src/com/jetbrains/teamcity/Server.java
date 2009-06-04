@@ -139,7 +139,7 @@ public class Server {
 	}
 
 	static class VersionCheckerStub implements VersionChecker{
-		@Override
+
 		public void checkServerVersion() throws IncompatiblePluginError {
 			
 		}
@@ -147,12 +147,10 @@ public class Server {
 	
 	static class ApplicationFacadeStub implements ApplicationFacade {
 
-		@Override
 		public Cancelable createCancelable() {
 			return null;
 		}
 
-		@Override
 		public void onProcessCanceled() {
 		}
 		

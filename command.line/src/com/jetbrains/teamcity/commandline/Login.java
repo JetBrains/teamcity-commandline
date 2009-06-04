@@ -12,7 +12,7 @@ import com.jetbrains.teamcity.ECommunicationException;
 import com.jetbrains.teamcity.ERemoteError;
 import com.jetbrains.teamcity.Server;
 import com.jetbrains.teamcity.Util;
-import com.jetbrains.teamcity.resources.VCSAccess;
+import com.jetbrains.teamcity.resources.TCAccess;
 
 public class Login implements ICommand {
 	
@@ -29,7 +29,6 @@ public class Login implements ICommand {
 	//	myStorageFile = home + File.separator + TC_STORAGE_DEFAULT_FILENAME;
 
 
-	@Override
 	public void execute(Server nullServer, String[] args) throws EAuthorizationException, ECommunicationException, ERemoteError, InvalidAttributesException {
 		if(Util.hasArgument(args, HOST_PARAM, HOST_PARAM_LONG)){
 			final String url = Util.getArgumentValue(args, HOST_PARAM, HOST_PARAM_LONG);
@@ -41,7 +40,7 @@ public class Login implements ICommand {
 				server.connect();
 				server.logon(user, password);
 				//ok. let's store
-				VCSAccess.getInstance().setCredential(url, user, password);
+				TCAccess.getInstance().setCredential(url, user, password);
 				
 			} catch (MalformedURLException e) {
 				throw new IllegalArgumentException(e);
@@ -73,22 +72,18 @@ public class Login implements ICommand {
 		return scanner.nextLine();
 	}
 
-	@Override
 	public String getDescription() {
 		return "Prompt for password for authenticating server";
 	}
 
-	@Override
 	public String getId() {
 		return "login";
 	}
 
-	@Override
 	public String getUsageDescription() {
 		return MessageFormat.format("{0} --host \"url\" [--user \"username\"] [--password \"password\"]", getId());
 	}
 
-	@Override
 	public boolean isConnectionRequired() {
 		return false;
 	}

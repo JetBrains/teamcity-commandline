@@ -12,14 +12,13 @@ import com.jetbrains.teamcity.ECommunicationException;
 import com.jetbrains.teamcity.ERemoteError;
 import com.jetbrains.teamcity.Server;
 import com.jetbrains.teamcity.Util;
-import com.jetbrains.teamcity.resources.IVCSRoot;
-import com.jetbrains.teamcity.resources.VCSAccess;
+import com.jetbrains.teamcity.resources.IShare;
+import com.jetbrains.teamcity.resources.TCAccess;
 
 public class Share implements ICommand {
 
 	private static final String ID = "share";
 
-	@Override
 	public void execute(final Server server, String[] args) throws EAuthorizationException, ECommunicationException, ERemoteError, InvalidAttributesException {
 		
 		if (Util.hasArgument(args, "-v", "--vcsroot") && Util.hasArgument(args, "-l", "--local")) {
@@ -48,13 +47,13 @@ public class Share implements ICommand {
 			}
 			return;
 		} else if (Util.hasArgument(args, "-i", "--info")){
-			final Collection<IVCSRoot> roots = VCSAccess.getInstance().roots();
+			final Collection<IShare> roots = TCAccess.getInstance().roots();
 			if(roots.isEmpty()){
 				System.out.println("no one share found");
 				return;
 			}
 			System.out.println("id\tlocal\tremote");
-			for(final IVCSRoot root : roots){
+			for(final IShare root : roots){
 				final VcsRoot remoteRoot = server.getVcsRoot(root.getRemote());				
 				System.out.println(MessageFormat.format("{0}\t{1}\t{2}", root.getId(),  root.getLocal(), String.valueOf(remoteRoot.getId())));
 			}
@@ -63,26 +62,22 @@ public class Share implements ICommand {
 		System.out.println(getUsageDescription());
 	}
 
-	private IVCSRoot share(final String localPath, final VcsRoot root) {
-		return VCSAccess.getInstance().share(localPath, root);
+	private IShare share(final String localPath, final VcsRoot root) {
+		return TCAccess.getInstance().share(localPath, root);
 	}
 
-	@Override
 	public String getId() {
 		return ID;
 	}
 
-	@Override
 	public boolean isConnectionRequired() {
 		return true;
 	}
 
-	@Override
 	public String getUsageDescription() {
 		return MessageFormat.format("{0}: use -v [vcs_root_id] -l [local_path]", getId()); 
 	}
 	
-	@Override
 	public String getDescription() {
 		return "Associates local folder with known TeamCity VcsRoot";
 	}

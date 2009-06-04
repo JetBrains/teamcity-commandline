@@ -18,26 +18,24 @@ import jetbrains.buildServer.vcs.VcsRoot;
 import com.jetbrains.teamcity.Logger;
 import com.jetbrains.teamcity.Storage;
 
-public class VCSAccess {
+public class TCAccess {
 	
 	static Storage.IKey<Long> SHARES_COUNTER_KEY = new Storage.IKey<Long>(){
 
 		private static final long serialVersionUID = 6509717225043443905L;
 
-		@Override
 		public Object getKey() {
-			return VCSAccess.class.getName() + ".SHARESCOUNTER";
+			return TCAccess.class.getName() + ".SHARESCOUNTER";
 		}
 		
 	};
 	
-	static Storage.IKey<ArrayList<IVCSRoot>> SHARES_KEY = new Storage.IKey<ArrayList<IVCSRoot>>(){
+	static Storage.IKey<ArrayList<IShare>> SHARES_KEY = new Storage.IKey<ArrayList<IShare>>(){
 		
 		private static final long serialVersionUID = 6509717225043443905L;
 
-		@Override
 		public Object getKey() {
-			return VCSAccess.class.getName() + ".SHARES";
+			return TCAccess.class.getName() + ".SHARES";
 		}
 	
 	};
@@ -46,33 +44,32 @@ public class VCSAccess {
 		
 		private static final long serialVersionUID = 6509717225043443905L;
 
-		@Override
 		public Object getKey() {
-			return VCSAccess.class.getName() + ".CREDENTIAL";
+			return TCAccess.class.getName() + ".CREDENTIAL";
 		}
 	};
 	
 
-	private static VCSAccess ourInstance;
+	private static TCAccess ourInstance;
 	
-	private ArrayList<IVCSRoot> myShares;
+	private ArrayList<IShare> myShares;
 	
 	private ArrayList<ICredential> myCredentials;
 
-	public static synchronized VCSAccess getInstance(){
+	public static synchronized TCAccess getInstance(){
 		if(ourInstance == null){
-			ourInstance = new VCSAccess();
+			ourInstance = new TCAccess();
 		}
 		return ourInstance;
 	}
 
-	private VCSAccess(){
+	private TCAccess(){
 		//roots
-		final Collection<IVCSRoot> shares = Storage.getInstance().get(SHARES_KEY);
+		final Collection<IShare> shares = Storage.getInstance().get(SHARES_KEY);
 		if(shares != null){
-			myShares = new ArrayList<IVCSRoot>(shares);
+			myShares = new ArrayList<IShare>(shares);
 		} else {
-			myShares = new ArrayList<IVCSRoot>();
+			myShares = new ArrayList<IShare>();
 		}
 		//credentials
 		ArrayList<ICredential> credentials = Storage.getInstance().get(CREDENTIAL_KEY);
@@ -84,21 +81,21 @@ public class VCSAccess {
 		
 	}
 	
-	public Collection<IVCSRoot> roots(){
-		return Collections.<IVCSRoot>unmodifiableCollection(myShares); //do not allow modification
+	public Collection<IShare> roots(){
+		return Collections.<IShare>unmodifiableCollection(myShares); //do not allow modification
 	}
 	
-	public IVCSRoot getRoot(String forPath) throws IllegalArgumentException {
+	public IShare getRoot(String forPath) throws IllegalArgumentException {
 		try {
 			forPath = new File(forPath.trim()).getCanonicalPath();
 			//make sure the deepest candidate will the last
-			final TreeSet<IVCSRoot> rootCandidate = new TreeSet<IVCSRoot>(new Comparator<IVCSRoot>(){
-				@Override
-				public int compare(IVCSRoot o1, IVCSRoot o2) {
+			final TreeSet<IShare> rootCandidate = new TreeSet<IShare>(new Comparator<IShare>(){
+				
+				public int compare(IShare o1, IShare o2) {
 					return o1.getLocal().toLowerCase().compareTo(o2.getLocal().toLowerCase());
 				}});
 			//scan all to get all hierarchial roots
-			for(final IVCSRoot root : myShares){
+			for(final IShare root : myShares){
 				final String existsRootPath = root.getLocal();
 				String parentPath = forPath.toLowerCase();
 				while(parentPath != null){
@@ -121,7 +118,7 @@ public class VCSAccess {
 		}
 	}
 	
-	public synchronized IVCSRoot share(String localRoot, final VcsRoot remote) throws IllegalArgumentException {
+	public synchronized IShare share(String localRoot, final VcsRoot remote) throws IllegalArgumentException {
 		try {
 			localRoot = new File(localRoot).getCanonicalPath();
 			//check exists
@@ -146,12 +143,12 @@ public class VCSAccess {
 	
 
 	public synchronized void unshare(final String id) throws IllegalArgumentException {
-		for(IVCSRoot root : roots()){
+		for(IShare root : roots()){
 			if(id.equals(root.getId())){
 				myShares.remove(root);
 				Storage.getInstance().put(SHARES_KEY, myShares);
 			}
-			Logger.log(VCSAccess.class.getName(), MessageFormat.format("Share \"{0}\" succesfully removed", id));
+			Logger.log(TCAccess.class.getName(), MessageFormat.format("Share \"{0}\" succesfully removed", id));
 			return;
 		}
 		throw new IllegalArgumentException(MessageFormat.format("Could not find share \"{0}\"", id));  
@@ -177,7 +174,7 @@ public class VCSAccess {
 	}
 	
 	
-	static class TeamCityRoot implements IVCSRoot, Serializable {
+	static class TeamCityRoot implements IShare, Serializable {
 		
 		private static final long serialVersionUID = -5096247011911645590L;
 		
@@ -206,8 +203,8 @@ public class VCSAccess {
 
 		@Override
 		public boolean equals(Object obj) {
-			if(obj instanceof IVCSRoot){
-				return this.myLocal.equals(((IVCSRoot)obj).getLocal()) && this.myRemote.equals(((IVCSRoot)obj).getRemote());
+			if(obj instanceof IShare){
+				return this.myLocal.equals(((IShare)obj).getLocal()) && this.myRemote.equals(((IShare)obj).getRemote());
 			}
 			return super.equals(obj);
 		}
@@ -217,27 +214,22 @@ public class VCSAccess {
 			return this.myLocal.hashCode() << 6 | this.myRemote.hashCode();
 		}
 
-		@Override
 		public String getLocal() {
 			return myLocal;
 		}
 
-		@Override
 		public Long getRemote() {
 			return myRemote;
 		}
 
-		@Override
 		public String getId() {
 			return myId;
 		}
 
-		@Override
 		public Map<String, String> getProperties() {
 			return myProperies;
 		}
 
-		@Override
 		public String getVcs() {
 			return myVcs;
 		}
@@ -258,22 +250,18 @@ public class VCSAccess {
 			myUser = user;
 		}
 
-		@Override
 		public String getPassword() {
 			return myPassword;
 		}
 
-		@Override
 		public String getServer() {
 			return myServer;
 		}
 
-		@Override
 		public String getUser() {
 			return myUser;
 		}
 		
-		@Override
 		public String toString() {
 			return MessageFormat.format("{0}:{1}:*************", myServer, myUser, myPassword);
 		}
@@ -287,7 +275,7 @@ public class VCSAccess {
 					return credential;
 				}
 			} catch (MalformedURLException e) {
-				Logger.log(VCSAccess.class.getName(), e);
+				Logger.log(TCAccess.class.getName(), e);
 			}
 		}
 		return null;
@@ -301,7 +289,7 @@ public class VCSAccess {
 			if(existing == null){
 				myCredentials.add(account);
 			} else {
-				Logger.log(VCSAccess.class.getName(), MessageFormat.format("will replace existing credential \"{0}\" with new one \"{1}\"", String.valueOf(existing), String.valueOf(account)));
+				Logger.log(TCAccess.class.getName(), MessageFormat.format("will replace existing credential \"{0}\" with new one \"{1}\"", String.valueOf(existing), String.valueOf(account)));
 				myCredentials.remove(existing);
 				myCredentials.add(account);
 			}
