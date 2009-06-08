@@ -20,6 +20,11 @@ import javax.naming.directory.InvalidAttributesException;
 
 import jetbrains.buildServer.AddToQueueRequest;
 import jetbrains.buildServer.AddToQueueResult;
+import jetbrains.buildServer.TeamServerSummaryData;
+import jetbrains.buildServer.UserChangeInfoData;
+import jetbrains.buildServer.UserChangeStatus;
+import jetbrains.buildServer.serverSide.userChanges.PersonalChangeCommitDecision;
+import jetbrains.buildServer.serverSide.userChanges.PersonalChangeDescriptor;
 import jetbrains.buildServer.serverSide.userChanges.PreTestedCommitType;
 import jetbrains.buildServer.vcs.patches.LowLevelPatchBuilder;
 import jetbrains.buildServer.vcs.patches.LowLevelPatchBuilderImpl;
@@ -47,6 +52,9 @@ import com.jetbrains.teamcity.resources.TCAccess;
 
 public class RemoteRun implements ICommand {
 
+	private static final int SLEEP_INTERVAL = 1000 * 10;
+	private static final int DEFAULT_TIMEOUT = 1000 * 60 * 60;
+
 	private static final String ID = "remoterun";
 	
 	private static final String CONFIGURATION_PARAM = "-c";
@@ -54,6 +62,9 @@ public class RemoteRun implements ICommand {
 	
 	private static final String MESSAGE_PARAM = "-m";
 	private static final String MESSAGE_PARAM_LONG = "--message";
+	
+	private static final String TIMEOUT_PARAM = "-t";
+	private static final String TIMEOUT_PARAM_LONG = "--timeout";
 	
 	private static final String NO_WAIT_SWITCH = "-n";
 	private static final String NO_WAIT_SWITCH_LONG = "--nowait";
@@ -66,6 +77,7 @@ public class RemoteRun implements ICommand {
 	private Server myServer;
 	private String myComments = "<no comments>";
 	private boolean isNoWait = false;
+	private long myTimeout;
 
 	public void execute(final Server server, String[] args) throws EAuthorizationException, ECommunicationException, ERemoteError, InvalidAttributesException {
 		if(Util.hasArgument(args, CONFIGURATION_PARAM, CONFIGURATION_PARAM_LONG) ){
@@ -80,14 +92,20 @@ public class RemoteRun implements ICommand {
 			if(Util.hasArgument(args, NO_WAIT_SWITCH, NO_WAIT_SWITCH_LONG)){
 				isNoWait  = true;
 			}
-			
+			//timeout
+			if(Util.hasArgument(args, TIMEOUT_PARAM, TIMEOUT_PARAM_LONG)){
+				myTimeout = Long.valueOf(Util.getArgumentValue(args, TIMEOUT_PARAM, TIMEOUT_PARAM_LONG));
+			} else {
+				myTimeout = DEFAULT_TIMEOUT;
+			}
+			//lets go...
 			myFiles = getFiles(args);
 			myRootMap = getRootMap(myFiles);
 			//start RR
-			fireRemoteRun(myRootMap);
+			final long chaneListId = fireRemoteRun(myRootMap);
 			//process result
 			if(!isNoWait){
-				
+				waitForResult(chaneListId, myTimeout);
 			}
 			return;
 		}
@@ -95,7 +113,36 @@ public class RemoteRun implements ICommand {
 	}
 
 
-	private void fireRemoteRun(final HashMap<IShare, ArrayList<File>> map) throws ECommunicationException, ERemoteError {
+	private PersonalChangeDescriptor waitForResult(final long changeListId, final long timeOut) throws ECommunicationException, ERemoteError {
+		final long startTime = System.currentTimeMillis();
+		while ((System.currentTimeMillis() - startTime) < timeOut) {
+			final TeamServerSummaryData summary = myServer.getSummary();
+			for(final UserChangeInfoData data : summary.getPersonalChanges()){
+				if(data.getPersonalDesc() != null && data.getPersonalDesc().getId() == changeListId){
+					//check builds status 
+					if (UserChangeStatus.FAILED == data.getChangeStatus() 
+							|| UserChangeStatus.CANCELED == data.getChangeStatus()) {
+						throw new ERemoteError(MessageFormat.format("RemoteRun failed: build status={0}", data.getChangeStatus()));
+					}
+					final PersonalChangeDescriptor descriptor = data.getPersonalDesc();
+					PersonalChangeCommitDecision commitStatus = descriptor.getPersonalChangeStatus();
+					if(PersonalChangeCommitDecision.COMMIT == commitStatus){
+						return descriptor;
+					}
+				}
+			}
+			try {
+				Thread.sleep(SLEEP_INTERVAL);
+			} catch (InterruptedException e) {
+				throw new RuntimeException(e);
+			}
+		}
+		//so, timeout exceed
+		throw new RuntimeException(MessageFormat.format("RemoteRun failed: timeout {0} ms exceed", myTimeout));
+	}
+
+
+	private long fireRemoteRun(final HashMap<IShare, ArrayList<File>> map) throws ECommunicationException, ERemoteError {
 		final int currentUser = myServer.getCurrentUser();
 		try {
 			//prepare change list & patch for remote run
@@ -108,6 +155,7 @@ public class RemoteRun implements ICommand {
 			if(result.hasFailures()){
 				throw new ERemoteError(result.getFailureReason(myConfigurationId));
 			}
+			return changeId;
 		} catch (IOException e) {
 			throw new ECommunicationException(e);
 		}
@@ -260,7 +308,7 @@ public class RemoteRun implements ICommand {
 	}
 
 	public String getUsageDescription() {
-		return MessageFormat.format("{0}: use -c|--configuration [configuration_id] -m|--message [message] [-n|--nowait] file [file ...]| @filelist", getId()); 
+		return MessageFormat.format("{0}: use -c|--configuration [configuration_id] -m|--message [message] -t|--timeout [timeout,sec] [-n|--nowait] file [file ...]| @filelist", getId()); 
 	}
 	
 	public String getDescription() {

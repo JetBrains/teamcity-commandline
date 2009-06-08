@@ -1,5 +1,6 @@
 package com.jetbrains.teamcity;
 
+import java.io.IOException;
 import java.net.Proxy;
 import java.net.URL;
 import java.util.ArrayList;
@@ -12,13 +13,17 @@ import jetbrains.buildServer.AddToQueueResult;
 import jetbrains.buildServer.BuildTypeData;
 import jetbrains.buildServer.IncompatiblePluginError;
 import jetbrains.buildServer.ProjectData;
+import jetbrains.buildServer.TeamServerSummary;
+import jetbrains.buildServer.TeamServerSummaryData;
 import jetbrains.buildServer.messages.XStreamHolder;
 import jetbrains.buildServer.serverProxy.ApplicationFacade;
+import jetbrains.buildServer.serverProxy.ProxyFactory;
 import jetbrains.buildServer.serverProxy.RemoteBuildServer;
 import jetbrains.buildServer.serverProxy.RemoteBuildServerImpl;
 import jetbrains.buildServer.serverProxy.VersionChecker;
 import jetbrains.buildServer.serverProxy.impl.SessionXmlRpcTargetImpl;
 import jetbrains.buildServer.serverSide.auth.AuthenticationFailedException;
+import jetbrains.buildServer.users.User;
 import jetbrains.buildServer.vcs.VcsRoot;
 import jetbrains.buildServer.xmlrpc.RemoteCallException;
 import jetbrains.buildServer.xmlrpc.XmlRpcTarget.Cancelable;
@@ -115,7 +120,15 @@ public class Server {
 		return vcsRoots.values();
 	}
 	
-	
+	public TeamServerSummaryData getSummary() throws ECommunicationException {
+		final byte[] serializedStr = getServerProxy().getGZippedSummary(String.valueOf(getCurrentUser()), true);
+		try {
+			final TeamServerSummaryData data = unzipAndDeserializeObject(serializedStr);
+			return data;
+		} catch (IOException e) {
+			throw new RuntimeException(e);
+		}
+	}
 	
 	public synchronized VcsRoot getVcsRoot(long id) throws ECommunicationException {
 		for(VcsRoot root : getVcsRoots()){
@@ -137,6 +150,12 @@ public class Server {
 	private static <T> T deserializeObject(final Object typeData) {
 		return XStreamWrapper.<T>deserializeObject((String)typeData, ourXStreamHolder);
 	}
+	
+	//TODO: move to utils
+	private <T> T unzipAndDeserializeObject(final Object typeData) throws IOException {
+		return XStreamWrapper.<T>unzipAndDeserializeObject((byte[])typeData, ourXStreamHolder);
+	}
+	
 
 	static class VersionCheckerStub implements VersionChecker{
 

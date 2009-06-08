@@ -26,7 +26,6 @@ public class CommandRunner {
 				command.execute(null, args);	
 			}
 		} catch (Throwable e){
-			System.err.println(e.getMessage());
 			Logger.log(CommandRunner.class.getName(), e);
 			System.exit(-1);
 		}
