@@ -1,4 +1,4 @@
-package com.jetbrains.teamcity.commandline;
+package com.jetbrains.teamcity.command;
 
 import java.net.MalformedURLException;
 import java.net.URL;

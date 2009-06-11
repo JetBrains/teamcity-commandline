@@ -1,4 +1,4 @@
-package com.jetbrains.teamcity.commandline;
+package com.jetbrains.teamcity.command;
 
 import java.text.MessageFormat;
 import java.util.Collection;
@@ -12,6 +12,7 @@ import com.jetbrains.teamcity.ECommunicationException;
 import com.jetbrains.teamcity.ERemoteError;
 import com.jetbrains.teamcity.Server;
 import com.jetbrains.teamcity.Util;
+import com.jetbrains.teamcity.command.ICommand;
 import com.jetbrains.teamcity.resources.IShare;
 import com.jetbrains.teamcity.resources.TCAccess;
 

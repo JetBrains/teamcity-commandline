@@ -1,4 +1,4 @@
-package com.jetbrains.teamcity.commandline;
+package com.jetbrains.teamcity.command;
 
 import javax.naming.directory.InvalidAttributesException;
 
