@@ -20,6 +20,7 @@ public class Unshare implements ICommand {
 		if (Util.hasArgument(args, "-s", "--share")) {
 			final String shareId = Util.getArgumentValue(args, "-s", "--share");
 			TCAccess.getInstance().unshare(shareId);
+			System.out.println("SUCCESS");
 			return;
 		}
 		System.out.println(getUsageDescription());

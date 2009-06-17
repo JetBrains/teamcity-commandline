@@ -109,6 +109,7 @@ public class RemoteRun implements ICommand {
 			if(!isNoWait){
 				waitForResult(chaneListId, myTimeout);
 			}
+			System.out.println("SUCCESS");
 			return;
 		}
 		System.out.println(getUsageDescription());
