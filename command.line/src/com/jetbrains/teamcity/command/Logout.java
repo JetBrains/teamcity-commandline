@@ -36,7 +36,7 @@ public class Logout implements ICommand {
 		return MessageFormat.format("{0} --host \"url\"", getId());
 	}
 
-	public boolean isConnectionRequired() {
+	public boolean isConnectionRequired(final String[] args) {
 		return false;
 	}
 

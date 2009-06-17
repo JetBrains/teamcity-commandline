@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="WINDOWS-1251" standalone="no"?>
+<jardesc>
+    <jar path="tc.jar"/>
+    <options buildIfNeeded="true" compress="true" descriptionLocation="/command.line/tc.jardesc" exportErrors="true" exportWarnings="true" includeDirectoryEntries="true" overwrite="true" saveDescription="true" storeRefactorings="false" useSourceFolders="false"/>
+    <storedRefactorings deprecationInfo="true" structuralOnly="false"/>
+    <selectedProjects/>
+    <manifest generateManifest="true" mainClassHandleIdentifier="=command.line/src&lt;com.jetbrains.teamcity.commandline{CommandRunner.java[CommandRunner" manifestLocation="" manifestVersion="1.0" reuseManifest="false" saveManifest="false" usesManifest="true">
+        <sealing sealJar="false">
+            <packagesToSeal/>
+            <packagesToUnSeal/>
+        </sealing>
+    </manifest>
+    <selectedElements exportClassFiles="false" exportJavaFiles="false" exportOutputFolder="true">
+        <folder path="/command.line/lib"/>
+        <folder path="/command.line/META-INF"/>
+        <javaElement handleIdentifier="=command.line/src"/>
+    </selectedElements>
+    <fatjar builder="org.eclipse.jdt.ui.plain_jar_builder" launchConfig=""/>
+</jardesc>

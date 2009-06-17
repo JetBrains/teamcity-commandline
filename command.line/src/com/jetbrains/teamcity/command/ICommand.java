@@ -13,7 +13,7 @@ public interface ICommand {
 	
 	public void execute(final Server server, String[] args) throws EAuthorizationException, ECommunicationException, ERemoteError, InvalidAttributesException ;
 
-	public boolean isConnectionRequired();
+	public boolean isConnectionRequired(final String[] args);
 	
 	public String getUsageDescription();
 

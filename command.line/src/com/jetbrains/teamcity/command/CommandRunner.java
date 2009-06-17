@@ -19,14 +19,15 @@ public class CommandRunner {
 		String commandId = getCommandId(args);
 		final ICommand command = CommandRegistry.getInstance().getCommand(commandId);
 		try{
-			if(command.isConnectionRequired()){
+			if(command.isConnectionRequired(args)){
 				final Server server = openConnection(args);
 				command.execute(server, args);
 			} else {
 				command.execute(null, args);	
 			}
 		} catch (Throwable e){
-			Logger.log(CommandRunner.class.getName(), e);
+			System.err.println(e.getMessage());
+//			Logger.log(CommandRunner.class.getName(), e);
 			System.exit(-1);
 		}
 	}

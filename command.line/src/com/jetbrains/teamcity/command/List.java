@@ -72,7 +72,7 @@ public class List implements ICommand {
 		return ID;
 	}
 
-	public boolean isConnectionRequired() {
+	public boolean isConnectionRequired(final String[] args) {
 		return true;
 	}
 

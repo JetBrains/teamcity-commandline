@@ -1,17 +1,18 @@
 package com.jetbrains.teamcity;
 
+import java.util.logging.Level;
 
 
 public class Logger {
 	
-	private static com.intellij.openapi.diagnostic.Logger ourLogger = com.intellij.openapi.diagnostic.Logger.getInstance(Logger.class.getName());
+	private static java.util.logging.Logger ourLogger = java.util.logging.Logger.getLogger(Logger.class.getName());
 	
 	public static void log(Object source, Throwable e) {
-		ourLogger.error(e);
+		ourLogger.log(Level.SEVERE, e.getMessage(), e);
 	}
 	
 	public static void log(Object source, String message) {
-		ourLogger.debug(message);
+		ourLogger.log(Level.INFO, message);
 	}
 
 }
