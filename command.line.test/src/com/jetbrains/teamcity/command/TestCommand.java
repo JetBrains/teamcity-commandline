@@ -1,4 +1,4 @@
-package com.jetbrains.teamcity.commandline;
+package com.jetbrains.teamcity.command;
 
 import javax.naming.directory.InvalidAttributesException;
 
@@ -25,7 +25,7 @@ public class TestCommand implements ICommand {
 		return "testId";
 	}
 
-	public boolean isConnectionRequired() {
+	public boolean isConnectionRequired(final String[] args) {
 		return false;
 	}
 
