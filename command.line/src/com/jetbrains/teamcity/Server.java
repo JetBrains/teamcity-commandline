@@ -104,6 +104,16 @@ public class Server {
 		return configurations;
 	}
 	
+	public synchronized BuildTypeData getConfiguration(final String id) throws ECommunicationException {
+		final Collection<BuildTypeData> allConfigurations = getConfigurations();
+		for(final BuildTypeData config : allConfigurations){
+			if(id.equals(config.getId())){
+				return config;
+			}
+		}
+		return null;
+	}
+	
 	public synchronized Collection<VcsRoot> getVcsRoots() throws ECommunicationException {
 		final Collection<BuildTypeData> allConfigurations = getConfigurations();
 		final HashMap<Long, VcsRoot> vcsRoots = new HashMap<Long, VcsRoot>();
@@ -117,6 +127,15 @@ public class Server {
 		return vcsRoots.values();
 	}
 	
+	public synchronized VcsRoot getVcsRoot(long id) throws ECommunicationException {
+		for(VcsRoot root : getVcsRoots()){
+			if(root.getId() == id){
+				return root;
+			}
+		}
+		return null;
+	}
+	
 	public TeamServerSummaryData getSummary() throws ECommunicationException {
 		final byte[] serializedStr = getServerProxy().getGZippedSummary(String.valueOf(getCurrentUser()), true);
 		try {
@@ -125,15 +144,6 @@ public class Server {
 		} catch (IOException e) {
 			throw new RuntimeException(e);
 		}
-	}
-	
-	public synchronized VcsRoot getVcsRoot(long id) throws ECommunicationException {
-		for(VcsRoot root : getVcsRoots()){
-			if(root.getId() == id){
-				return root;
-			}
-		}
-		return null;
 	}
 	
 	//TODO: move to utils

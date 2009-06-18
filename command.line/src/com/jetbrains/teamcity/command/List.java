@@ -25,14 +25,17 @@ public class List implements ICommand {
 	private static final String ID = "info";
 
 	public void execute(final Server server, final Args args) throws EAuthorizationException, ECommunicationException, ERemoteError, InvalidAttributesException {
-		if(args.hasArgument(PROJECT_SWITCH, PROJECT_SWITCH_LONG)){
+		if(args.hasArgument(PROJECT_SWITCH, PROJECT_SWITCH_LONG) 
+				&& !args.hasArgument(CONFIGURATION_SWITCH, CONFIGURATION_SWITCH_LONG)
+				&& !args.hasArgument(VCSROOT_SWITCH, VCSROOT_SWITCH_LONG)){
 			printProjects(server);
 			
-		} else if (args.hasArgument(CONFIGURATION_SWITCH, CONFIGURATION_SWITCH_LONG)){
-			printConfigurations(server);
+		} else if (args.hasArgument(CONFIGURATION_SWITCH, CONFIGURATION_SWITCH_LONG)
+				&& !args.hasArgument(VCSROOT_SWITCH, VCSROOT_SWITCH_LONG)){
+			printConfigurations(server, args);
 			
 		}else if (args.hasArgument(VCSROOT_SWITCH, VCSROOT_SWITCH_LONG)){
-			printVcsRoots(server);
+			printVcsRoots(server, args);
 			
 		} else {
 			System.out.println(getUsageDescription());
@@ -40,27 +43,43 @@ public class List implements ICommand {
 			System.out.println("projects:");
 			printProjects(server);
 			System.out.println("configurations:");
-			printConfigurations(server);
+			printConfigurations(server, null);
 			System.out.println("vcsroots:");
-			printVcsRoots(server);
+			printVcsRoots(server, null);
 		}
 	}
 
-	private void printVcsRoots(final Server server)
-			throws ECommunicationException {
-		final Collection<VcsRoot> roots = server.getVcsRoots();
+	private void printVcsRoots(final Server server, Args args)	throws ECommunicationException {
+		final Collection<? extends VcsRoot> roots;
+		if(args.hasArgument(CONFIGURATION_SWITCH, CONFIGURATION_SWITCH_LONG)){
+			final String filterByConfig = args.getArgument(CONFIGURATION_SWITCH, CONFIGURATION_SWITCH_LONG);
+			final BuildTypeData config = server.getConfiguration(filterByConfig);
+			if(config == null){
+				System.out.println(MessageFormat.format("No \"{0}\" Configuration found", filterByConfig));
+				return;
+			}
+			roots = config.getVcsRoots();
+		} else {
+			roots = server.getVcsRoots();
+		}
 		System.out.println(MessageFormat.format("id\tname\tvcsname\tproperties", ""));
 		for(final VcsRoot root :roots){
-			System.out.println(MessageFormat.format("{0}\t{1}\t{2}\t{3}", root.getId(), root.getName(), root.getVcsName(), root.getProperties()));
+			System.out.println(MessageFormat.format("{0}\t{1}\t{2}\t{3}", root.getId(), root.getName(), root.getVcsName(), root.getProperties()));	
 		}
 	}
 
-	private void printConfigurations(final Server server)
-			throws ECommunicationException {
+	private void printConfigurations(final Server server, Args args) throws ECommunicationException {
+		String filterByProject = null;
+		if(args.hasArgument(PROJECT_SWITCH, PROJECT_SWITCH_LONG)){
+			filterByProject = args.getArgument(PROJECT_SWITCH, PROJECT_SWITCH_LONG);
+		}
 		final Collection<BuildTypeData> configurations = server.getConfigurations();
 		System.out.println(MessageFormat.format("id\tname\tstatus\tdescription", ""));
 		for(final BuildTypeData config :configurations){
-			System.out.println(MessageFormat.format("{0}\t{1}\t{2}\t{3}", config.getId(), config.getName(), config.getStatus(), config.getDescription()));
+			//check 
+			if((filterByProject == null) || (filterByProject != null && config.getProjectId().equals(filterByProject))){
+				System.out.println(MessageFormat.format("{0}\t{1}\t{2}\t{3}", config.getId(), config.getName(), config.getStatus(), config.getDescription()));	
+			}
 		}
 	}
 

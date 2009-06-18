@@ -58,7 +58,7 @@ public class Share implements ICommand {
 				System.out.println("no one share found");
 				return;
 			}
-			System.out.println("id\tlocal\tremote\tproperties");
+			System.out.println("id\tlocal\tvcsrootid\tproperties");
 			for(final IShare root : roots){
 				System.out.println(MessageFormat.format("{0}\t{1}\t{2}\t{3}", root.getId(),  root.getLocal(), String.valueOf(root.getRemote()), root.getProperties()));
 			}

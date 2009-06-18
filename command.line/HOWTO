@@ -1,0 +1,114 @@
+Introduction
+	TeamCity command line tool allows you to start Personal Build outside supported IDE.
+
+Requirements
+	The tool distributed as executable .jar and a requirement is installed JRE only.
+
+Installing
+	The tool does not require any installation.
+
+Running
+	java -jar tcc.jar
+	
+Quick start
+
+	Help: The tool contains help for each supported command and full list command description. 
+	You can get the list of command using by:
+	
+	java -jar tcc.jar help
+	
+	A detail command description available:
+	
+	java -jar tcc.jar help <command>
+	
+	
+	Authorization:
+	To perform most of TeamCity operation you must point a TeamCity Server host will operating to, user and password. 
+	The tool support Global arguments "--host", "--user" & "--password". You can specify "--user" & "--password" for each tool's 
+	launching or store TeamCity connection parameters by "login" command invocation. The command persists a pair "--user" & "-password" 
+	for target host so you can avoid the login parameters except the "--host" one over next tool launching. See help for "login" for 
+	more details. All examples ran on logged in TeamCity Server(command "login" was executed).
+	  
+	See also: "logout" command
+
+	
+	Discover TeamCity Server structure: 
+	First of all you have to create mapping(share) local folder contains files for Remote Run with existing TeamCity VcsRoot.
+	Sharing requires knowledge TeamCity VcsRoot id about. The tool includes "info" command provides you short information a 
+	TeamCity Server's Projects, Configurations and VcsRoots:      
+		
+		java -jar tcc.jar info --host http://rusps-app:80 -p
+		
+	a result of invocation is a list of existing TC projects something like this:
+		id			name		status	description
+		project3	tc_test		NORMAL	tc_test
+		project2	tc_test_2	FAILURE	tc_test_2
+	
+	next you can get configurations of project "tc_test" for example:
+	
+		java -jar tcc.jar info --host http://rusps-app:80 -c -p project3 
+	
+	the tool prints configurations belongs to the project "tc_test":
+		id	name				status	description
+		bt9	tc-test-perforce	NORMAL	null
+		bt5	tc-test-svn			NORMAL	null
+		bt7	tc-test-svn-2		NORMAL	null
+		bt8	test-CVS			NORMAL	null	
+	
+	and gather VcsRoots of "tc-test-svn-2":  
+   
+		java -jar tcc.jar info --host http://rusps-app:80 -v -c bt7   
+
+	:
+		id	name	vcsname	properties
+		9	null	svn		{labelingPatterns=trunk=>tags, svn-config-directory=C:\Application Data\Subversion, svn-use-default-config-directory=true, externals-mode=externals-none, user=kdonskov, url=http://rusps-app.swiftteams.local:8080/svn/test/trunk/tc-test-rusps-app-svn/}
+		
+	At finish there is an id of TC VcsRoot for sharing.
+	HINT: remove "-p project3" for configurations and "-c bt7" for vcsroots command to disable filtering by project and configuration.
+	
+	
+	
+	Sharing:
+	Perform "share" command for mapping local folder "C:\work\tc-test\tc-test-rusps-app-svn" to VcsRoot "9":
+	
+		java -jar tcc.jar share --host http://rusps-app:80 -l C:\work\tc-test\tc-test-rusps-app-svn -v 9
+		
+	the tool reports with the newly created share id. All existing shares printed out by
+	
+	 	java -jar tcc.jar share --info
+	:
+		id	local										vcsrootid	properties
+		2	C:\work\tc-test\test-perforce-in-workspace	11			{port=rusps-app:1666, client-mapping=//depot/... //team-city-agent/..., p4-exe=p4, user=kdonskov, use-client=false}
+		3	C:\work\tc-test\tc-test-CVS					10			{cvs-tag-mode=HEAD, cvs-quiet-period=3, cvs-root=:pserver:kdonskov@rusps-app.SwiftTeams.local:/CVS-ROOT, local-server-command=server, ssh-use-ppk=false, ssh-port=22, module-name=tc-test-CVS}
+		28	C:\work\tc-test\tc-test-rusps-app-svn		9			{labelingPatterns=trunk=>tags, svn-config-directory=C:\Application Data\Subversion, svn-use-default-config-directory=true, user=kdonskov, externals-mode=externals-none, url=http://rusps-app.swiftteams.local:8080/svn/test/trunk/tc-test-rusps-app-svn/}
+	
+	
+	See also: "unshare" command
+	
+	
+	Remote Run:
+	So we have all required information and prepared Share to perform Remote Run. Let's schedule Personal Build for changed files located into
+	shared folder "C:\work\tc-test\tc-test-rusps-app-svn" on Configuration "bt7":
+	   
+	   java -jar tcc.jar remoterun --host http://rusps-app -c bt7 C:\work\tc-test\tc-test-rusps-app-svn
+	   
+	the command collected all files from the folder and child ones and sent them to TeamCity Server for Remote Run.
+	You can specify files for execution more accurately and such form allows you send deleted files to RemoteRun:
+	  
+	  	java -jar tcc.jar remoterun --host http://rusps-app -c bt7 C:\work\tc-test\tc-test-rusps-app-svn\src\all\New.java C:\work\tc-test\tc-test-rusps-app-svn\src\all\ENew.java
+	   
+	There is a form support file contains list of changes fro RemoteRun:
+	
+		java -jar tcc.jar remoterun --host http://rusps-app -c bt7 @C:\work\tc-test\tc-test-rusps-app-svn\src\all\changes.txt
+		
+	changes.txt content:
+	C:\work\tc-test\tc-test-rusps-app-svn\src\all\ENew.java
+	C:\work\tc-test\tc-test-rusps-app-svn\src\all\New.java
+	
+	so you can prepare own list of changes by vcs tools for example and pass changes to RemoteRun automatically.
+	 	
+	The "remoterun" command will wait for build result by default and form return code appropriate to status of build that suppose
+	emulate Delayed Commit using third party vcs tools. See "help remoterun" for all switches and arguments.  
+	 
+	        
+	
