@@ -97,7 +97,7 @@ Quick start
 	  
 	  	java -jar tcc.jar remoterun --host http://rusps-app -c bt7 C:\work\tc-test\tc-test-rusps-app-svn\src\all\New.java C:\work\tc-test\tc-test-rusps-app-svn\src\all\ENew.java
 	   
-	There is a form support file contains list of changes fro RemoteRun:
+	There is a form supports file that contains list of changes for RemoteRun:
 	
 		java -jar tcc.jar remoterun --host http://rusps-app -c bt7 @C:\work\tc-test\tc-test-rusps-app-svn\src\all\changes.txt
 		
