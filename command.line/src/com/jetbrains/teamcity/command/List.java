@@ -13,21 +13,25 @@ import com.jetbrains.teamcity.EAuthorizationException;
 import com.jetbrains.teamcity.ECommunicationException;
 import com.jetbrains.teamcity.ERemoteError;
 import com.jetbrains.teamcity.Server;
-import com.jetbrains.teamcity.Util;
-import com.jetbrains.teamcity.command.ICommand;
 
 public class List implements ICommand {
 
+	private static final String VCSROOT_SWITCH_LONG = "--vcsroots";
+	private static final String VCSROOT_SWITCH = "-v";
+	private static final String CONFIGURATION_SWITCH_LONG = "--configurations";
+	private static final String CONFIGURATION_SWITCH = "-c";
+	private static final String PROJECT_SWITCH_LONG = "--projects";
+	private static final String PROJECT_SWITCH = "-p";
 	private static final String ID = "info";
 
-	public void execute(final Server server, String[] args) throws EAuthorizationException, ECommunicationException, ERemoteError, InvalidAttributesException {
-		if(Util.hasArgument(args, "-p", "--projects")){
+	public void execute(final Server server, final Args args) throws EAuthorizationException, ECommunicationException, ERemoteError, InvalidAttributesException {
+		if(args.hasArgument(PROJECT_SWITCH, PROJECT_SWITCH_LONG)){
 			printProjects(server);
 			
-		} else if (Util.hasArgument(args, "-c", "--configurations")){
+		} else if (args.hasArgument(CONFIGURATION_SWITCH, CONFIGURATION_SWITCH_LONG)){
 			printConfigurations(server);
 			
-		}else if (Util.hasArgument(args, "-v", "--vcsroots")){
+		}else if (args.hasArgument(VCSROOT_SWITCH, VCSROOT_SWITCH_LONG)){
 			printVcsRoots(server);
 			
 		} else {
@@ -72,16 +76,26 @@ public class List implements ICommand {
 		return ID;
 	}
 
-	public boolean isConnectionRequired(final String[] args) {
+	public boolean isConnectionRequired(final Args args) {
 		return true;
 	}
 
 	public String getUsageDescription() {
-		return MessageFormat.format("{0}: use -p[rojects],-c[onfigurations],-v[csroots] switches", getId()); 
+		StringBuffer buffer = new StringBuffer();
+		buffer.append(getDescription()).append("\n");
+		buffer.append(MessageFormat.format("usage: {0} [{1}|{2}|{3}]", getId(), PROJECT_SWITCH , CONFIGURATION_SWITCH, VCSROOT_SWITCH)).append("\n");
+		buffer.append("\n");
+		buffer.append("With no args, print all information of the target TeamCity Server").append("\n");;
+		buffer.append("\n");
+		buffer.append("Valid options:").append("\n");;
+		buffer.append(MessageFormat.format("\t{0}[{1}] \t: {2}", PROJECT_SWITCH, PROJECT_SWITCH_LONG, "display Projects")).append("\n");;
+		buffer.append(MessageFormat.format("\t{0}[{1}] \t: {2}", CONFIGURATION_SWITCH, CONFIGURATION_SWITCH_LONG, "display Configurations")).append("\n");;
+		buffer.append(MessageFormat.format("\t{0}[{1}] \t: {2}", VCSROOT_SWITCH, VCSROOT_SWITCH_LONG, "display VcsRoots")).append("\n");;
+		return buffer.toString();
 	}
 
 	public String getDescription() {
-		return "Shows information for known TeamCity projects, configurations or vcsroots";
+		return "Show information for known TeamCity projects, configurations or vcsroots";
 	}
 
 }

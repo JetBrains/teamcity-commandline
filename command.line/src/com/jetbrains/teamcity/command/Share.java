@@ -11,8 +11,6 @@ import com.jetbrains.teamcity.EAuthorizationException;
 import com.jetbrains.teamcity.ECommunicationException;
 import com.jetbrains.teamcity.ERemoteError;
 import com.jetbrains.teamcity.Server;
-import com.jetbrains.teamcity.Util;
-import com.jetbrains.teamcity.command.ICommand;
 import com.jetbrains.teamcity.resources.IShare;
 import com.jetbrains.teamcity.resources.TCAccess;
 
@@ -27,11 +25,11 @@ public class Share implements ICommand {
 	private static final String VCSROOT_PARAM = "-v";
 	private static final String VCSROOT_PARAM_LONG = "--vcsroot";
 
-	public void execute(final Server server, String[] args) throws EAuthorizationException, ECommunicationException, ERemoteError, InvalidAttributesException {
+	public void execute(final Server server, Args args) throws EAuthorizationException, ECommunicationException, ERemoteError, InvalidAttributesException {
 		
-		if (Util.hasArgument(args, VCSROOT_PARAM, VCSROOT_PARAM_LONG) && Util.hasArgument(args, LOCAL_PARAM, LOCAL_PARAM_LONG)) {
-			final String localPath = Util.getArgumentValue(args, LOCAL_PARAM, LOCAL_PARAM_LONG);
-			final String vcsRootId = Util.getArgumentValue(args, VCSROOT_PARAM, VCSROOT_PARAM_LONG);
+		if (args.hasArgument(VCSROOT_PARAM, VCSROOT_PARAM_LONG) && args.hasArgument(LOCAL_PARAM, LOCAL_PARAM_LONG)) {
+			final String localPath = args.getArgument(LOCAL_PARAM, LOCAL_PARAM_LONG);
+			final String vcsRootId = args.getArgument(VCSROOT_PARAM, VCSROOT_PARAM_LONG);
 			if(vcsRootId != null){
 				//check format
 				final long id;
@@ -54,7 +52,7 @@ public class Share implements ICommand {
 				throw new IllegalArgumentException(MessageFormat.format("no VcsRoot found. id={0}", vcsRootId));
 			}
 			return;
-		} else if (Util.hasArgument(args, INFO_PARAM, INFO_PARAM_LONG)){
+		} else if (args.hasArgument(INFO_PARAM, INFO_PARAM_LONG)){
 			final Collection<IShare> roots = TCAccess.getInstance().roots();
 			if(roots.isEmpty()){
 				System.out.println("no one share found");
@@ -77,16 +75,29 @@ public class Share implements ICommand {
 		return ID;
 	}
 
-	public boolean isConnectionRequired(final String[] args) {
-		return Util.hasArgument(args, VCSROOT_PARAM, VCSROOT_PARAM_LONG) && Util.hasArgument(args, LOCAL_PARAM, LOCAL_PARAM_LONG);
+	public boolean isConnectionRequired(final Args args) {
+		return args.hasArgument(VCSROOT_PARAM, VCSROOT_PARAM_LONG) && args.hasArgument(LOCAL_PARAM, LOCAL_PARAM_LONG);
 	}
 
 	public String getUsageDescription() {
-		return MessageFormat.format("{0}: use -v [vcs_root_id] -l [local_path]", getId()); 
+		StringBuffer buffer = new StringBuffer();
+		buffer.append(getDescription()).append("\n");
+		buffer.append(MessageFormat.format("usage: {0} [{1}[{2}] ARG_VCSROOTID {3}[{4}] ARG_LOCALPATH] | [{5}[{6}]]", 
+				getId(), VCSROOT_PARAM, VCSROOT_PARAM_LONG, 
+						LOCAL_PARAM, LOCAL_PARAM_LONG,
+						INFO_PARAM, INFO_PARAM_LONG)).append("\n");
+		buffer.append("\n");
+		buffer.append("Create mapping of locat folder to existing TeamCity VcsRoot or show existing shares").append("\n");
+		buffer.append("\n");
+		buffer.append("Valid options:").append("\n");;
+		buffer.append(MessageFormat.format("\t{0}[{1}] ARG_VCSROOTID\t: {2}", VCSROOT_PARAM, VCSROOT_PARAM_LONG, "target TeamCity VcsRoot id. Can be found using by \"info\" command")).append("\n");
+		buffer.append(MessageFormat.format("\t{0}[{1}] ARG_LOCALPATH\t: {2}", LOCAL_PARAM, LOCAL_PARAM_LONG, "absolute path to existing local folder will be shared with TeamCity VcsRoot")).append("\n");
+		buffer.append(MessageFormat.format("\t{0}[{1}]\t: {2}", INFO_PARAM, INFO_PARAM_LONG, "show existing shares")).append("\n");
+		return buffer.toString();
 	}
 	
 	public String getDescription() {
-		return "Associates local folder with known TeamCity VcsRoot";
+		return "Associate local folder with known TeamCity VcsRoot";
 	}
 	
 

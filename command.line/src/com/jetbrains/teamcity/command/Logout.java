@@ -8,24 +8,22 @@ import com.jetbrains.teamcity.EAuthorizationException;
 import com.jetbrains.teamcity.ECommunicationException;
 import com.jetbrains.teamcity.ERemoteError;
 import com.jetbrains.teamcity.Server;
-import com.jetbrains.teamcity.Util;
-import com.jetbrains.teamcity.command.ICommand;
-import com.jetbrains.teamcity.command.Login;
 import com.jetbrains.teamcity.resources.TCAccess;
 
 public class Logout implements ICommand {
 
-	public void execute(Server server, String[] args) throws EAuthorizationException, ECommunicationException, ERemoteError, InvalidAttributesException {
-		if(Util.hasArgument(args, Login.HOST_PARAM, Login.HOST_PARAM_LONG)){
-			final String url = Util.getArgumentValue(args, Login.HOST_PARAM, Login.HOST_PARAM_LONG);
+	public void execute(Server server, Args args) throws EAuthorizationException, ECommunicationException, ERemoteError, InvalidAttributesException {
+		if(args.hasArgument(Login.HOST_PARAM, Login.HOST_PARAM_LONG)){
+			final String url = args.getArgument(Login.HOST_PARAM, Login.HOST_PARAM_LONG);
 			TCAccess.getInstance().removeCredential(url);
+			System.out.println("SUCCESS");
 			return;
 		}
 		System.out.println(getUsageDescription());
 	}
 
 	public String getDescription() {
-		return "Removes credential for TeamCity server";
+		return "Remove credential for TeamCity server";
 	}
 
 	public String getId() {
@@ -33,10 +31,14 @@ public class Logout implements ICommand {
 	}
 
 	public String getUsageDescription() {
-		return MessageFormat.format("{0} --host \"url\"", getId());
+		StringBuffer buffer = new StringBuffer();
+		buffer.append(getDescription()).append("\n");
+		buffer.append(MessageFormat.format("usage: {0} {1}[{2}] ARG_HOST", getId(), Login.HOST_PARAM, Login.HOST_PARAM_LONG)).append("\n");
+		buffer.append("\n");
+		return buffer.toString();
 	}
 
-	public boolean isConnectionRequired(final String[] args) {
+	public boolean isConnectionRequired(final Args args) {
 		return false;
 	}
 

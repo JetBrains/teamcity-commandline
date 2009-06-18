@@ -12,7 +12,7 @@ import com.jetbrains.teamcity.Server;
 @Ignore
 public class TestCommand implements ICommand {
 
-	public void execute(Server server, String[] args)
+	public void execute(Server server, Args args)
 			throws EAuthorizationException, ECommunicationException,
 			ERemoteError, InvalidAttributesException {
 	}
@@ -25,7 +25,7 @@ public class TestCommand implements ICommand {
 		return "testId";
 	}
 
-	public boolean isConnectionRequired(final String[] args) {
+	public boolean isConnectionRequired(Args args) {
 		return false;
 	}
 

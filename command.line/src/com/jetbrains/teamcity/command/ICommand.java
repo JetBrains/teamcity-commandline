@@ -11,9 +11,9 @@ public interface ICommand {
 	
 	public String getId();
 	
-	public void execute(final Server server, String[] args) throws EAuthorizationException, ECommunicationException, ERemoteError, InvalidAttributesException ;
+	public void execute(final Server server, final Args args) throws EAuthorizationException, ECommunicationException, ERemoteError, InvalidAttributesException ;
 
-	public boolean isConnectionRequired(final String[] args);
+	public boolean isConnectionRequired(final Args args);
 	
 	public String getUsageDescription();
 

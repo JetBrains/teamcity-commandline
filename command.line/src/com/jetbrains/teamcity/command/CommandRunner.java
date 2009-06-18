@@ -6,40 +6,44 @@ import java.text.MessageFormat;
 
 import com.jetbrains.teamcity.EAuthorizationException;
 import com.jetbrains.teamcity.ECommunicationException;
-import com.jetbrains.teamcity.Logger;
 import com.jetbrains.teamcity.Server;
-import com.jetbrains.teamcity.Util;
 import com.jetbrains.teamcity.resources.ICredential;
 import com.jetbrains.teamcity.resources.TCAccess;
 
 public class CommandRunner {
 	
+	static final String USER_ARG = "--user";
+	static final String PASSWORD_ARG = "--password";
+	static final String HOST_ARG = "--host";
+
 	public static void main(final String[] args) throws Exception {
 		
-		String commandId = getCommandId(args);
-		final ICommand command = CommandRegistry.getInstance().getCommand(commandId);
+		final Args arguments = new Args(args);
+		
+		final ICommand command = CommandRegistry.getInstance().getCommand(arguments.getCommandId());
 		try{
-			if(command.isConnectionRequired(args)){
-				final Server server = openConnection(args);
-				command.execute(server, args);
+			if(command.isConnectionRequired(arguments)){
+				final Server server = openConnection(arguments);
+				command.execute(server, arguments);
 			} else {
-				command.execute(null, args);	
+				command.execute(null, arguments);	
 			}
 		} catch (Throwable e){
 			System.err.println(e.getMessage());
-//			Logger.log(CommandRunner.class.getName(), e);
 			System.exit(-1);
 		}
 	}
 	
-	private static Server openConnection(final String[] args) throws MalformedURLException, ECommunicationException, EAuthorizationException {
-		final String host = Util.getArgumentValue(args, "--host");
+	private static Server openConnection(final Args args) throws MalformedURLException, ECommunicationException, EAuthorizationException {
+		final String host = args.getArgument(HOST_ARG);
+		
 		if(host != null){
 			final String user;
 			final String password;
-			if(Util.hasArgument(args, "--user", "--password")){
-				user = Util.getArgumentValue(args, "--user");
-				password = Util.getArgumentValue(args, "--password");
+			if(args.hasArgument(USER_ARG, PASSWORD_ARG)){
+				user = args.getArgument(USER_ARG);
+				password = args.getArgument(PASSWORD_ARG);
+				
 			} else {
 				//try to load from saved
 				final ICredential credential = TCAccess.getInstance().findCredential(host);
@@ -55,17 +59,8 @@ public class CommandRunner {
 			server.logon(user, password);
 			return server;
 		} else {
-			throw new IllegalArgumentException("No host specified. Use \"--host [url]\"");
+			throw new IllegalArgumentException(MessageFormat.format("No host specified. Use \"{0} [url]\"", HOST_ARG));
 		}
 	}
-
-
-	private static String getCommandId(final String[] args) {
-		if (args == null || args.length == 0) {
-			return Help.ID;
-		}
-		return args[0].toLowerCase().trim();
-	}
-	
 	
 }

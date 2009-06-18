@@ -47,8 +47,6 @@ import com.jetbrains.teamcity.Logger;
 import com.jetbrains.teamcity.Server;
 import com.jetbrains.teamcity.URLFactory;
 import com.jetbrains.teamcity.Util;
-import com.jetbrains.teamcity.command.ICommand;
-import com.jetbrains.teamcity.command.RemoteRun;
 import com.jetbrains.teamcity.resources.IShare;
 import com.jetbrains.teamcity.resources.TCAccess;
 
@@ -81,22 +79,22 @@ public class RemoteRun implements ICommand {
 	private boolean isNoWait = false;
 	private long myTimeout;
 
-	public void execute(final Server server, String[] args) throws EAuthorizationException, ECommunicationException, ERemoteError, InvalidAttributesException {
-		if(Util.hasArgument(args, CONFIGURATION_PARAM, CONFIGURATION_PARAM_LONG) ){
+	public void execute(final Server server, Args args) throws EAuthorizationException, ECommunicationException, ERemoteError, InvalidAttributesException {
+		if(args.hasArgument(CONFIGURATION_PARAM, CONFIGURATION_PARAM_LONG) ){
 			myServer = server;
 			//configuration
-			myConfigurationId = Util.getArgumentValue(args, CONFIGURATION_PARAM, CONFIGURATION_PARAM_LONG);
+			myConfigurationId = args.getArgument(CONFIGURATION_PARAM, CONFIGURATION_PARAM_LONG);
 			//comment
-			if(Util.hasArgument(args, MESSAGE_PARAM, MESSAGE_PARAM_LONG)){
-				myComments = Util.getArgumentValue(args, MESSAGE_PARAM, MESSAGE_PARAM_LONG);
+			if(args.hasArgument(MESSAGE_PARAM, MESSAGE_PARAM_LONG)){
+				myComments = args.getArgument(MESSAGE_PARAM, MESSAGE_PARAM_LONG);
 			}
 			//wait/no wait for build result
-			if(Util.hasArgument(args, NO_WAIT_SWITCH, NO_WAIT_SWITCH_LONG)){
+			if(args.hasArgument(NO_WAIT_SWITCH, NO_WAIT_SWITCH_LONG)){
 				isNoWait  = true;
 			}
 			//timeout
-			if(Util.hasArgument(args, TIMEOUT_PARAM, TIMEOUT_PARAM_LONG)){
-				myTimeout = Long.valueOf(Util.getArgumentValue(args, TIMEOUT_PARAM, TIMEOUT_PARAM_LONG));
+			if(args.hasArgument(TIMEOUT_PARAM, TIMEOUT_PARAM_LONG)){
+				myTimeout = Long.valueOf(args.getArgument(TIMEOUT_PARAM, TIMEOUT_PARAM_LONG));
 			} else {
 				myTimeout = DEFAULT_TIMEOUT;
 			}
@@ -268,12 +266,13 @@ public class RemoteRun implements ICommand {
 		return result;
 	}
 
-	private Collection<File> getFiles(String[] args) throws IllegalArgumentException {
-		int i = 1;//skip command
-		while (i < args.length) {
-			final String currentToken = args[i].toLowerCase();
-			if(args[i].startsWith("-")){
-				if(args[i].toLowerCase().equals(NO_WAIT_SWITCH) || currentToken.equals(NO_WAIT_SWITCH_LONG)){
+	private Collection<File> getFiles(Args args) throws IllegalArgumentException {
+		final String[] elements = args.getArguments();
+		int i = 0;//skip command
+		while (i < elements.length) {
+			final String currentToken = elements[i].toLowerCase();
+			if(elements[i].startsWith("-")){
+				if(elements[i].toLowerCase().equals(NO_WAIT_SWITCH) || currentToken.equals(NO_WAIT_SWITCH_LONG)){
 					i++; //single token
 				} else {
 					i++; //arg
@@ -286,8 +285,8 @@ public class RemoteRun implements ICommand {
 		}
 		
 		final HashSet<File> result = new HashSet<File>();
-		for (; i < args.length; i++) {
-			final String path = args[i];
+		for (; i < elements.length; i++) {
+			final String path = elements[i];
 			final Collection<File> files;
 			if(!path.startsWith("@")){
 				files = Util.getFiles(path);
@@ -306,16 +305,32 @@ public class RemoteRun implements ICommand {
 		return ID;
 	}
 
-	public boolean isConnectionRequired(final String[] args) {
+	public boolean isConnectionRequired(final Args args) {
 		return true;
 	}
 
 	public String getUsageDescription() {
-		return MessageFormat.format("{0}: use -c|--configuration [configuration_id] -m|--message [message] -t|--timeout [timeout,sec] [-n|--nowait] file [file ...]| @filelist", getId()); 
+		StringBuffer buffer = new StringBuffer();
+		buffer.append(getDescription()).append("\n");
+		buffer.append(MessageFormat.format("usage: {0} {1}[{2}] ARG_CONFIG [{2}[{3}] ARG_MESSAGE] [{4}[{5}] ARG_TIMEOUT] [{6}[{7}]] FILE[FILE...]|@FILELIST", 
+				getId(), CONFIGURATION_PARAM, CONFIGURATION_PARAM_LONG, 
+						MESSAGE_PARAM, MESSAGE_PARAM_LONG, 
+						TIMEOUT_PARAM, TIMEOUT_PARAM_LONG,
+						NO_WAIT_SWITCH, NO_WAIT_SWITCH_LONG)).append("\n");
+		buffer.append("\n");
+		buffer.append("Runs RemoteRun for TeamCity Configuration set with ARG_CONFIG argument and resources passed by FILE's section.").append("\n");
+		buffer.append("If filename's starting with \"@\" the file content is interpreted as list of resources for RemoteRun.").append("\n");
+		buffer.append("\n");
+		buffer.append("Valid options:").append("\n");;
+		buffer.append(MessageFormat.format("\t{0}[{1}] ARG_CONFIG\t: {2}", CONFIGURATION_PARAM, CONFIGURATION_PARAM_LONG, "target TeamCity configuration id for the RemoteRun")).append("\n");
+		buffer.append(MessageFormat.format("\t{0}[{1}] ARG_MESSAGE\t: {2}", MESSAGE_PARAM, MESSAGE_PARAM_LONG, "users message describes changes for RemoteRun.")).append("\n");
+		buffer.append(MessageFormat.format("\t{0}[{1}] ARG_TIMEOUT\t: {2}", TIMEOUT_PARAM, TIMEOUT_PARAM_LONG, "max time the utility will wait for RemoteRun result if -n|--nowait switch is missing")).append("\n");
+		buffer.append(MessageFormat.format("\t{0}[{1}]\t: {2}", NO_WAIT_SWITCH, NO_WAIT_SWITCH_LONG, "do not wait for build result, just schedule build for execution")).append("\n");;		
+		return buffer.toString();
 	}
 	
 	public String getDescription() {
-		return "Fires Personal Build";
+		return "Fire Personal Build";
 	}
 	
 
