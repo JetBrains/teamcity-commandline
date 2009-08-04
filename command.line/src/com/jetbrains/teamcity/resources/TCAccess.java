@@ -14,6 +14,7 @@ import java.util.Iterator;
 import java.util.Map;
 import java.util.TreeSet;
 
+import jetbrains.buildServer.serverSide.crypt.EncryptUtil;
 import jetbrains.buildServer.vcs.VcsRoot;
 
 import com.jetbrains.teamcity.Logger;
@@ -72,14 +73,12 @@ public class TCAccess {
 		} else {
 			myShares = new ArrayList<IShare>();
 		}
-		//credentials
-		ArrayList<ICredential> credentials = Storage.getInstance().get(CREDENTIAL_KEY);
+		//credentials. note: password encoded
+		final ArrayList<ICredential> credentials = Storage.getInstance().get(CREDENTIAL_KEY);
+		myCredentials = new ArrayList<ICredential>();
 		if(credentials != null){
-			myCredentials = new ArrayList<ICredential>(credentials);
-		} else {
-			myCredentials = new ArrayList<ICredential>();
+			myCredentials.addAll(credentials);
 		}
-		
 	}
 	
 	public Collection<IShare> roots(){
@@ -168,7 +167,7 @@ public class TCAccess {
 		myShares.clear();
 		myCredentials.clear();
 		Storage.getInstance().put(SHARES_KEY, myShares, false);
-		Storage.getInstance().put(CREDENTIAL_KEY, myCredentials, true);
+		Storage.getInstance().put(CREDENTIAL_KEY, new ArrayList<ICredential>(myCredentials), true);
 	}
 	
 	private void validate(String localRoot) throws IllegalArgumentException {
@@ -253,11 +252,13 @@ public class TCAccess {
 		private String myPassword;
 		private String myServer;
 		private String myUser;
+		private long myTs;
 		
 		TeamCityCredential(final String url, final String user, final String password){
 			myPassword = password;//TODO: crypt it
 			myServer = url;
 			myUser = user;
+			myTs = System.currentTimeMillis();
 		}
 
 		public String getPassword() {
@@ -274,6 +275,10 @@ public class TCAccess {
 		
 		public String toString() {
 			return MessageFormat.format("{0}:{1}:*************", myServer, myUser, myPassword); //$NON-NLS-1$
+		}
+
+		public long getCreationTimestamp() {
+			return myTs;
 		}
 		
 	}
@@ -292,19 +297,19 @@ public class TCAccess {
 	}
 	
 	public void setCredential(final String url, final String user, final String password){
-		final TeamCityCredential account = new TeamCityCredential(url, user, password);//make serializable
+		final String scrambled = EncryptUtil.scramble(password);
+		final TeamCityCredential account = new TeamCityCredential(url, user, scrambled);//make serializable
 		//check
 		try{
 			final ICredential existing = findCredential(account.getServer());
 			if(existing == null){
 				myCredentials.add(account);
 			} else {
-				Logger.log(TCAccess.class.getName(), MessageFormat.format("will replace existing credential \"{0}\" with new one \"{1}\"", String.valueOf(existing), String.valueOf(account))); //$NON-NLS-1$
 				myCredentials.remove(existing);
 				myCredentials.add(account);
 			}
 		} finally {
-			Storage.getInstance().put(CREDENTIAL_KEY, myCredentials, true);
+			Storage.getInstance().put(CREDENTIAL_KEY, new ArrayList<ICredential>(myCredentials), true);
 		}
 	}
 	
@@ -316,7 +321,7 @@ public class TCAccess {
 				myCredentials.remove(existing);
 			}
 		} finally {
-			Storage.getInstance().put(CREDENTIAL_KEY, myCredentials, true);
+			Storage.getInstance().put(CREDENTIAL_KEY, new ArrayList<ICredential>(myCredentials), true);
 		}
 	}
 	

@@ -22,8 +22,8 @@ import com.thoughtworks.xstream.XStream;
 //TODO: support parallel working!!!
 public class Storage {
 
-	public static final String TC_STORAGE_PROPERTY_NAME = "tc.storage";
-	public static final String TC_STORAGE_DEFAULT_FILENAME = ".tcstorage";
+	public static final String TC_STORAGE_PROPERTY_NAME = "tc.storage"; //$NON-NLS-1$
+	public static final String TC_STORAGE_DEFAULT_FILENAME = ".tcstorage"; //$NON-NLS-1$
 
 	private static Storage ourInstance;
 	
@@ -39,7 +39,7 @@ public class Storage {
 		if(storageFile != null){
 			myStorageFile = storageFile;
 		} else {//set to default
-			final String home = System.getProperty("user.home");
+			final String home = System.getProperty("user.home"); //$NON-NLS-1$
 			myStorageFile = home + File.separator + TC_STORAGE_DEFAULT_FILENAME;
 		}
 		//create FS
@@ -128,7 +128,7 @@ public class Storage {
 		private String myStorageFile;
 		
 		public XMLStorageFS(final String myStorageFile) {
-			this.myStorageFile = myStorageFile + ".xml";
+			this.myStorageFile = myStorageFile + ".xml"; //$NON-NLS-1$
 		}
 		
 		//TODO: move to utils		

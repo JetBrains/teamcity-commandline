@@ -43,12 +43,12 @@ import org.apache.commons.httpclient.methods.PostMethod;
 import com.jetbrains.teamcity.EAuthorizationException;
 import com.jetbrains.teamcity.ECommunicationException;
 import com.jetbrains.teamcity.ERemoteError;
-import com.jetbrains.teamcity.Logger;
 import com.jetbrains.teamcity.Server;
 import com.jetbrains.teamcity.URLFactory;
 import com.jetbrains.teamcity.Util;
 import com.jetbrains.teamcity.resources.IShare;
 import com.jetbrains.teamcity.resources.TCAccess;
+import com.jetbrains.teamcity.runtime.IProgressMonitor;
 
 public class RemoteRun implements ICommand {
 
@@ -79,15 +79,13 @@ public class RemoteRun implements ICommand {
 	private boolean isNoWait = false;
 	private long myTimeout;
 
-	public void execute(final Server server, Args args) throws EAuthorizationException, ECommunicationException, ERemoteError, InvalidAttributesException {
-		if(args.hasArgument(CONFIGURATION_PARAM, CONFIGURATION_PARAM_LONG) ){
+	public void execute(final Server server, Args args, final IProgressMonitor monitor) throws EAuthorizationException, ECommunicationException, ERemoteError, InvalidAttributesException {
+		if(args.hasArgument(CONFIGURATION_PARAM, CONFIGURATION_PARAM_LONG, MESSAGE_PARAM, MESSAGE_PARAM_LONG) ){
 			myServer = server;
 			//configuration
 			myConfigurationId = args.getArgument(CONFIGURATION_PARAM, CONFIGURATION_PARAM_LONG);
 			//comment
-			if(args.hasArgument(MESSAGE_PARAM, MESSAGE_PARAM_LONG)){
-				myComments = args.getArgument(MESSAGE_PARAM, MESSAGE_PARAM_LONG);
-			}
+			myComments = args.getArgument(MESSAGE_PARAM, MESSAGE_PARAM_LONG);
 			//wait/no wait for build result
 			if(args.hasArgument(NO_WAIT_SWITCH, NO_WAIT_SWITCH_LONG)){
 				isNoWait  = true;
@@ -99,63 +97,84 @@ public class RemoteRun implements ICommand {
 				myTimeout = DEFAULT_TIMEOUT;
 			}
 			//lets go...
-			myFiles = getFiles(args);
-			myRootMap = getRootMap(myFiles);
+			myFiles = getFiles(args, monitor);
+			myRootMap = getRootMap(myFiles, monitor);
+			
 			//start RR
-			final long chaneListId = fireRemoteRun(myRootMap);
+			final long chaneListId = fireRemoteRun(myRootMap, monitor);
 			//process result
 			if(!isNoWait){
-				waitForResult(chaneListId, myTimeout);
+				waitForSuccessResult(chaneListId, myTimeout, monitor);
 			}
-			System.out.println("SUCCESS");
 			return;
 		}
 		System.out.println(getUsageDescription());
 	}
 
 
-	private PersonalChangeDescriptor waitForResult(final long changeListId, final long timeOut) throws ECommunicationException, ERemoteError {
-		final long startTime = System.currentTimeMillis();
-		while ((System.currentTimeMillis() - startTime) < timeOut) {
-			final TeamServerSummaryData summary = myServer.getSummary();
-			for(final UserChangeInfoData data : summary.getPersonalChanges()){
-				if(data.getPersonalDesc() != null && data.getPersonalDesc().getId() == changeListId){
-					//check builds status 
-					if (UserChangeStatus.FAILED == data.getChangeStatus() 
-							|| UserChangeStatus.CANCELED == data.getChangeStatus()) {
-						throw new ERemoteError(MessageFormat.format("RemoteRun failed: build status={0}", data.getChangeStatus()));
-					}
-					final PersonalChangeDescriptor descriptor = data.getPersonalDesc();
-					PersonalChangeCommitDecision commitStatus = descriptor.getPersonalChangeStatus();
-					if(PersonalChangeCommitDecision.COMMIT == commitStatus){
-						return descriptor;
+	private PersonalChangeDescriptor waitForSuccessResult(final long changeListId, final long timeOut, IProgressMonitor monitor) throws ECommunicationException, ERemoteError {
+		monitor.beginTask("Waiting for Personal Build", -1);
+		try{
+			final long startTime = System.currentTimeMillis();
+			UserChangeStatus prevCurrentStatus = null;
+			while ((System.currentTimeMillis() - startTime) < timeOut) {
+				final TeamServerSummaryData summary = myServer.getSummary();
+				for(final UserChangeInfoData data : summary.getPersonalChanges()){
+					if(data.getPersonalDesc() != null && data.getPersonalDesc().getId() == changeListId){
+						//check builds status 
+						final UserChangeStatus currentStatus = data.getChangeStatus();
+						if(!currentStatus.equals(prevCurrentStatus)){
+							prevCurrentStatus = currentStatus;
+							monitor.worked(MessageFormat.format("{0}", currentStatus));
+						}
+						if (UserChangeStatus.FAILED_WITH_RESPONSIBLE == currentStatus 
+								|| UserChangeStatus.FAILED == currentStatus  
+								|| UserChangeStatus.CANCELED == currentStatus) {
+							throw new ERemoteError(MessageFormat.format("RemoteRun failed: build status={0}", currentStatus));
+						}
+						//check commit status
+						final PersonalChangeDescriptor descriptor = data.getPersonalDesc();
+						PersonalChangeCommitDecision commitStatus = descriptor.getPersonalChangeStatus();
+						if(PersonalChangeCommitDecision.COMMIT == commitStatus){
+							//OK
+							return descriptor;
+							
+						} else if (PersonalChangeCommitDecision.DO_NOT_COMMIT == commitStatus){
+							//build is OK, but commit is not allowed
+							throw new ERemoteError(MessageFormat.format("build is OK, but commit is not allowed: {0}", commitStatus));
+						}
+						
 					}
 				}
+				try {
+					Thread.sleep(SLEEP_INTERVAL);
+				} catch (InterruptedException e) {
+					throw new RuntimeException(e);
+				}
 			}
-			try {
-				Thread.sleep(SLEEP_INTERVAL);
-			} catch (InterruptedException e) {
-				throw new RuntimeException(e);
-			}
+			//so, timeout exceed
+			throw new RuntimeException(MessageFormat.format("RemoteRun failed: timeout {0} ms exceed", myTimeout));
+		} finally {
+			monitor.done(""); //to be sure
 		}
-		//so, timeout exceed
-		throw new RuntimeException(MessageFormat.format("RemoteRun failed: timeout {0} ms exceed", myTimeout));
 	}
 
 
-	private long fireRemoteRun(final HashMap<IShare, ArrayList<File>> map) throws ECommunicationException, ERemoteError {
+	private long fireRemoteRun(final HashMap<IShare, ArrayList<File>> map, final IProgressMonitor monitor) throws ECommunicationException, ERemoteError {
 		final int currentUser = myServer.getCurrentUser();
 		try {
 			//prepare change list & patch for remote run
-			final long changeId = createChangeList(myServer.getURL(), currentUser, myConfigurationId, myRootMap);
+			final long changeId = createChangeList(myServer.getURL(), currentUser, myConfigurationId, myRootMap, monitor);
 			//schedule for execution and process status
 			final ArrayList<AddToQueueRequest> batch = new ArrayList<AddToQueueRequest>();
 			final AddToQueueRequest request = new AddToQueueRequest(myConfigurationId, changeId);
 			batch.add(request);
+			monitor.beginTask("Scheduling Personal Build", -1);
 			final AddToQueueResult result = myServer.addRemoteRunToQueue(batch, myComments);//TODO: process Result here
 			if(result.hasFailures()){
 				throw new ERemoteError(result.getFailureReason(myConfigurationId));
 			}
+			monitor.done(MessageFormat.format("Build for Change #{0} scheduled successfully", changeId));
 			return changeId;
 		} catch (IOException e) {
 			throw new ECommunicationException(e);
@@ -164,11 +183,15 @@ public class RemoteRun implements ICommand {
 	}
 	
 	
-	private long createChangeList(String serverURL, int userId, String configuration, HashMap<IShare,ArrayList<File>> map) throws IOException, ECommunicationException {
+	private long createChangeList(String serverURL, int userId, String configuration, HashMap<IShare,ArrayList<File>> map, 
+			final IProgressMonitor monitor) throws IOException, ECommunicationException {
 		
+		monitor.beginTask("Preparing patch", -1);
 		final File patch = createPatch(createPatchFile(serverURL), map);
 		patch.deleteOnExit();
-
+		monitor.done();
+		
+		monitor.beginTask("Sending the patch to TeamCity Server", -1);
 		final SimpleHttpConnectionManager manager = new SimpleHttpConnectionManager();
 		HostConfiguration hostConfiguration = new HostConfiguration();
 		hostConfiguration.setHost(new URI(serverURL, false));
@@ -197,6 +220,8 @@ public class RemoteRun implements ICommand {
 		}
 		//post requests to queue
 		final String response = postMethod.getResponseBodyAsString();
+		monitor.done();
+		
 		return Long.parseLong(response);
 	}
 
@@ -249,10 +274,14 @@ public class RemoteRun implements ICommand {
 		return file;
 	}
 
-	private HashMap<IShare, ArrayList<File>> getRootMap(final Collection<File> files) throws IllegalArgumentException {
+	private HashMap<IShare, ArrayList<File>> getRootMap(final Collection<File> files, IProgressMonitor monitor) throws IllegalArgumentException {
+		final TCAccess access = TCAccess.getInstance();
+		if(access.roots().isEmpty()){
+			throw new IllegalArgumentException("no one local folder shared with TeamCity");
+		}
 		final HashMap<IShare, ArrayList<File>> result = new HashMap<IShare, ArrayList<File>>();
 		for(final File file : files){
-			final IShare root = TCAccess.getInstance().getRoot(file.getAbsolutePath());
+			final IShare root = access.getRoot(file.getAbsolutePath());
 			if(root == null){
 				throw new IllegalArgumentException(MessageFormat.format("Path is not shared: {0}", file.getAbsolutePath()));
 			}
@@ -266,7 +295,8 @@ public class RemoteRun implements ICommand {
 		return result;
 	}
 
-	private Collection<File> getFiles(Args args) throws IllegalArgumentException {
+	private Collection<File> getFiles(Args args, IProgressMonitor monitor) throws IllegalArgumentException {
+		monitor.beginTask("Collecting changes", -1);
 		final String[] elements = args.getArguments();
 		int i = 0;//skip command
 		while (i < elements.length) {
@@ -296,7 +326,10 @@ public class RemoteRun implements ICommand {
 			//filter out system files 
 			result.addAll(Util.SVN_FILES_FILTER.accept(Util.CVS_FILES_FILTER.accept(files)));
 		}
-		Logger.log(RemoteRun.class.getName(), MessageFormat.format("Collected {0} files for Remote Run", result.size()));
+		if (result.size() == 0) {
+			throw new IllegalArgumentException("No files collected for Remote Run.");
+		}
+		monitor.done(MessageFormat.format("Collected {0} files for Remote Run", result.size()));
 		return result;
 	}
 
@@ -312,7 +345,7 @@ public class RemoteRun implements ICommand {
 	public String getUsageDescription() {
 		StringBuffer buffer = new StringBuffer();
 		buffer.append(getDescription()).append("\n");
-		buffer.append(MessageFormat.format("usage: {0} {1}[{2}] ARG_CONFIG [{2}[{3}] ARG_MESSAGE] [{4}[{5}] ARG_TIMEOUT] [{6}[{7}]] FILE[FILE...]|@FILELIST", 
+		buffer.append(MessageFormat.format("usage: {0} {1}[{2}] ARG_CONFIG {2}[{3}] ARG_MESSAGE [{4}[{5}] ARG_TIMEOUT] [{6}[{7}]] FILE[FILE...]|@FILELIST", 
 				getId(), CONFIGURATION_PARAM, CONFIGURATION_PARAM_LONG, 
 						MESSAGE_PARAM, MESSAGE_PARAM_LONG, 
 						TIMEOUT_PARAM, TIMEOUT_PARAM_LONG,

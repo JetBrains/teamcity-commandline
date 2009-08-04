@@ -1,7 +1,10 @@
 package com.jetbrains.teamcity.command;
 
 import java.text.MessageFormat;
+import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
+import java.util.Comparator;
 
 import javax.naming.directory.InvalidAttributesException;
 
@@ -13,6 +16,7 @@ import com.jetbrains.teamcity.ERemoteError;
 import com.jetbrains.teamcity.Server;
 import com.jetbrains.teamcity.resources.IShare;
 import com.jetbrains.teamcity.resources.TCAccess;
+import com.jetbrains.teamcity.runtime.IProgressMonitor;
 
 public class Share implements ICommand {
 	
@@ -25,7 +29,7 @@ public class Share implements ICommand {
 	private static final String VCSROOT_PARAM = "-v";
 	private static final String VCSROOT_PARAM_LONG = "--vcsroot";
 
-	public void execute(final Server server, Args args) throws EAuthorizationException, ECommunicationException, ERemoteError, InvalidAttributesException {
+	public void execute(final Server server, Args args, final IProgressMonitor monitor) throws EAuthorizationException, ECommunicationException, ERemoteError, InvalidAttributesException {
 		
 		if (args.hasArgument(VCSROOT_PARAM, VCSROOT_PARAM_LONG) && args.hasArgument(LOCAL_PARAM, LOCAL_PARAM_LONG)) {
 			final String localPath = args.getArgument(LOCAL_PARAM, LOCAL_PARAM_LONG);
@@ -52,12 +56,23 @@ public class Share implements ICommand {
 				throw new IllegalArgumentException(MessageFormat.format("no VcsRoot found. id={0}", vcsRootId));
 			}
 			return;
-		} else if (args.hasArgument(INFO_PARAM, INFO_PARAM_LONG)){
-			final Collection<IShare> roots = TCAccess.getInstance().roots();
+			
+		} else if (args.hasArgument(INFO_PARAM, INFO_PARAM_LONG)){ //info branch
+			final ArrayList<IShare> roots = new ArrayList<IShare>(TCAccess.getInstance().roots());
 			if(roots.isEmpty()){
 				System.out.println("no one share found");
 				return;
 			}
+			Collections.sort(roots, new Comparator<IShare>(){
+				public int compare(IShare o1, IShare o2) {
+					if (Long.valueOf(o1.getId()) < Long.valueOf(o2.getId())) {
+						return -1;
+					} else if (Long.valueOf(o1.getId()) > Long.valueOf(o2.getId())) {
+						return 1;
+					}
+					return 0;
+				}});
+			
 			System.out.println("id\tlocal\tvcsrootid\tproperties");
 			for(final IShare root : roots){
 				System.out.println(MessageFormat.format("{0}\t{1}\t{2}\t{3}", root.getId(),  root.getLocal(), String.valueOf(root.getRemote()), root.getProperties()));

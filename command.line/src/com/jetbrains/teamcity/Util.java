@@ -18,14 +18,14 @@ public class Util {
 	
 	public static IFileFilter SVN_FILES_FILTER = new SVNFilter();
 	
-	private static Pattern ASTERISK_PATTERN = Pattern.compile(".*");
+	private static Pattern ASTERISK_PATTERN = Pattern.compile(".*"); //$NON-NLS-1$
 	
 	public static String getArgumentValue(final String[] args, final String ...arguments) {
 		for(int i = 0; i< args.length; i++){
 			for(String argument : arguments){
 				if(argument != null){
 					if(args[i].toLowerCase().trim().equals(argument.toLowerCase().trim())){
-						return args[i + 1].toLowerCase().trim();
+						return args[i + 1].trim();
 					}
 				}
 			}
@@ -48,12 +48,12 @@ public class Util {
 	
 	public static String getRelativePath(final File root, final File to) throws IOException, IllegalArgumentException {
 		if(root == null || to==null){
-			throw new IllegalArgumentException(MessageFormat.format("Null is not supported as argument: {0}, {1}", root, to));
+			throw new IllegalArgumentException(MessageFormat.format("Null is not supported as argument: {0}, {1}", root, to)); //$NON-NLS-1$
 		}
 		if(to.isAbsolute()){
-			return FileUtil.getRelativePath(root, to).replace("\\", "/");
+			return FileUtil.getRelativePath(root, to).replace("\\", "/"); //$NON-NLS-1$ //$NON-NLS-2$
 		} else {
-			return to.getPath().replace("\\", "/");
+			return to.getPath().replace("\\", "/"); //$NON-NLS-1$ //$NON-NLS-2$
 		}
 	}
 
@@ -74,12 +74,12 @@ public class Util {
 	}
 
 	static boolean hasFilePatterns(String path) {
-		return path.contains("*") || path.contains("!");
+		return path.contains("*") || path.contains("!");  //$NON-NLS-1$//$NON-NLS-2$
 	}
 
 	public static Collection<File> getFiles(final File file){
 		if(!file.exists()){
-			throw new IllegalArgumentException(MessageFormat.format("File is not found \"{0}\"", file.getAbsolutePath()));
+			throw new IllegalArgumentException(MessageFormat.format("File is not found \"{0}\"", file.getAbsolutePath())); //$NON-NLS-1$
 		}
 		try {
 			final List<String> content = FileUtil.readFile(file);
@@ -104,8 +104,8 @@ public class Util {
 		public Collection<File> accept(Collection<File> files) {
 			final HashSet<File> result = new HashSet<File>();
 			for(final File file : files){
-				final String normalPath = file.getPath().toLowerCase().replace("\\", "/");
-				if(!normalPath.endsWith("cvs/entries") && !normalPath.endsWith("cvs/repository") && !normalPath.endsWith("cvs/root")){
+				final String normalPath = file.getPath().toLowerCase().replace("\\", "/"); //$NON-NLS-1$ //$NON-NLS-2$
+				if(!normalPath.endsWith("cvs/entries") && !normalPath.endsWith("cvs/repository") && !normalPath.endsWith("cvs/root")){ //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
 					result.add(file);
 				}
 			}
@@ -119,7 +119,7 @@ public class Util {
 			final HashSet<File> result = new HashSet<File>();
 			for(final File file : files){
 				final String normalPath = file.getPath().toLowerCase();
-				if(!normalPath.contains(".svn")){
+				if(!normalPath.contains(".svn")){ //$NON-NLS-1$
 					result.add(file);
 				}
 			}

@@ -12,13 +12,12 @@ public class NativeCommandExecutor {
 	private static String ourNativeShellCommand;
 
 	public static String execute(final String command, final File dir, String ...args) throws IOException {
-		
 		//add shell for pipe e.t.c support
-		String nativeCommand = getNativeShellCommand() + " " + command.trim();
+		String nativeCommand = getNativeShellCommand() + " " + command.trim(); //$NON-NLS-1$
 		for(String arg : args){
-			nativeCommand += (" " + arg);
+			nativeCommand += (" " + arg); //$NON-NLS-1$
 		}
-		Logger.log(NativeCommandExecutor.class.getName(), MessageFormat.format("execute \"{0}\" in \"{1}\"", nativeCommand, dir));
+		Logger.log(NativeCommandExecutor.class.getName(), MessageFormat.format("execute \"{0}\" in \"{1}\"", nativeCommand, dir)); //$NON-NLS-1$
 		try {
 			final Process process = Runtime.getRuntime().exec(nativeCommand, null, dir);
 
@@ -36,7 +35,7 @@ public class NativeCommandExecutor {
 			}
 		} catch (InterruptedException e) {
 			Logger.log(NativeCommandExecutor.class.getName(), e);
-			return "InterruptedException";
+			return "InterruptedException"; //$NON-NLS-1$
 		}
 	}
 
@@ -59,11 +58,11 @@ public class NativeCommandExecutor {
 
 	static String getNativeShellCommand() {
 		if (ourNativeShellCommand == null) {
-			final String osname = String.valueOf(System.getProperty("os.name"));
-			if (osname.toLowerCase().contains("windows")) {
-				ourNativeShellCommand = "cmd /c";
+			final String osname = String.valueOf(System.getProperty("os.name")); //$NON-NLS-1$
+			if (osname.toLowerCase().contains("windows")) { //$NON-NLS-1$
+				ourNativeShellCommand = "cmd /c"; //$NON-NLS-1$
 			} else {
-				ourNativeShellCommand = "sh -c";
+				ourNativeShellCommand = "sh -c"; //$NON-NLS-1$
 			}
 		}
 		return ourNativeShellCommand;

@@ -10,12 +10,13 @@ import com.jetbrains.teamcity.EAuthorizationException;
 import com.jetbrains.teamcity.ECommunicationException;
 import com.jetbrains.teamcity.ERemoteError;
 import com.jetbrains.teamcity.Server;
+import com.jetbrains.teamcity.runtime.IProgressMonitor;
 
 class Help implements ICommand {
 
 	static final String ID = "help";
 	
-	public void execute(Server server, final Args args) throws EAuthorizationException, ECommunicationException, ERemoteError, InvalidAttributesException {
+	public void execute(Server server, final Args args, final IProgressMonitor monitor) throws EAuthorizationException, ECommunicationException, ERemoteError, InvalidAttributesException {
 		
 		System.out.println("TeamCity Commandline utility v0.0.0.1. Copyright 2000-2009 JetBrains s.r.o.");
 		

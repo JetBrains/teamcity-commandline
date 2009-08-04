@@ -8,4 +8,6 @@ public interface ICredential {
 	
 	String getPassword();
 	
+	long getCreationTimestamp();
+	
 }

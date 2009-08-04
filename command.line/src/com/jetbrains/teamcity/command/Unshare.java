@@ -9,6 +9,7 @@ import com.jetbrains.teamcity.ECommunicationException;
 import com.jetbrains.teamcity.ERemoteError;
 import com.jetbrains.teamcity.Server;
 import com.jetbrains.teamcity.resources.TCAccess;
+import com.jetbrains.teamcity.runtime.IProgressMonitor;
 
 public class Unshare implements ICommand {
 
@@ -16,7 +17,7 @@ public class Unshare implements ICommand {
 	private static final String SHARE_PARAM_LONG = "--share";
 	private static final String ID = "unshare";
 
-	public void execute(final Server server, Args args) throws EAuthorizationException, ECommunicationException, ERemoteError, InvalidAttributesException {
+	public void execute(final Server server, Args args, final IProgressMonitor monitor) throws EAuthorizationException, ECommunicationException, ERemoteError, InvalidAttributesException {
 		if (args.hasArgument(SHARE_PARAM, SHARE_PARAM_LONG)) {
 			final String shareId = args.getArgument(SHARE_PARAM, SHARE_PARAM_LONG);
 			TCAccess.getInstance().unshare(shareId);
@@ -26,7 +27,7 @@ public class Unshare implements ICommand {
 		System.out.println(getUsageDescription());
 	}
 
-	public String getId() {
+	public String getId() { 
 		return ID;
 	}
 
@@ -37,8 +38,7 @@ public class Unshare implements ICommand {
 	public String getUsageDescription() {
 		StringBuffer buffer = new StringBuffer();
 		buffer.append(getDescription()).append("\n");
-		buffer.append(MessageFormat.format("usage: {0} {1}[{2}] ARG_SHAREID", 
-				getId(), SHARE_PARAM, SHARE_PARAM_LONG)).append("\n");
+		buffer.append(MessageFormat.format("usage: {0} {1}[{2}] ARG_SHAREID",  getId(), SHARE_PARAM, SHARE_PARAM_LONG)).append("\n");
 		buffer.append("\n");
 		buffer.append("Valid options:").append("\n");;
 		buffer.append(MessageFormat.format("\t{0}[{1}] ARG_SHAREID\t: {2}", SHARE_PARAM, SHARE_PARAM_LONG, "share's id that asked for removing. Can be found using by \"share --info\" command")).append("\n");

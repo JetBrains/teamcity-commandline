@@ -12,6 +12,7 @@ import com.jetbrains.teamcity.ECommunicationException;
 import com.jetbrains.teamcity.ERemoteError;
 import com.jetbrains.teamcity.Server;
 import com.jetbrains.teamcity.resources.TCAccess;
+import com.jetbrains.teamcity.runtime.IProgressMonitor;
 
 public class Login implements ICommand {
 	
@@ -24,7 +25,7 @@ public class Login implements ICommand {
 	private static final String PASSWORD_PARAM = "-p";
 	private static final String PASSWORD_PARAM_LONG = CommandRunner.PASSWORD_ARG;
 	
-	public void execute(Server nullServer, Args args) throws EAuthorizationException, ECommunicationException, ERemoteError, InvalidAttributesException {
+	public void execute(Server nullServer, Args args, final IProgressMonitor monitor) throws EAuthorizationException, ECommunicationException, ERemoteError, InvalidAttributesException {
 		if(args.hasArgument(HOST_PARAM, HOST_PARAM_LONG)){
 			final String url = args.getArgument(HOST_PARAM, HOST_PARAM_LONG);
 			final String user = getUser(args);

@@ -1,7 +1,9 @@
 package com.jetbrains.teamcity.command;
 
 import java.text.MessageFormat;
-import java.util.Collection;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
 
 import javax.naming.directory.InvalidAttributesException;
 
@@ -13,9 +15,11 @@ import com.jetbrains.teamcity.EAuthorizationException;
 import com.jetbrains.teamcity.ECommunicationException;
 import com.jetbrains.teamcity.ERemoteError;
 import com.jetbrains.teamcity.Server;
+import com.jetbrains.teamcity.runtime.IProgressMonitor;
 
 public class List implements ICommand {
 
+	private static final String EMPTY = "<empty>";
 	private static final String VCSROOT_SWITCH_LONG = "--vcsroots";
 	private static final String VCSROOT_SWITCH = "-v";
 	private static final String CONFIGURATION_SWITCH_LONG = "--configurations";
@@ -24,7 +28,7 @@ public class List implements ICommand {
 	private static final String PROJECT_SWITCH = "-p";
 	private static final String ID = "info";
 
-	public void execute(final Server server, final Args args) throws EAuthorizationException, ECommunicationException, ERemoteError, InvalidAttributesException {
+	public void execute(final Server server, final Args args, final IProgressMonitor monitor) throws EAuthorizationException, ECommunicationException, ERemoteError, InvalidAttributesException {
 		if(args.hasArgument(PROJECT_SWITCH, PROJECT_SWITCH_LONG) 
 				&& !args.hasArgument(CONFIGURATION_SWITCH, CONFIGURATION_SWITCH_LONG)
 				&& !args.hasArgument(VCSROOT_SWITCH, VCSROOT_SWITCH_LONG)){
@@ -34,12 +38,11 @@ public class List implements ICommand {
 				&& !args.hasArgument(VCSROOT_SWITCH, VCSROOT_SWITCH_LONG)){
 			printConfigurations(server, args);
 			
-		}else if (args.hasArgument(VCSROOT_SWITCH, VCSROOT_SWITCH_LONG)){
+		} else if (args.hasArgument(VCSROOT_SWITCH, VCSROOT_SWITCH_LONG) 
+				&& !args.hasArgument(PROJECT_SWITCH, PROJECT_SWITCH_LONG)){
 			printVcsRoots(server, args);
 			
 		} else {
-			System.out.println(getUsageDescription());
-			System.out.println();
 			System.out.println("projects:");
 			printProjects(server);
 			System.out.println("configurations:");
@@ -50,41 +53,65 @@ public class List implements ICommand {
 	}
 
 	private void printVcsRoots(final Server server, Args args)	throws ECommunicationException {
-		final Collection<? extends VcsRoot> roots;
-		if(args.hasArgument(CONFIGURATION_SWITCH, CONFIGURATION_SWITCH_LONG)){
+		final ArrayList<? extends VcsRoot> roots;
+		if(args != null && args.hasArgument(CONFIGURATION_SWITCH, CONFIGURATION_SWITCH_LONG)){
 			final String filterByConfig = args.getArgument(CONFIGURATION_SWITCH, CONFIGURATION_SWITCH_LONG);
 			final BuildTypeData config = server.getConfiguration(filterByConfig);
 			if(config == null){
 				System.out.println(MessageFormat.format("No \"{0}\" Configuration found", filterByConfig));
 				return;
 			}
-			roots = config.getVcsRoots();
+			roots = new ArrayList<VcsRoot>(config.getVcsRoots());
 		} else {
-			roots = server.getVcsRoots();
+			roots = new ArrayList<VcsRoot>(server.getVcsRoots());
 		}
+		Collections.sort(roots, new Comparator<VcsRoot>(){
+			public int compare(VcsRoot o1, VcsRoot o2) {
+				if (o1.getId() < o2.getId()) {
+					return -1;
+				} else if (o1.getId() > o2.getId()) {
+					return 1;
+				}
+				return 0;
+			}});
 		System.out.println(MessageFormat.format("id\tname\tvcsname\tproperties", ""));
 		for(final VcsRoot root :roots){
-			System.out.println(MessageFormat.format("{0}\t{1}\t{2}\t{3}", root.getId(), root.getName(), root.getVcsName(), root.getProperties()));	
+			String name = root.getName()== null ? EMPTY : root.getName();
+			System.out.println(MessageFormat.format("{0}\t{1}\t{2}\t{3}", root.getId(), name, root.getVcsName(), root.getProperties()));	
 		}
 	}
 
 	private void printConfigurations(final Server server, Args args) throws ECommunicationException {
 		String filterByProject = null;
-		if(args.hasArgument(PROJECT_SWITCH, PROJECT_SWITCH_LONG)){
+		if(args != null && args.hasArgument(PROJECT_SWITCH, PROJECT_SWITCH_LONG)){
 			filterByProject = args.getArgument(PROJECT_SWITCH, PROJECT_SWITCH_LONG);
 		}
-		final Collection<BuildTypeData> configurations = server.getConfigurations();
+		//get & sort
+		final ArrayList<BuildTypeData> configurations = new ArrayList<BuildTypeData>(server.getConfigurations());
+		Collections.sort(configurations, new Comparator<BuildTypeData>(){
+			public int compare(BuildTypeData o1, BuildTypeData o2) {
+				return o1.getId().compareTo(o2.getId());
+			}});
+		//display
 		System.out.println(MessageFormat.format("id\tname\tstatus\tdescription", ""));
 		for(final BuildTypeData config :configurations){
 			//check 
 			if((filterByProject == null) || (filterByProject != null && config.getProjectId().equals(filterByProject))){
-				System.out.println(MessageFormat.format("{0}\t{1}\t{2}\t{3}", config.getId(), config.getName(), config.getStatus(), config.getDescription()));	
+				String description = config.getDescription() == null ? EMPTY : config.getDescription();
+				System.out.println(MessageFormat.format("{0}\t{1}\t{2}\t{3}", config.getId(), config.getName(), config.getStatus(), description));	
 			}
 		}
 	}
 
 	private void printProjects(final Server server) throws ECommunicationException {
-		final Collection<ProjectData> projects = server.getProjects();
+		//get & sort
+		final ArrayList<ProjectData> projects = new ArrayList<ProjectData>(server.getProjects());
+		Collections.sort(projects, new Comparator<ProjectData>(){
+			public int compare(ProjectData o1, ProjectData o2) {
+				return o1.getProjectId().compareTo(o2.getProjectId());
+			}});
+		
+		//display
 		System.out.println(MessageFormat.format("id\tname\tstatus\tdescription", ""));
 		for(final ProjectData project :projects){
 			System.out.println(MessageFormat.format("{0}\t{1}\t{2}\t{3}", project.getProjectId(), project.getName(), project.getStatus(), project.getDescription()));

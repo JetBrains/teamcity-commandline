@@ -17,19 +17,19 @@ public abstract class URLFactory {
 
 	public static URLFactory getFactory(IShare localRoot) {
 		final String vcs = localRoot.getVcs();
-		if (CVSUrlFactory.ID.equalsIgnoreCase(vcs)) { //$NON-NLS-1$
+		if (CVSUrlFactory.ID.equalsIgnoreCase(vcs)) {
 			return new CVSUrlFactory(localRoot);
 			
-		} else if (SVNUrlFactory.ID.equalsIgnoreCase(vcs)) { //$NON-NLS-1$
+		} else if (SVNUrlFactory.ID.equalsIgnoreCase(vcs)) {
 			return new SVNUrlFactory(localRoot);
 			
-		} else if (PerforceUrlFactory.ID.equalsIgnoreCase(vcs)) { //$NON-NLS-1$
+		} else if (PerforceUrlFactory.ID.equalsIgnoreCase(vcs)) {
 			return new PerforceUrlFactory(localRoot);
 			
-		} else if (TfsUrlFactory.ID.equalsIgnoreCase(vcs)) { //$NON-NLS-1$
+		} else if (TfsUrlFactory.ID.equalsIgnoreCase(vcs)) {
 			return new TfsUrlFactory(localRoot);
 			
-		} else if (StarteamUrlFactory.ID.equalsIgnoreCase(vcs)) { //$NON-NLS-1$
+		} else if (StarteamUrlFactory.ID.equalsIgnoreCase(vcs)) {
 			return new StarteamUrlFactory(localRoot);
 			
 		}
@@ -156,13 +156,28 @@ public abstract class URLFactory {
 		public String getUrl(File file) throws IOException {
 			final String relativePath = Util.getRelativePath(myLocalRoot, file);
 			final String url = MessageFormat.format("{0}/{1}", myTfsRootId, relativePath); //$NON-NLS-1$
-			System.err.println(url);
 			return url;
 		}
 
 	}
 	
 	static class StarteamUrlFactory extends URLFactory {
+//	    String result;
+//	    String url = properties.get(StarteamProps.URL);
+//	    String user = properties.get(StarteamProps.USERNAME);
+//	    String pwd = properties.get(StarteamProps.PASSWORD);
+//	    
+//	    if(user != null && pwd != null) { // insert user/password into url
+//	      StarTeamURL tmpUrl = new StarTeamURL(url);
+//	      result = new StringBuilder(100).append("starteam://").
+//	        append(user).append(":").append(pwd).append("@").append(tmpUrl.getHostName()).append(":").append(tmpUrl.getPort()).append("/")
+//	        .append(tmpUrl.getProjectName()).append("/").append(tmpUrl.getPath()).toString();
+//	    }
+//	    else
+//	      result = url;
+//
+//	    return result;
+		
 		
 		static final String ID = "starteam"; //$NON-NLS-1$
 		

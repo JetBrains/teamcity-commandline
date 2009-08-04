@@ -8,11 +8,12 @@ import com.jetbrains.teamcity.EAuthorizationException;
 import com.jetbrains.teamcity.ECommunicationException;
 import com.jetbrains.teamcity.ERemoteError;
 import com.jetbrains.teamcity.Server;
+import com.jetbrains.teamcity.runtime.IProgressMonitor;
 
 @Ignore
 public class TestCommand implements ICommand {
 
-	public void execute(Server server, Args args)
+	public void execute(Server server, Args args, final IProgressMonitor monitor)
 			throws EAuthorizationException, ECommunicationException,
 			ERemoteError, InvalidAttributesException {
 	}
