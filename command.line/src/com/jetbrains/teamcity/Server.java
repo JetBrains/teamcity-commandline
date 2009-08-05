@@ -31,7 +31,7 @@ import com.thoughtworks.xstream.XStream;
 
 public class Server {
 
-	private static final int CONNECTION_TIMEOUT = 10000;
+	
 	private URL myUrl;
 	private SessionXmlRpcTargetImpl mySession;
 	private Proxy myProxy;
@@ -49,10 +49,26 @@ public class Server {
 
 	public void connect() throws ECommunicationException {
 		try {
-			mySession = new SessionXmlRpcTargetImpl(myUrl.toExternalForm(), CONNECTION_TIMEOUT);
+			mySession = new SessionXmlRpcTargetImpl(myUrl.toExternalForm(), getTimeout());
 		} catch (Throwable e) {
 			throw new ECommunicationException(e);
 		}
+	}
+
+	private int getTimeout() {
+		final String timeoutStr = System.getProperty(Constants.XMLRPC_TIMEOUT_SYSTEM_PROPERTY);
+		if (timeoutStr != null) {
+			try {
+				final int timeout = new Integer(timeoutStr.trim()).intValue();
+				if (timeout > 0) {
+					return timeout;
+				}
+			} catch (Throwable t) {
+				Logger.log(this, t);
+				// no processing just return default
+			}
+		}
+		return Constants.DEFAULT_XMLRPC_TIMEOUT;
 	}
 
 	public void logon(final String username, final String password) throws ECommunicationException, EAuthorizationException {
