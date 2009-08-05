@@ -2,7 +2,6 @@ package com.jetbrains.teamcity.command;
 
 import java.text.MessageFormat;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
 
@@ -20,14 +19,18 @@ import com.jetbrains.teamcity.runtime.IProgressMonitor;
 
 public class Share implements ICommand {
 	
-	private static final String ID = "share";
+	private static final String ID = Messages.getString("Share.command.id"); //$NON-NLS-1$
 
-	private static final String INFO_PARAM = "-i";
-	private static final String INFO_PARAM_LONG = "--info";
-	private static final String LOCAL_PARAM = "-l";
-	private static final String LOCAL_PARAM_LONG = "--local";
-	private static final String VCSROOT_PARAM = "-v";
-	private static final String VCSROOT_PARAM_LONG = "--vcsroot";
+	private static final String INFO_PARAM = Messages.getString("Share.info.runtime.param"); //$NON-NLS-1$
+	private static final String INFO_PARAM_LONG = Messages.getString("Share.info.runtime.param.long"); //$NON-NLS-1$
+	
+	private static final String LOCAL_PARAM = Messages.getString("Share.local.runtime.param"); //$NON-NLS-1$
+	private static final String LOCAL_PARAM_LONG = Messages.getString("Share.local.runtime.param.long"); //$NON-NLS-1$
+	
+	private static final String VCSROOT_PARAM = Messages.getString("Share.vcsroot.runtime.param"); //$NON-NLS-1$
+	private static final String VCSROOT_PARAM_LONG = Messages.getString("Share.vcsroot.runtime.param.long"); //$NON-NLS-1$
+
+	private String myResultDescription;
 
 	public void execute(final Server server, Args args, final IProgressMonitor monitor) throws EAuthorizationException, ECommunicationException, ERemoteError, InvalidAttributesException {
 		
@@ -40,27 +43,27 @@ public class Share implements ICommand {
 				try{
 					id = new Long(vcsRootId).longValue();
 				} catch (NumberFormatException e){
-					throw new IllegalArgumentException(MessageFormat.format("wrong Id format: {0}", vcsRootId), e);
+					throw new IllegalArgumentException(MessageFormat.format(Messages.getString("Share.vcsroot.not.integer.error.message"), vcsRootId), e); //$NON-NLS-1$
 				}
 				//try to find root
 				for(final VcsRoot root : server.getVcsRoots()){
 					if (id == root.getId()) {
 						if(localPath == null){
-							throw new IllegalArgumentException("no local path passed");
+							throw new IllegalArgumentException(Messages.getString("Share.localpath.not.passed.error.message")); //$NON-NLS-1$
 						}
 						final String shareId = share(localPath, root).getId();
-						System.out.println(MessageFormat.format("{0}", shareId));
+						myResultDescription = MessageFormat.format(Messages.getString("Share.result.ok.pattern"), shareId, localPath, vcsRootId); //$NON-NLS-1$
 						return;
 					}
 				}
-				throw new IllegalArgumentException(MessageFormat.format("no VcsRoot found. id={0}", vcsRootId));
+				throw new IllegalArgumentException(MessageFormat.format(Messages.getString("Share.vcsroot.not.found.for.sharing.error.message"), vcsRootId)); //$NON-NLS-1$
 			}
 			return;
 			
 		} else if (args.hasArgument(INFO_PARAM, INFO_PARAM_LONG)){ //info branch
 			final ArrayList<IShare> roots = new ArrayList<IShare>(TCAccess.getInstance().roots());
 			if(roots.isEmpty()){
-				System.out.println("no one share found");
+				myResultDescription = Messages.getString("Share.no.one.share.info.message"); //$NON-NLS-1$
 				return;
 			}
 			Collections.sort(roots, new Comparator<IShare>(){
@@ -73,13 +76,14 @@ public class Share implements ICommand {
 					return 0;
 				}});
 			
-			System.out.println("id\tlocal\tvcsrootid\tproperties");
+			final StringBuffer buffer = new StringBuffer();
+			buffer.append(Messages.getString("Share.shares.list.header")); //$NON-NLS-1$
 			for(final IShare root : roots){
-				System.out.println(MessageFormat.format("{0}\t{1}\t{2}\t{3}", root.getId(),  root.getLocal(), String.valueOf(root.getRemote()), root.getProperties()));
+				buffer.append(MessageFormat.format(Messages.getString("Share.shares.list.pattern"), root.getId(),  root.getLocal(), String.valueOf(root.getRemote()), root.getProperties())); //$NON-NLS-1$
 			}
 			return;
 		}
-		System.out.println(getUsageDescription());
+		myResultDescription = getUsageDescription();
 	}
 
 	private IShare share(final String localPath, final VcsRoot root) {
@@ -95,25 +99,23 @@ public class Share implements ICommand {
 	}
 
 	public String getUsageDescription() {
-		StringBuffer buffer = new StringBuffer();
-		buffer.append(getDescription()).append("\n");
-		buffer.append(MessageFormat.format("usage: {0} [{1}[{2}] ARG_VCSROOTID {3}[{4}] ARG_LOCALPATH] | [{5}[{6}]]", 
-				getId(), VCSROOT_PARAM, VCSROOT_PARAM_LONG, 
-						LOCAL_PARAM, LOCAL_PARAM_LONG,
-						INFO_PARAM, INFO_PARAM_LONG)).append("\n");
-		buffer.append("\n");
-		buffer.append("Create mapping of locat folder to existing TeamCity VcsRoot or show existing shares").append("\n");
-		buffer.append("\n");
-		buffer.append("Valid options:").append("\n");;
-		buffer.append(MessageFormat.format("\t{0}[{1}] ARG_VCSROOTID\t: {2}", VCSROOT_PARAM, VCSROOT_PARAM_LONG, "target TeamCity VcsRoot id. Can be found using by \"info\" command")).append("\n");
-		buffer.append(MessageFormat.format("\t{0}[{1}] ARG_LOCALPATH\t: {2}", LOCAL_PARAM, LOCAL_PARAM_LONG, "absolute path to existing local folder will be shared with TeamCity VcsRoot")).append("\n");
-		buffer.append(MessageFormat.format("\t{0}[{1}]\t: {2}", INFO_PARAM, INFO_PARAM_LONG, "show existing shares")).append("\n");
-		return buffer.toString();
+		return MessageFormat.format(Messages.getString("Share.help.usage.pattern"),  //$NON-NLS-1$
+				getCommandDescription(), getId(), 
+				VCSROOT_PARAM, VCSROOT_PARAM_LONG, 
+				LOCAL_PARAM, LOCAL_PARAM_LONG,
+				INFO_PARAM, INFO_PARAM_LONG,
+				VCSROOT_PARAM, VCSROOT_PARAM_LONG,
+				LOCAL_PARAM, LOCAL_PARAM_LONG,INFO_PARAM, INFO_PARAM_LONG);
 	}
 	
-	public String getDescription() {
-		return "Associate local folder with known TeamCity VcsRoot";
+	public String getCommandDescription() {
+		return Messages.getString("Share.help.description"); //$NON-NLS-1$
 	}
+	
+	public String getResultDescription() {
+		return myResultDescription;
+	}
+	
 	
 
 }

@@ -16,18 +16,13 @@ import com.jetbrains.teamcity.runtime.IProgressMonitor;
 
 public class Login implements ICommand {
 	
-	static final String HOST_PARAM = "-h";
-	static final String HOST_PARAM_LONG = CommandRunner.HOST_ARG;
+	private static final String ID = Messages.getString("Login.command.id"); //$NON-NLS-1$
 	
-	private static final String USER_PARAM = "-u";
-	private static final String USER_PARAM_LONG = CommandRunner.USER_ARG;
-
-	private static final String PASSWORD_PARAM = "-p";
-	private static final String PASSWORD_PARAM_LONG = CommandRunner.PASSWORD_ARG;
+	private String myResultDescription;
 	
 	public void execute(Server nullServer, Args args, final IProgressMonitor monitor) throws EAuthorizationException, ECommunicationException, ERemoteError, InvalidAttributesException {
-		if(args.hasArgument(HOST_PARAM, HOST_PARAM_LONG)){
-			final String url = args.getArgument(HOST_PARAM, HOST_PARAM_LONG);
+		if(args.hasArgument(CommandRunner.HOST_ARG)){
+			final String url = args.getArgument(CommandRunner.HOST_ARG);
 			final String user = getUser(args);
 			final String password = getPassword(args);
 			//try to login
@@ -37,29 +32,29 @@ public class Login implements ICommand {
 				server.logon(user, password);
 				//ok. let's store
 				TCAccess.getInstance().setCredential(url, user, password);
-				System.out.println("SUCCESS");
+				myResultDescription = MessageFormat.format(Messages.getString("Login.result.ok.pattern"), user); //$NON-NLS-1$
 				
 			} catch (MalformedURLException e) {
 				throw new IllegalArgumentException(e);
 			} 
 		} else {
-			System.out.println(getUsageDescription());
+			myResultDescription = getUsageDescription();
 		}
 	}
 	
 	private String getPassword(Args args) {
-		if (args.hasArgument(PASSWORD_PARAM, PASSWORD_PARAM_LONG)) {
-			return args.getArgument(PASSWORD_PARAM, PASSWORD_PARAM_LONG);
+		if (args.hasArgument(CommandRunner.PASSWORD_ARG)) {
+			return args.getArgument(CommandRunner.PASSWORD_ARG);
 		} else {
-			return readLine("enter password:");
+			return readLine(Messages.getString("Login.password.prompt")); //$NON-NLS-1$
 		}
 	}
 
 	private String getUser(Args args) {
-		if (args.hasArgument(USER_PARAM, USER_PARAM_LONG)) {
-			return args.getArgument(USER_PARAM, USER_PARAM_LONG);
+		if (args.hasArgument(CommandRunner.USER_ARG)) {
+			return args.getArgument(CommandRunner.USER_ARG);
 		} else {
-			return readLine("enter username:");
+			return readLine(Messages.getString("Login.username.prompt")); //$NON-NLS-1$
 		}
 	}
 
@@ -69,26 +64,28 @@ public class Login implements ICommand {
 		return scanner.nextLine();
 	}
 
-	public String getDescription() {
-		return "Prompt for username and password for authenticating TeamCity Server";
+	public String getCommandDescription() {
+		return Messages.getString("Login.help.description"); //$NON-NLS-1$
 	}
 
 	public String getId() {
-		return "login";
+		return ID;
 	}
 
 	public String getUsageDescription() {
-		StringBuffer buffer = new StringBuffer();
-		buffer.append(getDescription()).append("\n");
-		buffer.append(MessageFormat.format("usage: {0} {1}[{2}] ARG_HOST [{3}[{4}] ARG_USERNAME {5}[{6}] ARG_PASSWORD]", getId(), HOST_PARAM, HOST_PARAM_LONG, USER_PARAM, USER_PARAM_LONG, PASSWORD_PARAM, PASSWORD_PARAM_LONG)).append("\n");
-		buffer.append("\n");
-		buffer.append("With no username or password args, prompt for input username and password interactive").append("\n");;
-		return buffer.toString();
+		return MessageFormat.format(Messages.getString("Login.help.usage.pattern"),  //$NON-NLS-1$
+				getCommandDescription(), getId(), CommandRunner.HOST_ARG, CommandRunner.USER_ARG, CommandRunner.PASSWORD_ARG);
 	}
 	
 
 	public boolean isConnectionRequired(final Args args) {
 		return false;
 	}
+	
+	public String getResultDescription() {
+		return myResultDescription;
+	}
+	
+	
 
 }

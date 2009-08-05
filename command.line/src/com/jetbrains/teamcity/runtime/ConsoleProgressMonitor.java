@@ -5,18 +5,19 @@ import java.io.PrintStream;
 
 public class ConsoleProgressMonitor implements IProgressMonitor {
 
+	private static final String SPACE = " ";
+	private static final String DONE = "[done]";
+	
 	private PrintStream myOut;
-	private int myTaskWork;
 	private Thread myCurrentTicker;
 
 	public ConsoleProgressMonitor(PrintStream out) {
 		myOut = out;
 	}
 
-	public IProgressMonitor beginTask(String name, int totalWork) {
+	public IProgressMonitor beginTask(String name) {
 		if (name != null && name.trim().length() > 0) {
 			myOut.append(name).append("...");
-			myTaskWork = totalWork;
 			stopTicker();
 			myCurrentTicker = new Thread(new Ticker(myOut), "Console Progress Monitor");
 			myCurrentTicker.start();
@@ -32,7 +33,7 @@ public class ConsoleProgressMonitor implements IProgressMonitor {
 
 	public IProgressMonitor done() {
 		stopTicker();
-		myOut.println("[done]");
+		myOut.println(DONE);
 		return this;
 	}
 	
@@ -41,7 +42,9 @@ public class ConsoleProgressMonitor implements IProgressMonitor {
 			done();
 		} else {
 			stopTicker();
-			myOut.println(message);
+			myOut.print(message);
+			myOut.print(SPACE);
+			myOut.println(DONE);
 		}
 		return this;
 	}	

@@ -13,34 +13,38 @@ import com.jetbrains.teamcity.runtime.IProgressMonitor;
 
 public class Logout implements ICommand {
 
+	private static final String ID = Messages.getString("Logout.command.id"); //$NON-NLS-1$
+	
+	private String myResultDescription;
+
 	public void execute(Server server, Args args, final IProgressMonitor monitor) throws EAuthorizationException, ECommunicationException, ERemoteError, InvalidAttributesException {
-		if(args.hasArgument(Login.HOST_PARAM, Login.HOST_PARAM_LONG)){
-			final String url = args.getArgument(Login.HOST_PARAM, Login.HOST_PARAM_LONG);
+		if(args.hasArgument(CommandRunner.HOST_ARG)){
+			final String url = args.getArgument(CommandRunner.HOST_ARG);
 			TCAccess.getInstance().removeCredential(url);
-			System.out.println("SUCCESS");
+			myResultDescription = MessageFormat.format(Messages.getString("Logout.result.ok.pattern"), url); //$NON-NLS-1$
 			return;
 		}
-		System.out.println(getUsageDescription());
+		myResultDescription = getUsageDescription();
 	}
 
-	public String getDescription() {
-		return "Remove credential for TeamCity server";
+	public String getCommandDescription() {
+		return Messages.getString("Logout.help.description"); //$NON-NLS-1$
 	}
 
 	public String getId() {
-		return "logout";
+		return ID;
 	}
 
 	public String getUsageDescription() {
-		StringBuffer buffer = new StringBuffer();
-		buffer.append(getDescription()).append("\n");
-		buffer.append(MessageFormat.format("usage: {0} {1}[{2}] ARG_HOST", getId(), Login.HOST_PARAM, Login.HOST_PARAM_LONG)).append("\n");
-		buffer.append("\n");
-		return buffer.toString();
+		return MessageFormat.format(Messages.getString("Logout.help.usage.pattern"), getCommandDescription(), CommandRunner.HOST_ARG); //$NON-NLS-1$
 	}
 
 	public boolean isConnectionRequired(final Args args) {
 		return false;
+	}
+	
+	public String getResultDescription() {
+		return myResultDescription;
 	}
 
 }

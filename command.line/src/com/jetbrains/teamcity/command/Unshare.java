@@ -13,18 +13,21 @@ import com.jetbrains.teamcity.runtime.IProgressMonitor;
 
 public class Unshare implements ICommand {
 
-	private static final String SHARE_PARAM = "-s";
-	private static final String SHARE_PARAM_LONG = "--share";
-	private static final String ID = "unshare";
+	private static final String SHARE_PARAM = Messages.getString("Unshare.share.runtime.param"); //$NON-NLS-1$
+	private static final String SHARE_PARAM_LONG = Messages.getString("Unshare.share.runtime.param.long"); //$NON-NLS-1$
+	
+	private static final String ID = Messages.getString("Unshare.command.id"); //$NON-NLS-1$
+	
+	private String myResultDescription;
 
 	public void execute(final Server server, Args args, final IProgressMonitor monitor) throws EAuthorizationException, ECommunicationException, ERemoteError, InvalidAttributesException {
 		if (args.hasArgument(SHARE_PARAM, SHARE_PARAM_LONG)) {
 			final String shareId = args.getArgument(SHARE_PARAM, SHARE_PARAM_LONG);
 			TCAccess.getInstance().unshare(shareId);
-			System.out.println("SUCCESS");
+			myResultDescription = MessageFormat.format(Messages.getString("Unshare.result.ok.pattern"), shareId); //$NON-NLS-1$
 			return;
 		}
-		System.out.println(getUsageDescription());
+		myResultDescription = getUsageDescription();
 	}
 
 	public String getId() { 
@@ -36,19 +39,19 @@ public class Unshare implements ICommand {
 	}
 
 	public String getUsageDescription() {
-		StringBuffer buffer = new StringBuffer();
-		buffer.append(getDescription()).append("\n");
-		buffer.append(MessageFormat.format("usage: {0} {1}[{2}] ARG_SHAREID",  getId(), SHARE_PARAM, SHARE_PARAM_LONG)).append("\n");
-		buffer.append("\n");
-		buffer.append("Valid options:").append("\n");;
-		buffer.append(MessageFormat.format("\t{0}[{1}] ARG_SHAREID\t: {2}", SHARE_PARAM, SHARE_PARAM_LONG, "share's id that asked for removing. Can be found using by \"share --info\" command")).append("\n");
-		return buffer.toString();
-		
+		return MessageFormat.format(Messages.getString("Unshare.help.usage.pattern"), //$NON-NLS-1$
+				getCommandDescription(),getId(), SHARE_PARAM, SHARE_PARAM_LONG);
 	}
 	
-	public String getDescription() {
-		return "Remove association of local folder with TeamCity VcsRoot";
+	public String getCommandDescription() {
+		return Messages.getString("Unshare.help.description"); //$NON-NLS-1$
 	}
+	
+	public String getResultDescription() {
+		return myResultDescription;
+	}
+	
+	
 	
 
 }

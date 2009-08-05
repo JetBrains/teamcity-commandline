@@ -19,47 +19,61 @@ import com.jetbrains.teamcity.runtime.IProgressMonitor;
 
 public class List implements ICommand {
 
-	private static final String EMPTY = "<empty>";
-	private static final String VCSROOT_SWITCH_LONG = "--vcsroots";
-	private static final String VCSROOT_SWITCH = "-v";
-	private static final String CONFIGURATION_SWITCH_LONG = "--configurations";
-	private static final String CONFIGURATION_SWITCH = "-c";
-	private static final String PROJECT_SWITCH_LONG = "--projects";
-	private static final String PROJECT_SWITCH = "-p";
-	private static final String ID = "info";
+	private static final String EMPTY = Messages.getString("List.empty.description"); //$NON-NLS-1$
+	
+	private static final String VCSROOT_SWITCH_LONG = Messages.getString("List.vcsroot.runtime.param.long"); //$NON-NLS-1$
+	private static final String VCSROOT_SWITCH = Messages.getString("List.vcsroot.runtime.param"); //$NON-NLS-1$
+	
+	private static final String CONFIGURATION_SWITCH_LONG = Messages.getString("List.conf.runtime.param.long"); //$NON-NLS-1$
+	private static final String CONFIGURATION_SWITCH = Messages.getString("List.conf.runtime.param"); //$NON-NLS-1$
+	
+	private static final String PROJECT_SWITCH_LONG = Messages.getString("List.project.runtime.param.long"); //$NON-NLS-1$
+	private static final String PROJECT_SWITCH = Messages.getString("List.project.runtime.param"); //$NON-NLS-1$
+	
+	private static final String ID = Messages.getString("List.command.id"); //$NON-NLS-1$
+
+	private String myResultDescription;
 
 	public void execute(final Server server, final Args args, final IProgressMonitor monitor) throws EAuthorizationException, ECommunicationException, ERemoteError, InvalidAttributesException {
 		if(args.hasArgument(PROJECT_SWITCH, PROJECT_SWITCH_LONG) 
 				&& !args.hasArgument(CONFIGURATION_SWITCH, CONFIGURATION_SWITCH_LONG)
 				&& !args.hasArgument(VCSROOT_SWITCH, VCSROOT_SWITCH_LONG)){
-			printProjects(server);
+			
+			myResultDescription = printProjects(server);
 			
 		} else if (args.hasArgument(CONFIGURATION_SWITCH, CONFIGURATION_SWITCH_LONG)
 				&& !args.hasArgument(VCSROOT_SWITCH, VCSROOT_SWITCH_LONG)){
-			printConfigurations(server, args);
+			
+			myResultDescription = printConfigurations(server, args);
 			
 		} else if (args.hasArgument(VCSROOT_SWITCH, VCSROOT_SWITCH_LONG) 
 				&& !args.hasArgument(PROJECT_SWITCH, PROJECT_SWITCH_LONG)){
-			printVcsRoots(server, args);
+			
+			myResultDescription = printVcsRoots(server, args);
 			
 		} else {
-			System.out.println("projects:");
-			printProjects(server);
-			System.out.println("configurations:");
-			printConfigurations(server, null);
-			System.out.println("vcsroots:");
-			printVcsRoots(server, null);
+			
+			final StringBuffer resultBuffer = new StringBuffer();
+			resultBuffer.append(Messages.getString("List.projects.section.header")); //$NON-NLS-1$
+			resultBuffer.append(printProjects(server));
+			resultBuffer.append(Messages.getString("List.configurations.section.header")); //$NON-NLS-1$
+			resultBuffer.append(printConfigurations(server, null));
+			resultBuffer.append(Messages.getString("List.vcsroots.section.header")); //$NON-NLS-1$
+			resultBuffer.append(printVcsRoots(server, null));
+			
+			myResultDescription = resultBuffer.toString();
 		}
 	}
 
-	private void printVcsRoots(final Server server, Args args)	throws ECommunicationException {
+	private String printVcsRoots(final Server server, Args args)	throws ECommunicationException {
+		final StringBuffer buffer = new StringBuffer();
 		final ArrayList<? extends VcsRoot> roots;
 		if(args != null && args.hasArgument(CONFIGURATION_SWITCH, CONFIGURATION_SWITCH_LONG)){
 			final String filterByConfig = args.getArgument(CONFIGURATION_SWITCH, CONFIGURATION_SWITCH_LONG);
 			final BuildTypeData config = server.getConfiguration(filterByConfig);
 			if(config == null){
-				System.out.println(MessageFormat.format("No \"{0}\" Configuration found", filterByConfig));
-				return;
+				buffer.append(MessageFormat.format(Messages.getString("List.no.config.found.for.filter.message"), filterByConfig)); //$NON-NLS-1$
+				return buffer.toString();
 			}
 			roots = new ArrayList<VcsRoot>(config.getVcsRoots());
 		} else {
@@ -74,14 +88,16 @@ public class List implements ICommand {
 				}
 				return 0;
 			}});
-		System.out.println(MessageFormat.format("id\tname\tvcsname\tproperties", ""));
+		buffer.append(Messages.getString("List.vcsroots.list.header")); //$NON-NLS-1$
 		for(final VcsRoot root :roots){
 			String name = root.getName()== null ? EMPTY : root.getName();
-			System.out.println(MessageFormat.format("{0}\t{1}\t{2}\t{3}", root.getId(), name, root.getVcsName(), root.getProperties()));	
+			buffer.append(MessageFormat.format(Messages.getString("List.vcsroots.list.pattern"), root.getId(), name, root.getVcsName(), root.getProperties()));	 //$NON-NLS-1$
 		}
+		return buffer.toString();
 	}
 
-	private void printConfigurations(final Server server, Args args) throws ECommunicationException {
+	private String printConfigurations(final Server server, Args args) throws ECommunicationException {
+		final StringBuffer buffer = new StringBuffer();
 		String filterByProject = null;
 		if(args != null && args.hasArgument(PROJECT_SWITCH, PROJECT_SWITCH_LONG)){
 			filterByProject = args.getArgument(PROJECT_SWITCH, PROJECT_SWITCH_LONG);
@@ -93,17 +109,19 @@ public class List implements ICommand {
 				return o1.getId().compareTo(o2.getId());
 			}});
 		//display
-		System.out.println(MessageFormat.format("id\tname\tstatus\tdescription", ""));
+		buffer.append(Messages.getString("List.config.list.header")); //$NON-NLS-1$
 		for(final BuildTypeData config :configurations){
 			//check 
 			if((filterByProject == null) || (filterByProject != null && config.getProjectId().equals(filterByProject))){
 				String description = config.getDescription() == null ? EMPTY : config.getDescription();
-				System.out.println(MessageFormat.format("{0}\t{1}\t{2}\t{3}", config.getId(), config.getName(), config.getStatus(), description));	
+				buffer.append(MessageFormat.format(Messages.getString("List.config.list.pattern"), config.getId(), config.getName(), config.getStatus(), description));	 //$NON-NLS-1$
 			}
 		}
+		return buffer.toString();
 	}
 
-	private void printProjects(final Server server) throws ECommunicationException {
+	private String printProjects(final Server server) throws ECommunicationException {
+		final StringBuffer buffer = new StringBuffer(); 
 		//get & sort
 		final ArrayList<ProjectData> projects = new ArrayList<ProjectData>(server.getProjects());
 		Collections.sort(projects, new Comparator<ProjectData>(){
@@ -112,10 +130,11 @@ public class List implements ICommand {
 			}});
 		
 		//display
-		System.out.println(MessageFormat.format("id\tname\tstatus\tdescription", ""));
+		buffer.append(Messages.getString("List.project.list.header")); //$NON-NLS-1$
 		for(final ProjectData project :projects){
-			System.out.println(MessageFormat.format("{0}\t{1}\t{2}\t{3}", project.getProjectId(), project.getName(), project.getStatus(), project.getDescription()));
+			buffer.append(MessageFormat.format(Messages.getString("List.project.list.pattern"), project.getProjectId(), project.getName(), project.getStatus(), project.getDescription())); //$NON-NLS-1$
 		}
+		return buffer.toString();
 	}
 
 	public String getId() {
@@ -127,21 +146,18 @@ public class List implements ICommand {
 	}
 
 	public String getUsageDescription() {
-		StringBuffer buffer = new StringBuffer();
-		buffer.append(getDescription()).append("\n");
-		buffer.append(MessageFormat.format("usage: {0} [{1}|{2}|{3}]", getId(), PROJECT_SWITCH , CONFIGURATION_SWITCH, VCSROOT_SWITCH)).append("\n");
-		buffer.append("\n");
-		buffer.append("With no args, print all information of the target TeamCity Server").append("\n");;
-		buffer.append("\n");
-		buffer.append("Valid options:").append("\n");;
-		buffer.append(MessageFormat.format("\t{0}[{1}] \t: {2}", PROJECT_SWITCH, PROJECT_SWITCH_LONG, "display Projects")).append("\n");;
-		buffer.append(MessageFormat.format("\t{0}[{1}] \t: {2}", CONFIGURATION_SWITCH, CONFIGURATION_SWITCH_LONG, "display Configurations")).append("\n");;
-		buffer.append(MessageFormat.format("\t{0}[{1}] \t: {2}", VCSROOT_SWITCH, VCSROOT_SWITCH_LONG, "display VcsRoots")).append("\n");;
-		return buffer.toString();
+		return MessageFormat.format(Messages.getString("List.help.usage.pattern"),  //$NON-NLS-1$
+				getCommandDescription(), getId(), PROJECT_SWITCH , CONFIGURATION_SWITCH, VCSROOT_SWITCH, PROJECT_SWITCH, PROJECT_SWITCH_LONG, CONFIGURATION_SWITCH, CONFIGURATION_SWITCH_LONG, VCSROOT_SWITCH, VCSROOT_SWITCH_LONG);
 	}
 
-	public String getDescription() {
-		return "Show information for known TeamCity projects, configurations or vcsroots";
+	public String getCommandDescription() {
+		return Messages.getString("List.help.description"); //$NON-NLS-1$
 	}
+	
+	public String getResultDescription() {
+		return myResultDescription;
+	}
+	
+	
 
 }

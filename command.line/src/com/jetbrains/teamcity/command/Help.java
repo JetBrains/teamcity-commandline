@@ -18,7 +18,7 @@ class Help implements ICommand {
 	
 	public void execute(Server server, final Args args, final IProgressMonitor monitor) throws EAuthorizationException, ECommunicationException, ERemoteError, InvalidAttributesException {
 		
-		System.out.println("TeamCity Commandline utility v0.0.0.1. Copyright 2000-2009 JetBrains s.r.o.");
+		System.out.println("TeamCity Commandline utility v0.0.0.x. Copyright 2000-2009 JetBrains s.r.o.");
 		
 		final String[] elements = args.getArguments();
 		//print delail help
@@ -32,23 +32,21 @@ class Help implements ICommand {
 			public int compare(ICommand o1, ICommand o2) {
 				return o1.getId().compareTo(o2.getId());
 			}});
+		
 		knownCommands.addAll(CommandRegistry.getInstance().commands());
 		for(final ICommand command : knownCommands){
-			System.out.println(MessageFormat.format("\t{0}\t\t{1}", String.valueOf(command.getId()), String.valueOf(command.getDescription())));
+			System.out.println(MessageFormat.format("\t{0}\t\t{1}", String.valueOf(command.getId()), String.valueOf(command.getCommandDescription())));
 		}
 		System.out.println();
 		System.out.println("use help [command] for command's usage information");
 		
-		//
 		printGlobalOptions();
 		
 	}
 
 	private void printGlobalOptions() {
-		System.out.println("Global options:");
-		System.out.println(MessageFormat.format("\t{0} ARG\t: {1}", CommandRunner.HOST_ARG, "specify a host ARG"));
-		System.out.println(MessageFormat.format("\t{0} ARG\t: {1}", CommandRunner.USER_ARG, "specify a username ARG"));
-		System.out.println(MessageFormat.format("\t{0} ARG\t: {1} ", CommandRunner.PASSWORD_ARG, "specify a password ARG"));
+		final String globalOptions = "Global options:\n\t{0} ARG\t: specify a host ARG\n\t{1} ARG\t: specify a username ARG\n\t{2} ARG\t: specify a password ARG";
+		System.out.println(MessageFormat.format(globalOptions, CommandRunner.HOST_ARG, CommandRunner.USER_ARG, CommandRunner.PASSWORD_ARG));
 	}
 
 	private void printDescription(final String commandId) {
@@ -70,11 +68,17 @@ class Help implements ICommand {
 	}
 
 	public String getUsageDescription() {
-		return getDescription();
+		return getCommandDescription();
 	}
 
-	public String getDescription() {
+	public String getCommandDescription() {
 		return "Print this screen";
 	}
+	
+	public String getResultDescription() {
+		return null;
+	}
+	
+	
 
 }

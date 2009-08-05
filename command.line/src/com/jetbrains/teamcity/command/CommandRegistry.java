@@ -21,16 +21,6 @@ import jetbrains.buildServer.util.FileUtil;
 import com.jetbrains.teamcity.Logger;
 import com.jetbrains.teamcity.Server;
 import com.jetbrains.teamcity.Storage;
-import com.jetbrains.teamcity.command.CommandRegistry;
-import com.jetbrains.teamcity.command.CommandRunner;
-import com.jetbrains.teamcity.command.Help;
-import com.jetbrains.teamcity.command.ICommand;
-import com.jetbrains.teamcity.command.List;
-import com.jetbrains.teamcity.command.Login;
-import com.jetbrains.teamcity.command.Logout;
-import com.jetbrains.teamcity.command.RemoteRun;
-import com.jetbrains.teamcity.command.Share;
-import com.jetbrains.teamcity.command.Unshare;
 import com.jetbrains.teamcity.resources.TCAccess;
 
 

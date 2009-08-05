@@ -15,9 +15,20 @@ public interface ICommand {
 	public void execute(final Server server, final Args args, final IProgressMonitor monitor) throws EAuthorizationException, ECommunicationException, ERemoteError, InvalidAttributesException ;
 
 	public boolean isConnectionRequired(final Args args);
-	
+
+	/**
+	 * @return The Command usage description. Uses for help 
+	 */
 	public String getUsageDescription();
 
-	public String getDescription();
+	/**
+	 * @return Short Command purpose description. Uses for help 
+	 */
+	public String getCommandDescription();
+	
+	/**
+	 * @return Result of the Command execution. Uses for result printing  
+	 */
+	public String getResultDescription();
 	
 }

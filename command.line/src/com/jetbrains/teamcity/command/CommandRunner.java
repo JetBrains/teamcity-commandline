@@ -3,9 +3,10 @@ package com.jetbrains.teamcity.command;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.text.MessageFormat;
+import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.Comparator;
-import java.util.TreeSet;
 
 import jetbrains.buildServer.serverSide.crypt.EncryptUtil;
 
@@ -49,14 +50,25 @@ public class CommandRunner {
 			} else {
 				command.execute(null, arguments, monitor);
 			}
+			//print success result
+			reportResult(command, monitor);
 		} catch (Throwable e){
-			System.err.println(e.getMessage());
+			//print error result
+			reportError(command, e, monitor);
 			System.exit(-1);
-		} finally {
-			monitor.done("");
-		}
+		} 
 	}
 	
+	private static void reportError(ICommand command, Throwable e, IProgressMonitor monitor) {
+		System.err.println(e.getMessage());
+	}
+
+	private static void reportResult(ICommand command, IProgressMonitor monitor) {
+		if (command.getResultDescription() != null && command.getResultDescription().trim().length() != 0) {
+			System.out.println(command.getResultDescription());
+		}
+	}
+
 	private static Server openConnection(final Args args, final IProgressMonitor monitor) throws MalformedURLException, ECommunicationException, EAuthorizationException {
 		String host = args.getArgument(HOST_ARG);
 		//load default(any) if omitted
@@ -86,11 +98,11 @@ public class CommandRunner {
 				}
 			}
 			final Server server = new Server(new URL(host));
-			monitor.beginTask("Connecting to TeamCity Server", -1);
+			monitor.beginTask("Connecting to TeamCity Server");
 			server.connect();
 			monitor.done();
 			
-			monitor.beginTask("Logging to TeamCity Server", -1);
+			monitor.beginTask("Logging to TeamCity Server");
 			server.logon(user, password);
 			monitor.done();
 			return server;
@@ -103,8 +115,8 @@ public class CommandRunner {
 		final Collection<ICredential> credentials = TCAccess.getInstance().credentials();
 		if(!credentials.isEmpty()){
 			//sort by creation TS. the newest will be used as default 
-			final TreeSet<ICredential> ordered = new TreeSet<ICredential>(ourCredentialComaparator);
-			ordered.addAll(credentials);
+			final ArrayList<ICredential> ordered = new ArrayList<ICredential>(credentials);
+			Collections.sort(ordered, ourCredentialComaparator);
 			final ICredential defaultCredential = ordered.iterator().next();
 			Logger.log(CommandRunner.class.getSimpleName(), MessageFormat.format("Host \"{0}\" selected as Default for session", defaultCredential.getServer()));
 			return defaultCredential.getServer();
