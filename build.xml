@@ -29,6 +29,12 @@
   </path>
 
   <target name="compile" depends="prepare-bundle-lib">
+     <echo file="${tool.home}/src/com/jetbrains/teamcity/Build.java">package com.jetbrains.teamcity;
+
+public class Build {
+    public static final String number = "0.0.0.SNAPSHOT"; 
+}</echo>
+
     	<javac destdir="${tmp}/bin" debug="on">
 	      	<src path="${tool.home}/src"/>
     	</javac>

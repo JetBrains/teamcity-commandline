@@ -30,8 +30,13 @@ public class TestCommand implements ICommand {
 		return false;
 	}
 
-	public String getDescription() {
+	public String getCommandDescription() {
 		return "Test command";
+	}
+
+	public String getResultDescription() {
+		// TODO Auto-generated method stub
+		return null;
 	}
 
 }

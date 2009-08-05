@@ -6,6 +6,7 @@ import java.util.TreeSet;
 
 import javax.naming.directory.InvalidAttributesException;
 
+import com.jetbrains.teamcity.Build;
 import com.jetbrains.teamcity.EAuthorizationException;
 import com.jetbrains.teamcity.ECommunicationException;
 import com.jetbrains.teamcity.ERemoteError;
@@ -18,7 +19,7 @@ class Help implements ICommand {
 	
 	public void execute(Server server, final Args args, final IProgressMonitor monitor) throws EAuthorizationException, ECommunicationException, ERemoteError, InvalidAttributesException {
 		
-		System.out.println("TeamCity Commandline utility v0.0.0.x. Copyright 2000-2009 JetBrains s.r.o.");
+		System.out.println(MessageFormat.format("TeamCity Commandline utility {0}. Copyright 2000-2009 JetBrains s.r.o.", Build.number));
 		
 		final String[] elements = args.getArguments();
 		//print delail help
