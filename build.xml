@@ -32,6 +32,12 @@
     	<javac destdir="${tmp}/bin" debug="on">
 	      	<src path="${tool.home}/src"/>
     	</javac>
+    <copy todir="${tmp}/bin">
+      <fileset dir="${tool.home}/src">
+        <include name="**/?*.properties"/>
+      </fileset>
+    </copy>
+
   </target>
 
   <target name="build" depends="compile">
