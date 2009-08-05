@@ -98,11 +98,11 @@ public class CommandRunner {
 				}
 			}
 			final Server server = new Server(new URL(host));
-			monitor.beginTask("Connecting to TeamCity Server");
+			monitor.beginTask(MessageFormat.format("Connecting to \"{0}\" TeamCity Server", host));
 			server.connect();
 			monitor.done();
 			
-			monitor.beginTask("Logging to TeamCity Server");
+			monitor.beginTask("Logging in");
 			server.logon(user, password);
 			monitor.done();
 			return server;
@@ -118,7 +118,6 @@ public class CommandRunner {
 			final ArrayList<ICredential> ordered = new ArrayList<ICredential>(credentials);
 			Collections.sort(ordered, ourCredentialComaparator);
 			final ICredential defaultCredential = ordered.iterator().next();
-			Logger.log(CommandRunner.class.getSimpleName(), MessageFormat.format("Host \"{0}\" selected as Default for session", defaultCredential.getServer()));
 			return defaultCredential.getServer();
 		}
 		return null;
