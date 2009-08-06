@@ -55,7 +55,7 @@ public class Server {
 		try {
 			final int timeout = getTimeout();
 			mySession = new SessionXmlRpcTargetImpl(myUrl.toExternalForm(), timeout);
-			LOGGER.debug(MessageFormat.format("XmlRpc session {0} to {1} created. Timeout set to {2}", mySession.describeMe(), myUrl, timeout));
+			LOGGER.debug(MessageFormat.format("XmlRpc session {0} created. Timeout set to {1}", mySession.describeMe(), timeout));
 		} catch (Throwable e) {
 			throw new ECommunicationException(e);
 		}
