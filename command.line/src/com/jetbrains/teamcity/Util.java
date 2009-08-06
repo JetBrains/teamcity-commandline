@@ -127,12 +127,16 @@ public class Util {
 		}
 	}
 
-	public static String encode(String str){
-		return null;
-	}
-	
-	public static String decode(String str){
-		return null;
+	public static Throwable getRootCause(Throwable throwable) {
+		Throwable cause = throwable.getCause();
+		if (cause != null) {
+			throwable = cause;
+			while ((throwable = throwable.getCause()) != null) {
+				cause = throwable;
+			}
+			return cause;
+		}
+		return throwable;
 	}
 	
 }

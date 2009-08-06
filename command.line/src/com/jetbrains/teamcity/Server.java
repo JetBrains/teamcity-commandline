@@ -57,7 +57,7 @@ public class Server {
 			mySession = new SessionXmlRpcTargetImpl(myUrl.toExternalForm(), timeout);
 			LOGGER.debug(MessageFormat.format("XmlRpc session {0} created. Timeout set to {1}", mySession.describeMe(), timeout));
 		} catch (Throwable e) {
-			throw new ECommunicationException(e);
+			throw new ECommunicationException(MessageFormat.format("Could not connect to server {0}", myUrl), Util.getRootCause(e));
 		}
 	}
 
@@ -81,9 +81,9 @@ public class Server {
 		try {
 			mySession.authenticate();
 		} catch (AuthenticationFailedException e) {
-			throw new EAuthorizationException(e);
+			throw new EAuthorizationException(Util.getRootCause(e));
 		} catch (RemoteCallException e) {
-			throw new ECommunicationException(e);
+			throw new ECommunicationException(Util.getRootCause(e));
 		}
 	}
 	
