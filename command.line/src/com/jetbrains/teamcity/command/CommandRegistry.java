@@ -18,13 +18,16 @@ import java.util.regex.Pattern;
 
 import jetbrains.buildServer.util.FileUtil;
 
-import com.jetbrains.teamcity.Logger;
+import org.apache.log4j.Logger;
+
 import com.jetbrains.teamcity.Server;
 import com.jetbrains.teamcity.Storage;
 import com.jetbrains.teamcity.resources.TCAccess;
 
 
 class CommandRegistry {
+	
+	private static Logger LOGGER = Logger.getLogger(CommandRegistry.class) ;
 	
 	public static final Pattern COMMAND_EXTENSION_JAR_PATTERN = Pattern.compile(".*tc\\.command.*");
 	
@@ -81,7 +84,7 @@ class CommandRegistry {
 					try {
 						final JarFile jar = new JarFile(file);
 						if(!isCommandExtensionJar(jar.getName())){
-							Logger.log(CommandRegistry.class.getName(), MessageFormat.format("New commans jar found: {0}", jar.getName()));
+							LOGGER.debug(MessageFormat.format("New commans jar found: {0}", jar.getName()));
 							final Enumeration<JarEntry> entries = jar.entries();
 							while(entries.hasMoreElements()){
 								final String fileName = entries.nextElement().getName();

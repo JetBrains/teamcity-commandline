@@ -3,6 +3,7 @@ package com.jetbrains.teamcity;
 import java.io.IOException;
 import java.net.Proxy;
 import java.net.URL;
+import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
@@ -27,14 +28,17 @@ import jetbrains.buildServer.xmlrpc.XmlRpcTarget.Cancelable;
 import jetbrains.buildServer.xstream.ServerXStreamFormat;
 import jetbrains.buildServer.xstream.XStreamWrapper;
 
+import org.apache.log4j.Logger;
+
 import com.thoughtworks.xstream.XStream;
 
 public class Server {
 
+	private static Logger LOGGER = Logger.getLogger(Server.class) ;
 	
 	private URL myUrl;
 	private SessionXmlRpcTargetImpl mySession;
-	private Proxy myProxy;
+//	private Proxy myProxy;
 	private RemoteBuildServer myServerProxy;
 	private ArrayList<ProjectData> myProjects;
 
@@ -44,12 +48,14 @@ public class Server {
 	
 	public Server(final URL url, final Proxy proxy) {
 		this(url);
-		myProxy = proxy;
+//		myProxy = proxy;
 	}
 
 	public void connect() throws ECommunicationException {
 		try {
-			mySession = new SessionXmlRpcTargetImpl(myUrl.toExternalForm(), getTimeout());
+			final int timeout = getTimeout();
+			mySession = new SessionXmlRpcTargetImpl(myUrl.toExternalForm(), timeout);
+			LOGGER.debug(MessageFormat.format("XmlRpc session {0} to {1} created. Timeout set to {2}", mySession.describeMe(), myUrl, timeout));
 		} catch (Throwable e) {
 			throw new ECommunicationException(e);
 		}
@@ -64,8 +70,7 @@ public class Server {
 					return timeout;
 				}
 			} catch (Throwable t) {
-				Logger.log(this, t);
-				// no processing just return default
+				LOGGER.error("Could not parse timeout", t);
 			}
 		}
 		return Constants.DEFAULT_XMLRPC_TIMEOUT;

@@ -7,9 +7,13 @@ import java.util.List;
 
 import jetbrains.buildServer.util.FileUtil;
 
+import org.apache.log4j.Logger;
+
 import com.jetbrains.teamcity.resources.IShare;
 
 public abstract class URLFactory {
+	
+	private static Logger LOGGER = Logger.getLogger(URLFactory.class) ;
 
 	private URLFactory() {
 
@@ -90,7 +94,7 @@ public abstract class URLFactory {
 						myRootId = MessageFormat.format("svn://{0}|{1}", repoUUID, localRootSegment); //$NON-NLS-1$
 					}
 				} catch (IOException e) {
-					Logger.log(SVNUrlFactory.class.getName(), e);
+					LOGGER.error(e.getMessage(), e);
 				}
 			}
 		}

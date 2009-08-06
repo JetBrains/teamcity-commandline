@@ -17,10 +17,13 @@ import java.util.TreeSet;
 import jetbrains.buildServer.serverSide.crypt.EncryptUtil;
 import jetbrains.buildServer.vcs.VcsRoot;
 
-import com.jetbrains.teamcity.Logger;
+import org.apache.log4j.Logger;
+
 import com.jetbrains.teamcity.Storage;
 
 public class TCAccess {
+	
+	private static Logger LOGGER = Logger.getLogger(TCAccess.class) ;
 	
 	static Storage.IKey<Long> SHARES_COUNTER_KEY = new Storage.IKey<Long>(){
 
@@ -143,6 +146,8 @@ public class TCAccess {
 			myShares.add(newRoot);
 			Storage.getInstance().put(SHARES_KEY, myShares, false);
 			Storage.getInstance().put(SHARES_COUNTER_KEY, newShareID);
+			
+			LOGGER.debug(MessageFormat.format("New Share \"{0}\" is created: {1}->{2}", newRoot.myId, newRoot.myLocal, newRoot.myRemote)); //$NON-NLS-1$
 			return newRoot;
 			
 		} catch (IOException e) {
@@ -156,7 +161,7 @@ public class TCAccess {
 			if(id.equals(root.getId())){
 				myShares.remove(root);
 				Storage.getInstance().put(SHARES_KEY, myShares);
-				Logger.log(TCAccess.class.getName(), MessageFormat.format("Share \"{0}\" succesfully removed", id)); //$NON-NLS-1$
+				LOGGER.debug(MessageFormat.format("Share \"{0}\" succesfully removed", id)); //$NON-NLS-1$
 				return;
 			}
 		}
@@ -290,7 +295,7 @@ public class TCAccess {
 					return credential;
 				}
 			} catch (MalformedURLException e) {
-				Logger.log(TCAccess.class.getName(), e);
+				LOGGER.error(e.getMessage(), e);
 			}
 		}
 		return null;

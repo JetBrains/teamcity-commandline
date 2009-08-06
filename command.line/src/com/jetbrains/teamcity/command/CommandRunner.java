@@ -12,7 +12,6 @@ import jetbrains.buildServer.serverSide.crypt.EncryptUtil;
 
 import com.jetbrains.teamcity.EAuthorizationException;
 import com.jetbrains.teamcity.ECommunicationException;
-import com.jetbrains.teamcity.Logger;
 import com.jetbrains.teamcity.Server;
 import com.jetbrains.teamcity.resources.ICredential;
 import com.jetbrains.teamcity.resources.TCAccess;
