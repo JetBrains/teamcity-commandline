@@ -17,7 +17,7 @@ then
  JAVA_HOME=`which java 2>/dev/null`
  JAVA_HOME=`dirname $JAVA_HOME 2>/dev/null`
  if [ -z "$JAVA_HOME" ]; then
-  echo "The JAVA_HOME environment variable is defined"
+  echo "The JAVA_HOME environment variable is not defined"
   echo "It's required for application running"
   exit 1
  fi
