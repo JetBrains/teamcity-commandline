@@ -47,7 +47,6 @@ $JAVA_HOME/java -jar tcc-5.0.0.49.jar remoterun -c bt2 -m $2 @$LIST
 if [[ $? -eq 0 ]] 
 then
  svn commit --message $2 --targets $LIST
- echo COMMIT
 fi
 
 
