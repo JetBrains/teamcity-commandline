@@ -10,6 +10,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.regex.Pattern;
 
+
 import jetbrains.buildServer.util.FileUtil;
 
 public class Util {
@@ -84,6 +85,9 @@ public class Util {
 		try {
 			final List<String> content = FileUtil.readFile(file);
 			final HashSet<File> files = new HashSet<File>(content.size());
+			if(files.isEmpty()){
+				throw new IllegalArgumentException(MessageFormat.format("File \"{0}\" is empty", file.getAbsolutePath())); //$NON-NLS-1$	
+			}
 			for(String path : content){
 				if(path.trim().length()>0){
 					files.addAll(getFiles(path));

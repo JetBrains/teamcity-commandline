@@ -81,6 +81,7 @@ public class Share implements ICommand {
 			for(final IShare root : roots){
 				buffer.append(MessageFormat.format(Messages.getString("Share.shares.list.pattern"), root.getId(),  root.getLocal(), String.valueOf(root.getRemote()), root.getProperties())); //$NON-NLS-1$
 			}
+			myResultDescription = buffer.toString();
 			return;
 		}
 		myResultDescription = getUsageDescription();
