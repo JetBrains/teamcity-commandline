@@ -73,7 +73,7 @@ class Help implements ICommand {
 	}
 
 	public String getCommandDescription() {
-		return "Print this screen";
+		return "Display this screen";
 	}
 	
 	public String getResultDescription() {
