@@ -32,7 +32,8 @@
      <echo file="${tool.home}/src/com/jetbrains/teamcity/Build.java">package com.jetbrains.teamcity;
 
 public class Build {
-    public static final String number = "${major.version}.${build.number}"; 
+    public static final String major = "${major.version}";
+    public static final String build = "${build.number}";
 }</echo>
 
     	<javac destdir="${tmp}/bin" debug="on">

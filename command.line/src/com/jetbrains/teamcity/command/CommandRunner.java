@@ -50,6 +50,9 @@ public class CommandRunner {
 		
 		final ICommand command = CommandRegistry.getInstance().getCommand(arguments.getCommandId());
 		try{
+			
+			command.validate(arguments);
+			
 			if(command.isConnectionRequired(arguments)){
 				final Server server = openConnection(arguments, monitor);
 				command.execute(server, arguments, monitor);

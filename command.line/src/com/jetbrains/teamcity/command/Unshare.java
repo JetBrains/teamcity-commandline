@@ -19,15 +19,18 @@ public class Unshare implements ICommand {
 	private static final String ID = Messages.getString("Unshare.command.id"); //$NON-NLS-1$
 	
 	private String myResultDescription;
+	
+	public void validate(Args args) throws IllegalArgumentException {
+		if(!args.hasArgument(SHARE_PARAM, SHARE_PARAM_LONG) ){
+			throw new IllegalArgumentException(MessageFormat.format("missing {0}[{1}]", SHARE_PARAM, SHARE_PARAM_LONG));
+		}
+	}
 
 	public void execute(final Server server, Args args, final IProgressMonitor monitor) throws EAuthorizationException, ECommunicationException, ERemoteError, InvalidAttributesException {
-		if (args.hasArgument(SHARE_PARAM, SHARE_PARAM_LONG)) {
-			final String shareId = args.getArgument(SHARE_PARAM, SHARE_PARAM_LONG);
-			TCAccess.getInstance().unshare(shareId);
-			myResultDescription = MessageFormat.format(Messages.getString("Unshare.result.ok.pattern"), shareId); //$NON-NLS-1$
-			return;
-		}
-		myResultDescription = getUsageDescription();
+		final String shareId = args.getArgument(SHARE_PARAM, SHARE_PARAM_LONG);
+		TCAccess.getInstance().unshare(shareId);
+		myResultDescription = MessageFormat.format(Messages.getString("Unshare.result.ok.pattern"), shareId); //$NON-NLS-1$
+		return;
 	}
 
 	public String getId() { 

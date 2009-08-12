@@ -15,48 +15,79 @@ import com.jetbrains.teamcity.runtime.IProgressMonitor;
 
 class Help implements ICommand {
 
-	static final String ID = "help";
+	static final String ID = Messages.getString("Help.command.id"); //$NON-NLS-1$
+	private String myResultDescription;
 	
 	public void execute(Server server, final Args args, final IProgressMonitor monitor) throws EAuthorizationException, ECommunicationException, ERemoteError, InvalidAttributesException {
 		
-		System.out.println(MessageFormat.format("TeamCity Commandline utility {0}. Copyright 2000-2009 JetBrains s.r.o.", Build.number));
+		final StringBuffer buffer = new StringBuffer();
+		buffer.append(MessageFormat.format(Messages.getString("Help.command.header"),  //$NON-NLS-1$
+				Build.major, Build.build));
 		
 		final String[] elements = args.getArguments();
 		//print delail help
 		if (elements.length > 0 && elements[0] != ID/*do not include auto inserted help*/) {
-			printDescription(elements[0]);
+			
+			//prints detail help for command(arg[0])
+			buffer.append(printDescription(elements[0]));
+			myResultDescription = buffer.toString();
 			return;
+		} else {
+			buffer.append(printDefault());
+//			buffer.append(Messages.getString("Help.tool.usage.description")); //$NON-NLS-1$
+//			//print command list
+//			buffer.append(Messages.getString("Help.available.commands.list.header")); //$NON-NLS-1$
+//			final TreeSet<ICommand> knownCommands = new TreeSet<ICommand>(new Comparator<ICommand>(){
+//				public int compare(ICommand o1, ICommand o2) {
+//					return o1.getId().compareTo(o2.getId());
+//				}});
+//
+//			knownCommands.addAll(CommandRegistry.getInstance().commands());
+//			for(final ICommand command : knownCommands){
+//				buffer.append(MessageFormat.format(Messages.getString("Help.available.commands.list.pattern"), String.valueOf(command.getId()), String.valueOf(command.getCommandDescription()))); //$NON-NLS-1$
+//			}
+//			buffer.append(Messages.getString("Help.command.usage.text")); //$NON-NLS-1$
+//			buffer.append(printGlobalOptions());
+			myResultDescription = buffer.toString();
+			return; 
 		}
+		
+	}
+
+	private String printDefault() {
+		final StringBuffer buffer = new StringBuffer();
+		buffer.append(Messages.getString("Help.tool.usage.description")); //$NON-NLS-1$
 		//print command list
-		System.out.println("Available commands:");
+		buffer.append(Messages.getString("Help.available.commands.list.header")); //$NON-NLS-1$
 		final TreeSet<ICommand> knownCommands = new TreeSet<ICommand>(new Comparator<ICommand>(){
 			public int compare(ICommand o1, ICommand o2) {
 				return o1.getId().compareTo(o2.getId());
 			}});
-		
+
 		knownCommands.addAll(CommandRegistry.getInstance().commands());
 		for(final ICommand command : knownCommands){
-			System.out.println(MessageFormat.format("\t{0}\t\t{1}", String.valueOf(command.getId()), String.valueOf(command.getCommandDescription())));
+			buffer.append(MessageFormat.format(Messages.getString("Help.available.commands.list.pattern"), String.valueOf(command.getId()), String.valueOf(command.getCommandDescription()))); //$NON-NLS-1$
 		}
-		System.out.println();
-		System.out.println("use help [command] for command's usage information");
-		
-		printGlobalOptions();
-		
+		buffer.append(Messages.getString("Help.command.usage.text")); //$NON-NLS-1$
+		buffer.append(printGlobalOptions());
+		return buffer.toString();
 	}
 
-	private void printGlobalOptions() {
-		final String globalOptions = "Global options:\n\t{0} ARG\t: specify a host ARG\n\t{1} ARG\t: specify a username ARG\n\t{2} ARG\t: specify a password ARG";
-		System.out.println(MessageFormat.format(globalOptions, CommandRunner.HOST_ARG, CommandRunner.USER_ARG, CommandRunner.PASSWORD_ARG));
+	private String printGlobalOptions() {
+		final String globalOptions = Messages.getString("Help.global.options.header"); //$NON-NLS-1$
+		return MessageFormat.format(globalOptions, CommandRunner.HOST_ARG, CommandRunner.USER_ARG, CommandRunner.PASSWORD_ARG);
 	}
 
-	private void printDescription(final String commandId) {
+	private String printDescription(final String commandId) {
+		StringBuffer buffer = new StringBuffer();
 		final ICommand command = CommandRegistry.getInstance().getCommand(commandId);
 		if (command != null && command.getId().equals(commandId)) {
-			System.out.println(command.getUsageDescription());
-			printGlobalOptions();
+			buffer.append(command.getUsageDescription());
+			buffer.append(printGlobalOptions());
+			return buffer.toString();
 		} else {
-			System.out.println(MessageFormat.format("No \"{0}\" command found", commandId));
+			return printDefault();
+//			return MessageFormat.format(Messages.getString("Help.no.one.registered.command.found.message"), commandId); //$NON-NLS-1$
 		}
 	}
 
@@ -73,11 +104,16 @@ class Help implements ICommand {
 	}
 
 	public String getCommandDescription() {
-		return "Display this screen";
+		return Messages.getString("Help.command.description"); //$NON-NLS-1$
 	}
 	
 	public String getResultDescription() {
-		return null;
+		return myResultDescription;
+	}
+
+	public void validate(Args args) throws IllegalArgumentException {
+		// TODO Auto-generated method stub
+		
 	}
 	
 	

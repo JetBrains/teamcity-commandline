@@ -82,43 +82,38 @@ public class RemoteRun implements ICommand {
 	private String myResultDescription;
 
 	public void execute(final Server server, Args args, final IProgressMonitor monitor) throws EAuthorizationException, ECommunicationException, ERemoteError, InvalidAttributesException {
-		if(args.hasArgument(CONFIGURATION_PARAM, CONFIGURATION_PARAM_LONG, MESSAGE_PARAM, MESSAGE_PARAM_LONG) ){
-			myServer = server;
-			//configuration
-			myConfigurationId = args.getArgument(CONFIGURATION_PARAM, CONFIGURATION_PARAM_LONG);
-			//comment
-			myComments = args.getArgument(MESSAGE_PARAM, MESSAGE_PARAM_LONG);
-			//wait/no wait for build result
-			if(args.hasArgument(NO_WAIT_SWITCH, NO_WAIT_SWITCH_LONG)){
-				isNoWait  = true;
-			}
-			//timeout
-			if(args.hasArgument(TIMEOUT_PARAM, TIMEOUT_PARAM_LONG)){
-				myTimeout = Long.valueOf(args.getArgument(TIMEOUT_PARAM, TIMEOUT_PARAM_LONG));
-			} else {
-				myTimeout = DEFAULT_TIMEOUT;
-			}
-			//lets go...
-			myFiles = getFiles(args, monitor);
-			myRootMap = getRootMap(myFiles, monitor);
-			
-			//start RR
-			final long chaneListId = fireRemoteRun(myRootMap, monitor);
-			//process result
-			if(isNoWait){
-				myResultDescription = MessageFormat.format(Messages.getString("RemoteRun.schedule.result.ok.pattern"), chaneListId); //$NON-NLS-1$
-				
-			} else { 
-				final PersonalChangeDescriptor result = waitForSuccessResult(chaneListId, myTimeout, monitor);
-				myResultDescription = MessageFormat.format(Messages.getString("RemoteRun.build.result.ok.pattern"), chaneListId, result.getPersonalChangeStatus()); //$NON-NLS-1$
-				
-			}
-			return;
+		myServer = server;
+		//configuration
+		myConfigurationId = args.getArgument(CONFIGURATION_PARAM, CONFIGURATION_PARAM_LONG);
+		//comment
+		myComments = args.getArgument(MESSAGE_PARAM, MESSAGE_PARAM_LONG);
+		//wait/no wait for build result
+		if(args.hasArgument(NO_WAIT_SWITCH, NO_WAIT_SWITCH_LONG)){
+			isNoWait  = true;
 		}
-		myResultDescription = getUsageDescription();
+		//timeout
+		if(args.hasArgument(TIMEOUT_PARAM, TIMEOUT_PARAM_LONG)){
+			myTimeout = Long.valueOf(args.getArgument(TIMEOUT_PARAM, TIMEOUT_PARAM_LONG));
+		} else {
+			myTimeout = DEFAULT_TIMEOUT;
+		}
+		//lets go...
+		myFiles = getFiles(args, monitor);
+		myRootMap = getRootMap(myFiles, monitor);
+
+		//start RR
+		final long chaneListId = fireRemoteRun(myRootMap, monitor);
+		//process result
+		if(isNoWait){
+			myResultDescription = MessageFormat.format(Messages.getString("RemoteRun.schedule.result.ok.pattern"), String.valueOf(chaneListId)); //$NON-NLS-1$
+
+		} else { 
+			final PersonalChangeDescriptor result = waitForSuccessResult(chaneListId, myTimeout, monitor);
+			myResultDescription = MessageFormat.format(Messages.getString("RemoteRun.build.result.ok.pattern"), String.valueOf(chaneListId), result.getPersonalChangeStatus()); //$NON-NLS-1$
+		}
+		return;
 	}
-
-
+	
 	private PersonalChangeDescriptor waitForSuccessResult(final long changeListId, final long timeOut, IProgressMonitor monitor) throws ECommunicationException, ERemoteError {
 		monitor.beginTask(Messages.getString("RemoteRun.wait.for.build.step.name")); //$NON-NLS-1$
 		try{
@@ -370,6 +365,14 @@ public class RemoteRun implements ICommand {
 	public String getResultDescription() {
 		return myResultDescription;
 	}
-	
+
+	public void validate(Args args) throws IllegalArgumentException {
+		if(!args.hasArgument(CONFIGURATION_PARAM, CONFIGURATION_PARAM_LONG) ){
+			throw new IllegalArgumentException(MessageFormat.format("missing {0}[{1}]", CONFIGURATION_PARAM, CONFIGURATION_PARAM_LONG));
+		}
+		if(!args.hasArgument(MESSAGE_PARAM, MESSAGE_PARAM_LONG)){
+			throw new IllegalArgumentException(MessageFormat.format("missing {0}[{1}]", MESSAGE_PARAM, MESSAGE_PARAM_LONG));		
+		}
+	}
 
 }

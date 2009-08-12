@@ -6,7 +6,7 @@ import java.io.PrintStream;
 public class ConsoleProgressMonitor implements IProgressMonitor {
 
 	private static final String SPACE = " ";
-	private static final String DONE = "[done]";
+	private static final String DONE = "done";
 	
 	private PrintStream myOut;
 	private Thread myCurrentTicker;

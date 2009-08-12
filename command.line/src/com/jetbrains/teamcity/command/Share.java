@@ -31,6 +31,10 @@ public class Share implements ICommand {
 	private static final String VCSROOT_PARAM_LONG = Messages.getString("Share.vcsroot.runtime.param.long"); //$NON-NLS-1$
 
 	private String myResultDescription;
+	
+	public void validate(Args args) throws IllegalArgumentException {
+		//no op as far "info" available 
+	}
 
 	public void execute(final Server server, Args args, final IProgressMonitor monitor) throws EAuthorizationException, ECommunicationException, ERemoteError, InvalidAttributesException {
 		

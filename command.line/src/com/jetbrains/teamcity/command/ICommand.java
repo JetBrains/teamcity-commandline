@@ -31,4 +31,9 @@ public interface ICommand {
 	 */
 	public String getResultDescription();
 	
+	/**
+	 * @throws IllegalArgumentException if passed args is wrong 
+	 */
+	public void validate(final Args args) throws IllegalArgumentException;
+	
 }

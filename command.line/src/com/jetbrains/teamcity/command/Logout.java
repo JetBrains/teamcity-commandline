@@ -18,15 +18,18 @@ public class Logout implements ICommand {
 	private String myResultDescription;
 
 	public void execute(Server server, Args args, final IProgressMonitor monitor) throws EAuthorizationException, ECommunicationException, ERemoteError, InvalidAttributesException {
-		if(args.hasArgument(CommandRunner.HOST_ARG)){
-			final String url = args.getArgument(CommandRunner.HOST_ARG);
-			TCAccess.getInstance().removeCredential(url);
-			myResultDescription = MessageFormat.format(Messages.getString("Logout.result.ok.pattern"), url); //$NON-NLS-1$
-			return;
-		}
-		myResultDescription = getUsageDescription();
+		final String url = args.getArgument(CommandRunner.HOST_ARG);
+		TCAccess.getInstance().removeCredential(url);
+		myResultDescription = MessageFormat.format(Messages.getString("Logout.result.ok.pattern"), url); //$NON-NLS-1$
+		return;
 	}
-
+	
+	public void validate(Args args) throws IllegalArgumentException {
+		if(!args.hasArgument(CommandRunner.HOST_ARG) ){
+			throw new IllegalArgumentException(MessageFormat.format("missing {0}", CommandRunner.HOST_ARG));
+		}
+	}
+	
 	public String getCommandDescription() {
 		return Messages.getString("Logout.help.description"); //$NON-NLS-1$
 	}
@@ -36,7 +39,7 @@ public class Logout implements ICommand {
 	}
 
 	public String getUsageDescription() {
-		return MessageFormat.format(Messages.getString("Logout.help.usage.pattern"), getCommandDescription(), CommandRunner.HOST_ARG); //$NON-NLS-1$
+		return MessageFormat.format(Messages.getString("Logout.help.usage.pattern"), getCommandDescription(), getId(), CommandRunner.HOST_ARG); //$NON-NLS-1$
 	}
 
 	public boolean isConnectionRequired(final Args args) {
