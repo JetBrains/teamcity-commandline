@@ -90,8 +90,12 @@ public abstract class URLFactory {
 						final String repoUUID = entriesContent.get(26);
 						final String url = entriesContent.get(4);
 						final String repoUrl = entriesContent.get(5);
-						final String localRootSegment = url.substring(repoUrl.length() + 1, url.length());
-						myRootId = MessageFormat.format("svn://{0}|{1}", repoUUID, localRootSegment); //$NON-NLS-1$
+						if (url.length() > repoUrl.length()) {
+							final String localRootSegment = url.substring(repoUrl.length() + 1, url.length());
+							myRootId = MessageFormat.format("svn://{0}|{1}/", repoUUID, localRootSegment); //$NON-NLS-1$
+						}  else {
+							myRootId = MessageFormat.format("svn://{0}|/", repoUUID); //$NON-NLS-1$
+						}
 					}
 				} catch (IOException e) {
 					LOGGER.error(e.getMessage(), e);
@@ -102,7 +106,7 @@ public abstract class URLFactory {
 		@Override
 		public String getUrl(File file) throws IOException {
 			final String relativePath = Util.getRelativePath(myLocalRoot, file);
-			final String url = MessageFormat.format("{0}/{1}", myRootId, relativePath); //$NON-NLS-1$
+			final String url = MessageFormat.format("{0}{1}", myRootId, relativePath); //$NON-NLS-1$
 			return url;
 		}
 
