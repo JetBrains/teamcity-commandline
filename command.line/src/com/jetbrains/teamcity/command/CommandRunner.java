@@ -127,7 +127,7 @@ public class CommandRunner {
 						password = credential.getPassword();
 					}
 				} else {
-					throw new EAuthorizationException(MessageFormat.format(Messages.getString("CommandRunner.not.logged.in.error.pattern"), host)); //$NON-NLS-1$
+					throw new IllegalArgumentException(MessageFormat.format(Messages.getString("CommandRunner.not.logged.in.error.pattern"), host)); //$NON-NLS-1$
 				}
 			}
 			final Server server = new Server(new URL(host));
