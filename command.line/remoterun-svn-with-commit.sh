@@ -40,7 +40,7 @@ fi
 #
 # run remoterun
 #
-$JAVA_HOME/java -jar tcc-5.0.0.49.jar remoterun -c $1 -m $2 @$LIST
+$JAVA_HOME/java -jar tcc.jar run -c $1 -m $2 @$LIST
 #
 # check return code & try to commit changes
 #

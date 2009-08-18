@@ -70,7 +70,7 @@ public class RemoteRun implements ICommand {
 	private static final String NO_WAIT_SWITCH = Messages.getString("RemoteRun.nowait.runtime.param"); //$NON-NLS-1$
 	private static final String NO_WAIT_SWITCH_LONG = Messages.getString("RemoteRun.nowait.runtime.param.long"); //$NON-NLS-1$
 	
-	private static final String PATCHES_FOLDER = "."; //$NON-NLS-1$
+	private static final String PATCHES_FOLDER = System.getProperty("java.io.tmpdir"); //$NON-NLS-1$
 	
 	private String myConfigurationId;
 	private Collection<File> myFiles;
@@ -116,50 +116,78 @@ public class RemoteRun implements ICommand {
 	
 	private PersonalChangeDescriptor waitForSuccessResult(final long changeListId, final long timeOut, IProgressMonitor monitor) throws ECommunicationException, ERemoteError {
 		monitor.beginTask(Messages.getString("RemoteRun.wait.for.build.step.name")); //$NON-NLS-1$
-		try{
-			final long startTime = System.currentTimeMillis();
-			UserChangeStatus prevCurrentStatus = null;
-			while ((System.currentTimeMillis() - startTime) < timeOut) {
-				final TeamServerSummaryData summary = myServer.getSummary();
-				for(final UserChangeInfoData data : summary.getPersonalChanges()){
-					if(data.getPersonalDesc() != null && data.getPersonalDesc().getId() == changeListId){
-						//check builds status 
-						final UserChangeStatus currentStatus = data.getChangeStatus();
-						if(!currentStatus.equals(prevCurrentStatus)){
-							prevCurrentStatus = currentStatus;
-							monitor.worked(MessageFormat.format(Messages.getString("RemoteRun.wait.for.build.statuschanged.step.name"), currentStatus)); //$NON-NLS-1$
-						}
-						if (UserChangeStatus.FAILED_WITH_RESPONSIBLE == currentStatus 
-								|| UserChangeStatus.FAILED == currentStatus  
-								|| UserChangeStatus.CANCELED == currentStatus) {
-							throw new ERemoteError(MessageFormat.format(Messages.getString("RemoteRun.build.failed.error.pattern"), currentStatus)); //$NON-NLS-1$
-						}
-						//check commit status
-						final PersonalChangeDescriptor descriptor = data.getPersonalDesc();
-						PersonalChangeCommitDecision commitStatus = descriptor.getPersonalChangeStatus();
-						if(PersonalChangeCommitDecision.COMMIT == commitStatus){
-							//OK
-							return descriptor;
-							
-						} else if (PersonalChangeCommitDecision.DO_NOT_COMMIT == commitStatus){
-							//build is OK, but commit is not allowed
-							throw new ERemoteError(MessageFormat.format(Messages.getString("RemoteRun.build.ok.commit.rejected.error.pattern"), commitStatus)); //$NON-NLS-1$
-						}
+		final long startTime = System.currentTimeMillis();
+		UserChangeStatus prevCurrentStatus = null;
+		while ((System.currentTimeMillis() - startTime) < timeOut) {
+			final TeamServerSummaryData summary = myServer.getSummary();
+			for(final UserChangeInfoData data : summary.getPersonalChanges()){
+				if(data.getPersonalDesc() != null && data.getPersonalDesc().getId() == changeListId){
+					//check builds status 
+					final UserChangeStatus currentStatus = data.getChangeStatus();
+					if(!currentStatus.equals(prevCurrentStatus)){
+						prevCurrentStatus = currentStatus;
+						monitor.worked(MessageFormat.format(Messages.getString("RemoteRun.wait.for.build.statuschanged.step.name"), getBuildStatusDescription(currentStatus))); //$NON-NLS-1$
+					}
+					if (UserChangeStatus.FAILED_WITH_RESPONSIBLE == currentStatus 
+							|| UserChangeStatus.FAILED == currentStatus  
+							|| UserChangeStatus.CANCELED == currentStatus) {
+						throw new ERemoteError(MessageFormat.format(Messages.getString("RemoteRun.build.failed.error.pattern"), getBuildStatusDescription(currentStatus))); //$NON-NLS-1$
+					}
+					//check commit status
+					final PersonalChangeDescriptor descriptor = data.getPersonalDesc();
+					PersonalChangeCommitDecision commitStatus = descriptor.getPersonalChangeStatus();
+					if(PersonalChangeCommitDecision.COMMIT == commitStatus){
+						//OK
+						monitor.done();
+						return descriptor;
+
+					} else if (PersonalChangeCommitDecision.DO_NOT_COMMIT == commitStatus){
+						//build is OK, but commit is not allowed
+						throw new ERemoteError(MessageFormat.format(Messages.getString("RemoteRun.build.ok.commit.rejected.error.pattern"), getCommitStatusDescription(commitStatus))); //$NON-NLS-1$
 					}
 				}
-				try {
-					Thread.sleep(SLEEP_INTERVAL);
-				} catch (InterruptedException e) {
-					throw new RuntimeException(e);
-				}
 			}
-			//so, timeout exceed
-			throw new RuntimeException(MessageFormat.format(Messages.getString("RemoteRun.wait.for.build.timeout.exceed.error"), myTimeout, changeListId)); //$NON-NLS-1$
-		} finally {
-			monitor.done(""); //to be sure //$NON-NLS-1$
+			try {
+				Thread.sleep(SLEEP_INTERVAL);
+			} catch (InterruptedException e) {
+				throw new RuntimeException(e);
+			}
 		}
+		//so, timeout exceed
+		throw new RuntimeException(MessageFormat.format(Messages.getString("RemoteRun.wait.for.build.timeout.exceed.error"), myTimeout, changeListId)); //$NON-NLS-1$
 	}
 
+
+	private Object getCommitStatusDescription(final PersonalChangeCommitDecision commitStatus) {
+		return commitStatus;
+	}
+
+	private Object getBuildStatusDescription(final UserChangeStatus currentStatus) {
+		
+		if(UserChangeStatus.CANCELED == currentStatus){
+			return Messages.getString("RemoteRun.UserChangeStatus.CANCELED"); //$NON-NLS-1$
+			
+		} else if(UserChangeStatus.CHECKED == currentStatus){
+			return Messages.getString("RemoteRun.UserChangeStatus.CHECKED");  //$NON-NLS-1$
+			
+		} else if(UserChangeStatus.FAILED == currentStatus){
+			return Messages.getString("RemoteRun.UserChangeStatus.FAILED"); //$NON-NLS-1$
+			
+		} else if(UserChangeStatus.FAILED_WITH_RESPONSIBLE == currentStatus){
+			return Messages.getString("RemoteRun.UserChangeStatus.FAILED_WITH_RESPONSIBLE"); //$NON-NLS-1$
+			
+		} else if(UserChangeStatus.PENDING == currentStatus){
+			return Messages.getString("RemoteRun.UserChangeStatus.PENDING"); //$NON-NLS-1$
+			
+		} else if(UserChangeStatus.RUNNING_FAILED == currentStatus){
+			return Messages.getString("RemoteRun.UserChangeStatus.RUNNING_FAILED"); //$NON-NLS-1$
+			
+		} else if(UserChangeStatus.RUNNING_SUCCESSFULY == currentStatus){
+			return Messages.getString("RemoteRun.UserChangeStatus.RUNNING_SUCCESSFULY"); //$NON-NLS-1$
+			
+		}
+		return currentStatus;
+	}
 
 	private long fireRemoteRun(final HashMap<IShare, ArrayList<File>> map, final IProgressMonitor monitor) throws ECommunicationException, ERemoteError {
 		final int currentUser = myServer.getCurrentUser();
@@ -264,7 +292,7 @@ public class RemoteRun implements ICommand {
 	}
 
 	private static File createPatchFile(String url) {
-		File stateLocation = new File(PATCHES_FOLDER);
+		File stateLocation = new File(PATCHES_FOLDER == null ? "." : PATCHES_FOLDER); //$NON-NLS-1$
 		try {
 			url = new String(Base64.encodeBase64(MessageDigest.getInstance("MD5").digest(url.getBytes()))); //$NON-NLS-1$
 		} catch (NoSuchAlgorithmException e) {
@@ -368,10 +396,10 @@ public class RemoteRun implements ICommand {
 
 	public void validate(Args args) throws IllegalArgumentException {
 		if(!args.hasArgument(CONFIGURATION_PARAM, CONFIGURATION_PARAM_LONG) ){
-			throw new IllegalArgumentException(MessageFormat.format("missing {0}[{1}]", CONFIGURATION_PARAM, CONFIGURATION_PARAM_LONG));
+			throw new IllegalArgumentException(MessageFormat.format(Messages.getString("RemoteRun.missing.configuration.para.error.pattern"), CONFIGURATION_PARAM, CONFIGURATION_PARAM_LONG)); //$NON-NLS-1$
 		}
 		if(!args.hasArgument(MESSAGE_PARAM, MESSAGE_PARAM_LONG)){
-			throw new IllegalArgumentException(MessageFormat.format("missing {0}[{1}]", MESSAGE_PARAM, MESSAGE_PARAM_LONG));		
+			throw new IllegalArgumentException(MessageFormat.format(Messages.getString("RemoteRun.missing.message.para.error.pattern"), MESSAGE_PARAM, MESSAGE_PARAM_LONG));		 //$NON-NLS-1$
 		}
 	}
 

@@ -58,7 +58,7 @@ public class Build {
       <equals arg1="${build.number}" arg2="SNAPSHOT"/>
     </condition-->
 
-    <jar destfile="${tmp}/${product.name}-${major.version}.${build.number}.jar" manifest="${tmp}/MANIFEST.MF">
+    <jar destfile="${tmp}/${product.name}.jar" manifest="${tmp}/MANIFEST.MF">
       <fileset dir="${tmp}/bin">
         <include name="**/**"/>
       </fileset>

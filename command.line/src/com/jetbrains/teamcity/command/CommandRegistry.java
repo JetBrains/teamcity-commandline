@@ -159,9 +159,6 @@ class CommandRegistry {
 	}
 	
 	synchronized ICommand getCommand(final String id){
-		if(!ourRegistry.containsKey(id)){
-			return ourRegistry.get(Help.ID);
-		}
 		return ourRegistry.get(id);
 	}
 

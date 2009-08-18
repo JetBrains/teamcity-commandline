@@ -33,6 +33,7 @@ public class ConsoleProgressMonitor implements IProgressMonitor {
 
 	public IProgressMonitor done() {
 		stopTicker();
+		myOut.print(SPACE);
 		myOut.println(DONE);
 		return this;
 	}
@@ -42,9 +43,8 @@ public class ConsoleProgressMonitor implements IProgressMonitor {
 			done();
 		} else {
 			stopTicker();
-			myOut.print(message);
 			myOut.print(SPACE);
-			myOut.println(DONE);
+			myOut.println(message);
 		}
 		return this;
 	}	

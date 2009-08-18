@@ -21,33 +21,18 @@ class Help implements ICommand {
 	public void execute(Server server, final Args args, final IProgressMonitor monitor) throws EAuthorizationException, ECommunicationException, ERemoteError, InvalidAttributesException {
 		
 		final StringBuffer buffer = new StringBuffer();
+		
 		buffer.append(MessageFormat.format(Messages.getString("Help.command.header"),  //$NON-NLS-1$
 				Build.major, Build.build));
 		
-		final String[] elements = args.getArguments();
 		//print delail help
-		if (elements.length > 0 && elements[0] != ID/*do not include auto inserted help*/) {
-			
+		if (args.getCommandId() != null && args.getCommandId() != ID/*do not include auto inserted help*/) {
 			//prints detail help for command(arg[0])
-			buffer.append(printDescription(elements[0]));
+			buffer.append(printDescription(args.getCommandId()));
 			myResultDescription = buffer.toString();
 			return;
 		} else {
 			buffer.append(printDefault());
-//			buffer.append(Messages.getString("Help.tool.usage.description")); //$NON-NLS-1$
-//			//print command list
-//			buffer.append(Messages.getString("Help.available.commands.list.header")); //$NON-NLS-1$
-//			final TreeSet<ICommand> knownCommands = new TreeSet<ICommand>(new Comparator<ICommand>(){
-//				public int compare(ICommand o1, ICommand o2) {
-//					return o1.getId().compareTo(o2.getId());
-//				}});
-//
-//			knownCommands.addAll(CommandRegistry.getInstance().commands());
-//			for(final ICommand command : knownCommands){
-//				buffer.append(MessageFormat.format(Messages.getString("Help.available.commands.list.pattern"), String.valueOf(command.getId()), String.valueOf(command.getCommandDescription()))); //$NON-NLS-1$
-//			}
-//			buffer.append(Messages.getString("Help.command.usage.text")); //$NON-NLS-1$
-//			buffer.append(printGlobalOptions());
 			myResultDescription = buffer.toString();
 			return; 
 		}
@@ -86,8 +71,9 @@ class Help implements ICommand {
 			buffer.append(printGlobalOptions());
 			return buffer.toString();
 		} else {
-			return printDefault();
-//			return MessageFormat.format(Messages.getString("Help.no.one.registered.command.found.message"), commandId); //$NON-NLS-1$
+			buffer.append(MessageFormat.format(Messages.getString("Help.no.one.registered.command.found.message"), commandId)); //$NON-NLS-1$
+			buffer.append(printDefault());
+			return buffer.toString();
 		}
 	}
 

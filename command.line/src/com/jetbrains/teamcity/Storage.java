@@ -22,8 +22,9 @@ import com.thoughtworks.xstream.XStream;
 //TODO: support parallel working!!!
 public class Storage {
 
-	public static final String TC_STORAGE_PROPERTY_NAME = "tc.storage"; //$NON-NLS-1$
-	public static final String TC_STORAGE_DEFAULT_FILENAME = ".tcstorage"; //$NON-NLS-1$
+	public static final String TC_STORAGE_PROPERTY_NAME = "teamcity.cli.configfile"; //$NON-NLS-1$
+	public static final String TC_STORAGE_ENVIRONMENT_VARIABLE_PROPERTY_NAME = "TEAMCITY_CLI_CONFIGFILE"; //$NON-NLS-1$
+	public static final String TC_STORAGE_DEFAULT_FILENAME = "/.TeamCity-CommandLine/.tcstorage"; //$NON-NLS-1$
 
 	private static Storage ourInstance;
 	
@@ -36,9 +37,13 @@ public class Storage {
 	private Storage() {
 		//init storage
 		final String storageFile = System.getProperty(TC_STORAGE_PROPERTY_NAME);
-		if(storageFile != null){
+		if(storageFile != null){//-D
 			myStorageFile = storageFile;
-		} else {//set to default
+			
+		} else if(System.getenv(TC_STORAGE_ENVIRONMENT_VARIABLE_PROPERTY_NAME) != null){//env
+			myStorageFile = System.getenv(TC_STORAGE_ENVIRONMENT_VARIABLE_PROPERTY_NAME);
+			
+		} else {//default
 			final String home = System.getProperty("user.home"); //$NON-NLS-1$
 			myStorageFile = home + File.separator + TC_STORAGE_DEFAULT_FILENAME;
 		}

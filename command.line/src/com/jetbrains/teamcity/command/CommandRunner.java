@@ -49,23 +49,28 @@ public class CommandRunner {
 		final IProgressMonitor monitor = new ConsoleProgressMonitor(System.out);
 		
 		final ICommand command = CommandRegistry.getInstance().getCommand(arguments.getCommandId());
-		try{
-			
-			command.validate(arguments);
-			
-			if(command.isConnectionRequired(arguments)){
-				final Server server = openConnection(arguments, monitor);
-				command.execute(server, arguments, monitor);
-			} else {
-				command.execute(null, arguments, monitor);
+		if(command != null){
+			try{
+				command.validate(arguments);
+				if(command.isConnectionRequired(arguments)){
+					final Server server = openConnection(arguments, monitor);
+					command.execute(server, arguments, monitor);
+				} else {
+					command.execute(null, arguments, monitor);
+				}
+				//print success result
+				reportResult(command, monitor);
+			} catch (Throwable e){
+				//print error result
+				monitor.done(Messages.getString("CommandRunner.monitor.error.found")); //$NON-NLS-1$
+				reportError(command, e, monitor);
+				System.exit(-1);
 			}
-			//print success result
-			reportResult(command, monitor);
-		} catch (Throwable e){
-			//print error result
-			reportError(command, e, monitor);
-			System.exit(-1);
-		} 
+		} else {
+			final ICommand helpCommand = CommandRegistry.getInstance().getCommand(Help.ID);
+			helpCommand.execute(null, arguments, monitor);
+			reportResult(helpCommand, monitor);
+		}
 	}
 	
 	private static void reportError(ICommand command, Throwable e, IProgressMonitor monitor) {
@@ -86,7 +91,7 @@ public class CommandRunner {
 			System.err.println(MessageFormat.format(Messages.getString("CommandRunner.could.not.connect.error.pattern"), e.getMessage())); //$NON-NLS-1$
 			
 		} else if (e instanceof ERemoteError){
-			System.err.println(e.getMessage());
+			System.err.println(MessageFormat.format(Messages.getString("CommandRunner.businesslogic.error.pattern"), e.getMessage())); //$NON-NLS-1$
 			
 		} else if (e instanceof IllegalArgumentException){
 			System.err.println(MessageFormat.format(Messages.getString("CommandRunner.invalid.command.arguments.error.pattern"), e.getMessage())); //$NON-NLS-1$
