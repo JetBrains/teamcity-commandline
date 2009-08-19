@@ -4,12 +4,13 @@ import java.io.File;
 import java.io.IOException;
 import java.text.MessageFormat;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.regex.Pattern;
-
 
 import jetbrains.buildServer.util.FileUtil;
 
@@ -141,6 +142,120 @@ public class Util {
 			return cause;
 		}
 		return throwable;
+	}
+
+	public static class StringTable{
+		
+		private String[] myHeader;
+		private LinkedList<String[]> rows = new LinkedList<String[]>();
+		private int myNumColumns;
+
+		public StringTable(final String[] header){
+			if(header == null || header.length == 0){
+				throw new IllegalArgumentException("Header cannot be null or empty");
+			}
+			myHeader = header;
+			myNumColumns = myHeader.length;
+		}
+		
+		public StringTable(final int numColumns){
+			myNumColumns = numColumns;
+		}
+		
+		/**
+		 * @param tabbedHeader Plain string represents Column's headers devided by '\t' 
+		 */
+		public StringTable(final String tabbedHeader){
+			this(tabbedHeader.split("\t"));
+		}
+		
+		/**
+		 * 
+		 * @param tabbedRow Plain string represents row. columns must be devided by '\t'
+		 */
+		public void addRow(final String tabbedRow){
+			final String[] splited = tabbedRow.split("\t");
+			if(splited.length == myNumColumns){
+				addRow(splited);
+				
+			} else if(splited.length < myNumColumns){
+				final String[] paddedRow = new String[myNumColumns];
+				Arrays.fill(paddedRow, "");
+				for(int i = 0; i< splited.length; i++){
+					paddedRow[i] = splited[i];
+				}
+				addRow(paddedRow);
+			} else {
+				final String[] trimmedRow = new String[myNumColumns];
+				for(int i = 0; i< myNumColumns; i++){
+					trimmedRow[i] = splited[i];
+				}
+				addRow(trimmedRow);
+			}
+		}
+	
+		public void addRow(final String[] row){
+			if(row == null || row.length != myNumColumns){
+				throw new IllegalArgumentException(MessageFormat.format("Row is null or size differs to Header {1}: {0}", Arrays.toString(row), myNumColumns));
+			}
+			rows.add(row);
+		}
+		
+		public String toString(){
+			final LinkedList<String[]> buffer = new LinkedList<String[]>(rows);
+			if(myHeader != null){
+				buffer.add(0, myHeader);
+			}
+
+			// collect max lengths of columns
+			final int[] maxSizes = new int[myNumColumns];
+			for (final String[] row : buffer) {
+				for (int i = 0; i < myNumColumns; i++) {
+					maxSizes[i] = Math.max(row[i].length(), maxSizes[i]);
+				}
+			}
+			//so, let's format result according to maxSizes...
+			final StringBuffer result = new StringBuffer();
+			for (final String[] row : buffer) {
+				for (int i = 0; i < myNumColumns; i++) {
+					final String column = row[i];
+					final int maxStringLenght = maxSizes[i];
+					result.append(String.format("%1$-" + ((i != (myNumColumns - 1)) ? (maxStringLenght + 1) : maxStringLenght) + "s", column));
+					
+				}
+				result.append("\n");
+			}
+			return result.toString();
+		}
+		
+	}
+	
+	public static void main(String[] args){
+		{
+			final StringTable table = new StringTable(new String[] {"Fist Column", "2", "The last"});
+			table.addRow(new String[] {"1", "qwiueiqwiei, qweiuqwieiqiwei", "a"});
+			table.addRow(new String[] {"2", "qweiuqwieiqiwei", "asdsdsdsd, sdsdsdsdsdsdsdsd"});
+			table.addRow(new String[] {"3", "q", "asdsdsdsd"});
+			System.out.println(table);
+		}
+		
+		{
+			final StringTable table = new StringTable("Fist Column\t2\tThe last");
+			table.addRow("1\tqwiueiqwiei, qweiuqwieiqiwei\ta");
+			table.addRow("2\tqweiuqwieiqiwei\tasdsdsdsd, sdsdsdsdsdsdsdsd");
+			table.addRow("3\tq\tasdsdsdsd");
+			System.out.println(table);
+		}
+
+		{
+			final StringTable table = new StringTable(3);
+			table.addRow("1\tqwiueiqwiei, qweiuqwieiqiwei\ta");
+			table.addRow("2\tqweiuqwieiqiwei\tasdsdsdsd, sdsdsdsdsdsdsdsd");
+			table.addRow("3\tq\tasdsdsdsd");
+			System.out.println(table);
+		}
+		
+		
 	}
 	
 }

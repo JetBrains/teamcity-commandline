@@ -18,6 +18,8 @@ import com.jetbrains.teamcity.EAuthorizationException;
 import com.jetbrains.teamcity.ECommunicationException;
 import com.jetbrains.teamcity.ERemoteError;
 import com.jetbrains.teamcity.Server;
+import com.jetbrains.teamcity.Util;
+import com.jetbrains.teamcity.Util.StringTable;
 import com.jetbrains.teamcity.runtime.IProgressMonitor;
 
 public class List implements ICommand {
@@ -69,14 +71,12 @@ public class List implements ICommand {
 	}
 
 	private String printVcsRoots(final Server server, Args args)	throws ECommunicationException {
-		final StringBuffer buffer = new StringBuffer();
 		final ArrayList<? extends VcsRoot> roots;
 		if(args != null && args.hasArgument(CONFIGURATION_SWITCH, CONFIGURATION_SWITCH_LONG)){
 			final String filterByConfig = args.getArgument(CONFIGURATION_SWITCH, CONFIGURATION_SWITCH_LONG);
 			final BuildTypeData config = server.getConfiguration(filterByConfig);
 			if(config == null){
-				buffer.append(MessageFormat.format(Messages.getString("List.no.config.found.for.filter.message"), filterByConfig)); //$NON-NLS-1$
-				return buffer.toString();
+				return MessageFormat.format(Messages.getString("List.no.config.found.for.filter.message"), filterByConfig); //$NON-NLS-1$
 			}
 			roots = new ArrayList<VcsRoot>(config.getVcsRoots());
 		} else {
@@ -113,15 +113,15 @@ public class List implements ICommand {
 //				}
 //				return 0;
 			}});
-		buffer.append(Messages.getString("List.vcsroots.list.header")); //$NON-NLS-1$
+		final StringTable table = new Util.StringTable(Messages.getString("List.vcsroots.list.header")); //$NON-NLS-1$
 		for(final VcsRoot root :roots){
 			String name = root.getName()== null ? EMPTY : root.getName();
 			final Collection<BuildTypeData> configurations = collectConfigurations(configMap.values(), root);
 			final String configNames = asString(configurations);
 			final String prjNames = toString(collectProjects(prjMap, configurations));
-			buffer.append(MessageFormat.format(Messages.getString("List.vcsroots.list.pattern"), root.getId(), prjNames, configNames, name, root.getVcsName(), root.getProperties()));	 //$NON-NLS-1$
+			table.addRow(MessageFormat.format(Messages.getString("List.vcsroots.list.pattern"), root.getId(), prjNames, configNames, name, root.getVcsName(), root.getProperties()));	 //$NON-NLS-1$
 		}
-		return buffer.toString();
+		return table.toString();
 	}
 	
 	private String asString(Collection<BuildTypeData> configurations){
@@ -187,7 +187,6 @@ public class List implements ICommand {
 
 
 	private String printConfigurations(final Server server, Args args) throws ECommunicationException {
-		final StringBuffer buffer = new StringBuffer();
 		final String filterByProject;
 		if(args != null && args.hasArgument(PROJECT_SWITCH, PROJECT_SWITCH_LONG)){
 			filterByProject = args.getArgument(PROJECT_SWITCH, PROJECT_SWITCH_LONG);
@@ -211,20 +210,19 @@ public class List implements ICommand {
 				return (prj1name + " " + o1.getName()).compareTo(prj2name + " " + o2.getName());
 			}});
 		//display
-		buffer.append(Messages.getString("List.config.list.header")); //$NON-NLS-1$
+		final StringTable table = new Util.StringTable(Messages.getString("List.config.list.header")); //$NON-NLS-1$
 		for(final BuildTypeData config :configurations){
 			//check 
 			if((filterByProject == null) || (filterByProject != null && config.getProjectId().equals(filterByProject))){
 				final String description = config.getDescription() == null ? EMPTY : config.getDescription();
 				final String prjName = prjMap.get(config.getProjectId());
-				buffer.append(MessageFormat.format(Messages.getString("List.config.list.pattern"), config.getId(), prjName, config.getName(), config.getStatus(), description));	 //$NON-NLS-1$
+				table.addRow(MessageFormat.format(Messages.getString("List.config.list.pattern"), config.getId(), prjName, config.getName(), config.getStatus(), description));	 //$NON-NLS-1$
 			}
 		}
-		return buffer.toString();
+		return table.toString();
 	}
 
 	private String printProjects(final Server server) throws ECommunicationException {
-		final StringBuffer buffer = new StringBuffer(); 
 		//get & sort
 		final ArrayList<ProjectData> projects = new ArrayList<ProjectData>(server.getProjects());
 		Collections.sort(projects, new Comparator<ProjectData>(){
@@ -233,12 +231,12 @@ public class List implements ICommand {
 			}});
 		
 		//display
-		buffer.append(Messages.getString("List.project.list.header")); //$NON-NLS-1$
+		final StringTable table = new Util.StringTable(Messages.getString("List.project.list.header")); //$NON-NLS-1$
 		for(final ProjectData project :projects){
-			final String description = project.getDescription();// == null ? EMPTY : project.getDescription();
-			buffer.append(MessageFormat.format(Messages.getString("List.project.list.pattern"), project.getProjectId(), project.getName(), project.getStatus(), description)); //$NON-NLS-1$
+			final String description = project.getDescription() == null ? EMPTY : project.getDescription();
+			table.addRow(MessageFormat.format(Messages.getString("List.project.list.pattern"), project.getProjectId(), project.getName(), project.getStatus(), description)); //$NON-NLS-1$
 		}
-		return buffer.toString();
+		return table.toString();
 	}
 
 	public String getId() {

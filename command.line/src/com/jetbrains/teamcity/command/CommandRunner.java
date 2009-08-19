@@ -68,6 +68,7 @@ public class CommandRunner {
 			}
 		} else {
 			final ICommand helpCommand = CommandRegistry.getInstance().getCommand(Help.ID);
+//			newArgs = new String[args.length + 1];
 			helpCommand.execute(null, arguments, monitor);
 			reportResult(helpCommand, monitor);
 		}

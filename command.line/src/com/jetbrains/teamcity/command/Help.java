@@ -11,6 +11,8 @@ import com.jetbrains.teamcity.EAuthorizationException;
 import com.jetbrains.teamcity.ECommunicationException;
 import com.jetbrains.teamcity.ERemoteError;
 import com.jetbrains.teamcity.Server;
+import com.jetbrains.teamcity.Util;
+import com.jetbrains.teamcity.Util.StringTable;
 import com.jetbrains.teamcity.runtime.IProgressMonitor;
 
 class Help implements ICommand {
@@ -25,13 +27,18 @@ class Help implements ICommand {
 		buffer.append(MessageFormat.format(Messages.getString("Help.command.header"),  //$NON-NLS-1$
 				Build.major, Build.build));
 		
-		//print delail help
-		if (args.getCommandId() != null && args.getCommandId() != ID/*do not include auto inserted help*/) {
-			//prints detail help for command(arg[0])
+		final String commandId = args != null && args.getArguments() != null && args.getArguments().length >0 ? args.getArguments()[0] : "";
+		if (args.getCommandId().equals(ID) && commandId!= null && !commandId.equals(ID)) {//help command used
+			buffer.append(printDescription(commandId));
+			myResultDescription = buffer.toString();
+			return;
+			
+		} if (!args.getCommandId().equals(ID)) { //no help command used
 			buffer.append(printDescription(args.getCommandId()));
 			myResultDescription = buffer.toString();
 			return;
-		} else {
+			
+		} else {//nothing passed
 			buffer.append(printDefault());
 			myResultDescription = buffer.toString();
 			return; 
@@ -50,9 +57,12 @@ class Help implements ICommand {
 			}});
 
 		knownCommands.addAll(CommandRegistry.getInstance().commands());
+//		final StringTable table = new Util.StringTable(3);
 		for(final ICommand command : knownCommands){
 			buffer.append(MessageFormat.format(Messages.getString("Help.available.commands.list.pattern"), String.valueOf(command.getId()), String.valueOf(command.getCommandDescription()))); //$NON-NLS-1$
+//			table.addRow(MessageFormat.format(Messages.getString("Help.available.commands.list.pattern"), String.valueOf(command.getId()), String.valueOf(command.getCommandDescription()))); //$NON-NLS-1$
 		}
+//		buffer.append(table.toString());
 		buffer.append(Messages.getString("Help.command.usage.text")); //$NON-NLS-1$
 		buffer.append(printGlobalOptions());
 		return buffer.toString();

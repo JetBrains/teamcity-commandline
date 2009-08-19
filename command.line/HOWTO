@@ -1,5 +1,8 @@
 Introduction
 	TeamCity command line tool allows you to start Personal Build outside supported IDE.
+	
+Supported VCS
+	The tool allows to run Personal Builds for sources shared with SVN, CVS, Perforce and TFS. 
 
 Requirements
 	The tool distributed as executable .jar and a requirement is installed JRE only.
