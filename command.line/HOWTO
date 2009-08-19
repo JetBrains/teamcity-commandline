@@ -93,25 +93,25 @@ Quick start
 	So we have all required information and prepared Share to perform Remote Run. Let's schedule Personal Build for changed files located into
 	shared folder "C:\work\tc-test\tc-test-rusps-app-svn" on Configuration "bt7":
 	   
-	   java -jar tcc.jar remoterun --host http://rusps-app -c bt7 C:\work\tc-test\tc-test-rusps-app-svn
+	   java -jar tcc.jar run --host http://rusps-app -c bt7 C:\work\tc-test\tc-test-rusps-app-svn
 	   
 	the command collected all files from the folder and child ones and sent them to TeamCity Server for Remote Run.
-	You can specify files for execution more accurately and such form allows you send deleted files to RemoteRun:
+	You can specify files for execution more accurately and such form allows you send deleted files to run:
 	  
-	  	java -jar tcc.jar remoterun --host http://rusps-app -c bt7 C:\work\tc-test\tc-test-rusps-app-svn\src\all\New.java C:\work\tc-test\tc-test-rusps-app-svn\src\all\ENew.java
+	  	java -jar tcc.jar run --host http://rusps-app -c bt7 C:\work\tc-test\tc-test-rusps-app-svn\src\all\New.java C:\work\tc-test\tc-test-rusps-app-svn\src\all\ENew.java
 	   
-	There is a form supports file that contains list of changes for RemoteRun:
+	There is a form supports file that contains list of changes for run:
 	
-		java -jar tcc.jar remoterun --host http://rusps-app -c bt7 @C:\work\tc-test\tc-test-rusps-app-svn\src\all\changes.txt
+		java -jar tcc.jar run --host http://rusps-app -c bt7 @C:\work\tc-test\tc-test-rusps-app-svn\src\all\changes.txt
 		
 	changes.txt content:
 	C:\work\tc-test\tc-test-rusps-app-svn\src\all\ENew.java
 	C:\work\tc-test\tc-test-rusps-app-svn\src\all\New.java
 	
-	so you can prepare own list of changes by vcs tools for example and pass changes to RemoteRun automatically.
+	so you can prepare own list of changes by vcs tools for example and pass changes to run automatically.
 	 	
-	The "remoterun" command will wait for build result by default and form return code appropriate to status of build that suppose
-	emulate Delayed Commit using third party vcs tools. See "help remoterun" for all switches and arguments.  
+	The "run" command will wait for build result by default and form return code appropriate to status of build that suppose
+	emulate Delayed Commit using third party vcs tools. See "help run" for all switches and arguments.  
 	 
 	        
 	
