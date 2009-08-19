@@ -7,6 +7,7 @@ import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.TreeSet;
 
 import javax.naming.directory.InvalidAttributesException;
 
@@ -148,11 +149,12 @@ public class List implements ICommand {
 			}
 		}
 		//sort by name
-		Collections.sort(buffer, new Comparator<BuildTypeData>(){
+		final TreeSet<BuildTypeData> ordered = new TreeSet<BuildTypeData>(new Comparator<BuildTypeData>(){
 			public int compare(BuildTypeData o1, BuildTypeData o2) {
-				return o1.getName().compareTo(o2.getName());
-			}});
-		return buffer;
+			return o1.getName().compareTo(o2.getName());
+		}});
+		ordered.addAll(buffer);
+		return ordered;
 	}
 	
 	/**
@@ -166,12 +168,12 @@ public class List implements ICommand {
 				buffer.add(prj);	
 			}
 		}
-		//sort by name
-		Collections.sort(buffer, new Comparator<ProjectData>(){
+		final TreeSet<ProjectData> ordered = new TreeSet<ProjectData>(new Comparator<ProjectData>(){
 			public int compare(ProjectData o1, ProjectData o2) {
 				return o1.getName().compareTo(o2.getName());
 			}});
-		return buffer;
+		ordered.addAll(buffer);
+		return ordered;
 	}
 
 	private String toString(Collection<ProjectData> configurations){
