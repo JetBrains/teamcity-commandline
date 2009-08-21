@@ -13,6 +13,8 @@ import com.jetbrains.teamcity.EAuthorizationException;
 import com.jetbrains.teamcity.ECommunicationException;
 import com.jetbrains.teamcity.ERemoteError;
 import com.jetbrains.teamcity.Server;
+import com.jetbrains.teamcity.Util;
+import com.jetbrains.teamcity.Util.StringTable;
 import com.jetbrains.teamcity.resources.IShare;
 import com.jetbrains.teamcity.resources.TCAccess;
 import com.jetbrains.teamcity.runtime.IProgressMonitor;
@@ -80,12 +82,11 @@ public class Share implements ICommand {
 					return 0;
 				}});
 			
-			final StringBuffer buffer = new StringBuffer();
-			buffer.append(Messages.getString("Share.shares.list.header")); //$NON-NLS-1$
+			final StringTable table = new Util.StringTable(Messages.getString("Share.shares.list.header")); //$NON-NLS-1$
 			for(final IShare root : roots){
-				buffer.append(MessageFormat.format(Messages.getString("Share.shares.list.pattern"), root.getId(),  root.getLocal(), String.valueOf(root.getRemote()), root.getProperties())); //$NON-NLS-1$
+				table.addRow(MessageFormat.format(Messages.getString("Share.shares.list.pattern"), root.getId(),  root.getLocal(), String.valueOf(root.getRemote()), root.getProperties())); //$NON-NLS-1$
 			}
-			myResultDescription = buffer.toString();
+			myResultDescription = table.toString();
 			return;
 		}
 		myResultDescription = getUsageDescription();

@@ -35,6 +35,9 @@ public abstract class URLFactory {
 			
 		} else if (StarteamUrlFactory.ID.equalsIgnoreCase(vcs)) {
 			return new StarteamUrlFactory(localRoot);
+
+		} else if (GitUrlFactory.ID.equalsIgnoreCase(vcs)) {
+			return new GitUrlFactory(localRoot);
 			
 		}
 		return null;
@@ -124,16 +127,25 @@ public abstract class URLFactory {
 
 		private File myLocalRoot;
 		private String myPort;
+		private String myClientMapping = "//depot";
 
 		public PerforceUrlFactory(IShare localRoot) {
 			myLocalRoot = new File(localRoot.getLocal());
 			myPort = localRoot.getProperties().get("port"); //$NON-NLS-1$
+			final String clientMapping = localRoot.getProperties().get("client-mapping"); //$NON-NLS-1$
+			if(clientMapping != null){
+				final String[] mappings = clientMapping.split(" ");
+				if(mappings != null && mappings.length > 0){
+					myClientMapping = String.valueOf(mappings[0]);
+				}
+			}
+			
 		}
 
 		@Override
 		public String getUrl(File file) throws IOException {
 			final String relativePath = Util.getRelativePath(myLocalRoot, file);
-			final String url = MessageFormat.format("perforce://{0}:////depot/{1}", myPort, relativePath); //$NON-NLS-1$
+			final String url = MessageFormat.format("perforce://{0}://{1}/{2}", myPort, myClientMapping, relativePath); //$NON-NLS-1$
 			return url;
 		}
 
@@ -214,6 +226,33 @@ public abstract class URLFactory {
 
 	}
 	
+	static class GitUrlFactory extends URLFactory {
+		
+		//git://rusps-app01/repo/jgit#master
+		
+		static final String ID = "jetbrains.git"; //$NON-NLS-1$
+		
+		private File myLocalRoot;
+		
+		private String myTfsRootId;
+
+		public GitUrlFactory(IShare localRoot) {
+			myLocalRoot = new File(localRoot.getLocal());
+			
+			final String branch = localRoot.getProperties().get("branch"); //$NON-NLS-1$
+			final String url = localRoot.getProperties().get("url"); //$NON-NLS-1$
+			
+			myTfsRootId = MessageFormat.format("{0}://{1}#{2}", ID, url, branch); //$NON-NLS-1$
+		}
+
+		@Override
+		public String getUrl(File file) throws IOException {
+			final String relativePath = Util.getRelativePath(myLocalRoot, file);
+			final String url = MessageFormat.format("{0}|{1}", myTfsRootId, relativePath); //$NON-NLS-1$
+			return url;
+		}
+
+	}
 	
 
 }
