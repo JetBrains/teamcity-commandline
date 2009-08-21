@@ -217,7 +217,7 @@ public class RemoteRun implements ICommand {
 		
 		monitor.beginTask(Messages.getString("RemoteRun.preparing.patch..step.name")); //$NON-NLS-1$
 		final File patch = createPatch(createPatchFile(serverURL), map);
-		patch.deleteOnExit();
+//		patch.deleteOnExit();
 		monitor.done();
 		
 		monitor.beginTask(Messages.getString("RemoteRun.send.patch.step.name")); //$NON-NLS-1$
