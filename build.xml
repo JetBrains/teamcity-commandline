@@ -36,7 +36,7 @@ public class Build {
     public static final String build = "${build.number}";
 }</echo>
 
-    	<javac destdir="${tmp}/bin" debug="on">
+    	<javac destdir="${tmp}/bin" debug="on" target="1.5">
 	      	<src path="${tool.home}/src"/>
     	</javac>
     <copy todir="${tmp}/bin">
