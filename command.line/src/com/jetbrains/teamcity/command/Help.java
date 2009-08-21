@@ -11,8 +11,6 @@ import com.jetbrains.teamcity.EAuthorizationException;
 import com.jetbrains.teamcity.ECommunicationException;
 import com.jetbrains.teamcity.ERemoteError;
 import com.jetbrains.teamcity.Server;
-import com.jetbrains.teamcity.Util;
-import com.jetbrains.teamcity.Util.StringTable;
 import com.jetbrains.teamcity.runtime.IProgressMonitor;
 
 class Help implements ICommand {
@@ -28,12 +26,12 @@ class Help implements ICommand {
 				Build.major, Build.build));
 		
 		final String commandId = args != null && args.getArguments() != null && args.getArguments().length >0 ? args.getArguments()[0] : "";
-		if (args.getCommandId().equals(ID) && commandId!= null && !commandId.equals(ID)) {//help command used
+		if (args != null && args.getCommandId().equals(ID) && commandId!= null && !commandId.equals(ID)) {//help command used
 			buffer.append(printDescription(commandId));
 			myResultDescription = buffer.toString();
 			return;
 			
-		} if (!args.getCommandId().equals(ID)) { //no help command used
+		} if (args != null && !args.getCommandId().equals(ID)) { //no help command used
 			buffer.append(printDescription(args.getCommandId()));
 			myResultDescription = buffer.toString();
 			return;
