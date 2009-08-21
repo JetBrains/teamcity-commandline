@@ -123,7 +123,7 @@ public class TCAccess {
 	
 	public synchronized IShare share(String localRoot, final VcsRoot remote) throws IllegalArgumentException {
 		try {
-			localRoot = new File(localRoot).getCanonicalPath();
+			localRoot = new File(localRoot).getCanonicalFile().getAbsolutePath();
 			//check exists
 			validate(localRoot);
 			//TODO: extract method
