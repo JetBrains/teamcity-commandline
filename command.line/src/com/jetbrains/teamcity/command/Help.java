@@ -26,12 +26,12 @@ class Help implements ICommand {
 				Build.major, Build.build));
 		
 		final String commandId = args != null && args.getArguments() != null && args.getArguments().length >0 ? args.getArguments()[0] : "";
-		if (args != null && args.getCommandId().equals(ID) && commandId!= null && !commandId.equals(ID)) {//help command used
+		if (args != null && args.getCommandId() != null && args.getCommandId().equals(ID) && commandId!= null && !commandId.equals(ID)) {//help command used
 			buffer.append(printDescription(commandId));
 			myResultDescription = buffer.toString();
 			return;
 			
-		} if (args != null && !args.getCommandId().equals(ID)) { //no help command used
+		} if (args != null && args.getCommandId() != null && !args.getCommandId().equals(ID)) { //no help command used
 			buffer.append(printDescription(args.getCommandId()));
 			myResultDescription = buffer.toString();
 			return;
