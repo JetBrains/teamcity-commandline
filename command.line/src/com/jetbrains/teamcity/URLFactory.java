@@ -136,7 +136,12 @@ public abstract class URLFactory {
 			if(clientMapping != null){
 				final String[] mappings = clientMapping.split(" ");
 				if(mappings != null && mappings.length > 0){
-					myClientMapping = String.valueOf(mappings[0]);
+					String root = String.valueOf(mappings[0]);
+					//truncate tail
+					if (root.length() > 4) {//to be sure
+						root = root.substring(0, root.length() - 4);
+						myClientMapping = root;	
+					}
 				}
 			}
 			
