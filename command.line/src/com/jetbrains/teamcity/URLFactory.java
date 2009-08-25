@@ -84,7 +84,7 @@ public abstract class URLFactory {
 
 		public SVNUrlFactory(IShare localRoot) {
 			myLocalRoot = new File(localRoot.getLocal());
-			//ugly hack: get uuid from local 
+			//FIXME: ugly hack: get uuid from local 
 			final File entries = new File(myLocalRoot.getAbsolutePath() + File.separator + ".svn" + File.separator + "entries"); //$NON-NLS-1$ //$NON-NLS-2$
 			if(entries.exists()){
 				try {
@@ -131,34 +131,42 @@ public abstract class URLFactory {
 		private String myMapping = "//depot";
 
 		public PerforceUrlFactory(IShare localRoot) {
+			
+			myLocalRoot = new File(localRoot.getLocal());
+			myPort = localRoot.getProperties().get("port"); //$NON-NLS-1$
+			
 			//this allows to set url properly for vcsroots that uses "Client" mapping
 			final String depo = System.getProperty(Constants.PERFORCE_DEPO);
 			if(depo != null){
 				myMapping = depo;
-			}
-			
-			myLocalRoot = new File(localRoot.getLocal());
-			myPort = localRoot.getProperties().get("port"); //$NON-NLS-1$
-			final String useClient = localRoot.getProperties().get("use-client");
-			if(!Boolean.TRUE.equals(Boolean.parseBoolean(useClient))){
-				final String clientMapping = localRoot.getProperties().get("client-mapping"); //$NON-NLS-1$
-				if(clientMapping != null){
-					final String[] lines = clientMapping.split("[\n\r]");
-					for(final String line : lines){
-						//check the line is root
-						if(line.toLowerCase().endsWith("//team-city-agent/...")){
-							final String[] mappings = line.split(" ");
-							if(mappings.length > 0){
-								String root = String.valueOf(mappings[0]);
-								//truncate tail
-								if (root.length() > 4) {//to be sure
-									root = root.substring(0, root.length() - 4);
-									myMapping = root;	
+				
+			} else {
+				//nothing set. use cached root's property
+				final String useClient = localRoot.getProperties().get("use-client");
+				if(!Boolean.TRUE.equals(Boolean.parseBoolean(useClient))){
+					final String clientMapping = localRoot.getProperties().get("client-mapping"); //$NON-NLS-1$
+					if(clientMapping != null){
+						final String[] lines = clientMapping.split("[\n\r]");
+						//FIXME: this ugly hack looking for the shortest second part of client mappings and uses that line as root location
+						if (lines.length > 0) {
+							int shortestLen = Integer.MAX_VALUE;
+							String root = null;
+							for (int i = 0; i < lines.length; i++) {
+								final String[] mappings = lines[i].split(" ");
+								if(mappings.length > 0){
+									if(mappings[1].toLowerCase().startsWith("//team-city-agent/") 
+											&& mappings[1].length() < shortestLen ){
+										shortestLen = mappings[1].length();
+										root = mappings[0];
+									}
 								}
+							}
+							if(root != null && root.length() > 4){
+								root = root.substring(0, root.length() - 4);
+								myMapping = root;
 							}
 						}
 					}
-					
 				}
 			}
 		}
