@@ -2,10 +2,9 @@ package com.jetbrains.teamcity.command;
 
 import java.text.MessageFormat;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
-
-import javax.naming.directory.InvalidAttributesException;
 
 import jetbrains.buildServer.vcs.VcsRoot;
 
@@ -31,6 +30,9 @@ public class Share implements ICommand {
 	
 	private static final String VCSROOT_PARAM = Messages.getString("Share.vcsroot.runtime.param"); //$NON-NLS-1$
 	private static final String VCSROOT_PARAM_LONG = Messages.getString("Share.vcsroot.runtime.param.long"); //$NON-NLS-1$
+	
+	private static final String UPDATE_SWITCH = Messages.getString("Share.sync.runtime.param"); //$NON-NLS-1$
+	private static final String UPDATE_SWITCH_LONG = Messages.getString("Share.sync.runtime.param.long"); //$NON-NLS-1$
 
 	private String myResultDescription;
 	
@@ -38,7 +40,7 @@ public class Share implements ICommand {
 		//no op as far "info" available 
 	}
 
-	public void execute(final Server server, Args args, final IProgressMonitor monitor) throws EAuthorizationException, ECommunicationException, ERemoteError, InvalidAttributesException {
+	public void execute(final Server server, Args args, final IProgressMonitor monitor) throws EAuthorizationException, ECommunicationException, ERemoteError {
 		
 		if (args.hasArgument(VCSROOT_PARAM, VCSROOT_PARAM_LONG) && args.hasArgument(LOCAL_PARAM, LOCAL_PARAM_LONG)) {
 			final String localPath = args.getArgument(LOCAL_PARAM, LOCAL_PARAM_LONG);
@@ -88,8 +90,35 @@ public class Share implements ICommand {
 			}
 			myResultDescription = table.toString();
 			return;
+			
+		} else if (args.hasArgument(UPDATE_SWITCH, UPDATE_SWITCH_LONG)){//refresh cached info
+			myResultDescription = update(server);
+			return;
+			
 		}
+		
 		myResultDescription = getUsageDescription();
+	}
+
+	private String update(final Server server) throws ECommunicationException {
+		final Collection<IShare> all = TCAccess.getInstance().roots();
+		if(all.isEmpty()){
+			return Messages.getString("Share.update.nothing.to.update.message"); //$NON-NLS-1$
+		}
+		int updatedCount = 0;
+		int deletedCount = 0;
+		for(final IShare share : all){
+			final Long vcsRootId = share.getRemote();
+			final VcsRoot root = server.getVcsRoot(vcsRootId);
+			if(root == null){
+				TCAccess.getInstance().unshare(share.getId());
+				deletedCount ++;
+			} else {
+				TCAccess.getInstance().update(share, root);
+				updatedCount ++;
+			}
+		}
+		return MessageFormat.format(Messages.getString("Share.update.info.pattern"), updatedCount, deletedCount); //$NON-NLS-1$
 	}
 
 	private IShare share(final String localPath, final VcsRoot root) {
@@ -101,7 +130,8 @@ public class Share implements ICommand {
 	}
 
 	public boolean isConnectionRequired(final Args args) {
-		return args.hasArgument(VCSROOT_PARAM, VCSROOT_PARAM_LONG) && args.hasArgument(LOCAL_PARAM, LOCAL_PARAM_LONG);
+		return (args.hasArgument(VCSROOT_PARAM, VCSROOT_PARAM_LONG) && args.hasArgument(LOCAL_PARAM, LOCAL_PARAM_LONG)) 
+		|| args.hasArgument(UPDATE_SWITCH, UPDATE_SWITCH_LONG);
 	}
 
 	public String getUsageDescription() {
@@ -111,7 +141,9 @@ public class Share implements ICommand {
 				LOCAL_PARAM, LOCAL_PARAM_LONG,
 				INFO_PARAM, INFO_PARAM_LONG,
 				VCSROOT_PARAM, VCSROOT_PARAM_LONG,
-				LOCAL_PARAM, LOCAL_PARAM_LONG,INFO_PARAM, INFO_PARAM_LONG);
+				LOCAL_PARAM, LOCAL_PARAM_LONG,INFO_PARAM, 
+				INFO_PARAM_LONG,
+				UPDATE_SWITCH, UPDATE_SWITCH_LONG);
 	}
 	
 	public String getCommandDescription() {

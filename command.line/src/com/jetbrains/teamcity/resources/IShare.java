@@ -14,4 +14,5 @@ public interface IShare {
 	public String getVcs();
 	
 	public Map<String, String> getProperties();
+
 }

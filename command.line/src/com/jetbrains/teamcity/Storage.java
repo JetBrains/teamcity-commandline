@@ -73,8 +73,12 @@ public class Storage {
 	public synchronized <T extends Serializable> void put(final IKey<T> key, T value, final boolean flush) {
 		myStorage.put(key.getKey(), value);
 		if(flush){
-			ourStorageFS.save(myStorage);
+			flush();
 		}
+	}
+	
+	public synchronized void flush() {
+		ourStorageFS.save(myStorage);
 	}
 
 	public synchronized <T extends Serializable> void put(final IKey<T> key, T value) {

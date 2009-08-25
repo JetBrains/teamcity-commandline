@@ -155,6 +155,23 @@ public class TCAccess {
 		}
 	}
 	
+	public void update(IShare share, VcsRoot root) {
+		if(share instanceof TeamCityRoot){
+			((TeamCityRoot)share).update(root.getProperties());
+			Storage.getInstance().put(SHARES_KEY, myShares);
+		} else {
+			throw new IllegalArgumentException("Could not update Share {0}: read-only"); //$NON-NLS-1$
+		}
+	}
+	
+	
+
+	@Override
+	protected void finalize() throws Throwable {
+		Storage.getInstance().flush();
+		LOGGER.debug("Flush enforced");
+		super.finalize();
+	}
 
 	public synchronized void unshare(final String id) throws IllegalArgumentException {
 		for(IShare root : roots()){
@@ -186,7 +203,6 @@ public class TCAccess {
 			throw new IllegalArgumentException(MessageFormat.format("Only folder can be shared: {0}", localRoot)); //$NON-NLS-1$
 		}
 	}
-	
 	
 	static class TeamCityRoot implements IShare, Serializable {
 		
@@ -247,6 +263,10 @@ public class TCAccess {
 
 		public String getVcs() {
 			return myVcs;
+		}
+
+		public void update(Map<String, String> properties) {
+			myProperies = properties;
 		}
 		
 	}
@@ -334,6 +354,6 @@ public class TCAccess {
 	public Collection<ICredential> credentials(){
 		return Collections.<ICredential>unmodifiableCollection(myCredentials); //do not allow modification
 	}
-	
+
 	
 }

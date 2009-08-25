@@ -394,6 +394,11 @@ public class RemoteRun implements ICommand {
 
 			public String getVcs() {
 				return singleRoot.getVcsName();
+			}
+
+			public void update(Map<String, String> properties) {
+				// TODO Auto-generated method stub
+				
 			}};
 	}
 

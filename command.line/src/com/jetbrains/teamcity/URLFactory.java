@@ -117,40 +117,56 @@ public abstract class URLFactory {
 	
 	static class PerforceUrlFactory extends URLFactory {
 		
-		// perforce://1666:////depot/test-perforce-in-workspace/src/test_perforce_in_workspace/handlers/SampleHandler.java
+		// perforce://1666:////TeamServer/BuildServer/test-perforce-in-workspace/src/test_perforce_in_workspace/handlers/SampleHandler.java
 		// perforce://localhost:1666:////depot/test-perforce-in-workspace/src/test_perforce_in_workspace/handlers/SampleHandler.java
 		// perforce://rusps-app.SwiftTeams.local:1666:////depot/src/test_perforce_in/ActivatorRenamed.java
 		// perforce://rusps-app:1666:////depot/src/other/ENotAdded.java
 //		11	null	perforce	{port=rusps-app:1666, client-mapping=//depot/... //team-city-agent/..., p4-exe=p4, user=kdonskov, use-client=false}
+		//TCVCSROOT: //depot/... //team-city-agent/...
 		
 		static final String ID = "perforce";//$NON-NLS-1$
 
 		private File myLocalRoot;
 		private String myPort;
-		private String myClientMapping = "//depot";
+		private String myMapping = "//depot";
 
 		public PerforceUrlFactory(IShare localRoot) {
-			myLocalRoot = new File(localRoot.getLocal());
-			myPort = localRoot.getProperties().get("port"); //$NON-NLS-1$
-			final String clientMapping = localRoot.getProperties().get("client-mapping"); //$NON-NLS-1$
-			if(clientMapping != null){
-				final String[] mappings = clientMapping.split(" ");
-				if(mappings != null && mappings.length > 0){
-					String root = String.valueOf(mappings[0]);
-					//truncate tail
-					if (root.length() > 4) {//to be sure
-						root = root.substring(0, root.length() - 4);
-						myClientMapping = root;	
-					}
-				}
+			//this allows to set url properly for vcsroots that uses "Client" mapping
+			final String depo = System.getProperty(Constants.PERFORCE_DEPO);
+			if(depo != null){
+				myMapping = depo;
 			}
 			
+			myLocalRoot = new File(localRoot.getLocal());
+			myPort = localRoot.getProperties().get("port"); //$NON-NLS-1$
+			final String useClient = localRoot.getProperties().get("use-client");
+			if(!Boolean.TRUE.equals(Boolean.parseBoolean(useClient))){
+				final String clientMapping = localRoot.getProperties().get("client-mapping"); //$NON-NLS-1$
+				if(clientMapping != null){
+					final String[] lines = clientMapping.split("[\n\r]");
+					for(final String line : lines){
+						//check the line is root
+						if(line.toLowerCase().endsWith("//team-city-agent/...")){
+							final String[] mappings = line.split(" ");
+							if(mappings.length > 0){
+								String root = String.valueOf(mappings[0]);
+								//truncate tail
+								if (root.length() > 4) {//to be sure
+									root = root.substring(0, root.length() - 4);
+									myMapping = root;	
+								}
+							}
+						}
+					}
+					
+				}
+			}
 		}
 
 		@Override
 		public String getUrl(File file) throws IOException {
 			final String relativePath = Util.getRelativePath(myLocalRoot, file);
-			final String url = MessageFormat.format("perforce://{0}://{1}/{2}", myPort, myClientMapping, relativePath); //$NON-NLS-1$
+			final String url = MessageFormat.format("perforce://{0}://{1}/{2}", myPort, myMapping, relativePath); //$NON-NLS-1$
 			return url;
 		}
 
