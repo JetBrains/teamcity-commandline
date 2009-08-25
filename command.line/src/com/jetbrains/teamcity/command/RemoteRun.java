@@ -14,18 +14,22 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
 import java.util.Map.Entry;
 
 import javax.naming.directory.InvalidAttributesException;
 
 import jetbrains.buildServer.AddToQueueRequest;
 import jetbrains.buildServer.AddToQueueResult;
+import jetbrains.buildServer.BuildTypeData;
 import jetbrains.buildServer.TeamServerSummaryData;
 import jetbrains.buildServer.UserChangeInfoData;
 import jetbrains.buildServer.UserChangeStatus;
 import jetbrains.buildServer.serverSide.userChanges.PersonalChangeCommitDecision;
 import jetbrains.buildServer.serverSide.userChanges.PersonalChangeDescriptor;
 import jetbrains.buildServer.serverSide.userChanges.PreTestedCommitType;
+import jetbrains.buildServer.vcs.VcsRoot;
 import jetbrains.buildServer.vcs.patches.LowLevelPatchBuilder;
 import jetbrains.buildServer.vcs.patches.LowLevelPatchBuilderImpl;
 import jetbrains.buildServer.vcs.patches.PatchBuilderImpl;
@@ -39,6 +43,7 @@ import org.apache.commons.httpclient.SimpleHttpConnectionManager;
 import org.apache.commons.httpclient.URI;
 import org.apache.commons.httpclient.methods.InputStreamRequestEntity;
 import org.apache.commons.httpclient.methods.PostMethod;
+import org.apache.log4j.Logger;
 
 import com.jetbrains.teamcity.EAuthorizationException;
 import com.jetbrains.teamcity.ECommunicationException;
@@ -52,25 +57,29 @@ import com.jetbrains.teamcity.runtime.IProgressMonitor;
 
 
 public class RemoteRun implements ICommand {
+	
+	private static Logger LOGGER = Logger.getLogger(RemoteRun.class) ;	
 
-	private static final int SLEEP_INTERVAL = 1000 * 10;
-	private static final int DEFAULT_TIMEOUT = 1000 * 60 * 60;
+	static final int SLEEP_INTERVAL = 1000 * 10;
+	static final int DEFAULT_TIMEOUT = 1000 * 60 * 60;
 
-	private static final String ID = Messages.getString("RemoteRun.command.id"); //$NON-NLS-1$
+	static final String ID = Messages.getString("RemoteRun.command.id"); //$NON-NLS-1$
 	
-	private static final String CONFIGURATION_PARAM = Messages.getString("RemoteRun.config.runtime.param"); //$NON-NLS-1$
-	private static final String CONFIGURATION_PARAM_LONG = Messages.getString("RemoteRun.config.runtime.param.long"); //$NON-NLS-1$
+	static final String CONFIGURATION_PARAM = Messages.getString("RemoteRun.config.runtime.param"); //$NON-NLS-1$
+	static final String CONFIGURATION_PARAM_LONG = Messages.getString("RemoteRun.config.runtime.param.long"); //$NON-NLS-1$
 	
-	private static final String MESSAGE_PARAM = Messages.getString("RemoteRun.message.runtime.param"); //$NON-NLS-1$
-	private static final String MESSAGE_PARAM_LONG = Messages.getString("RemoteRun.message.runtime.param.long"); //$NON-NLS-1$
+	static final String MESSAGE_PARAM = Messages.getString("RemoteRun.message.runtime.param"); //$NON-NLS-1$
+	static final String MESSAGE_PARAM_LONG = Messages.getString("RemoteRun.message.runtime.param.long"); //$NON-NLS-1$
 	
-	private static final String TIMEOUT_PARAM = Messages.getString("RemoteRun.timeout.runtime.param"); //$NON-NLS-1$
-	private static final String TIMEOUT_PARAM_LONG = Messages.getString("RemoteRun.timeout.runtime.param.long"); //$NON-NLS-1$
+	static final String TIMEOUT_PARAM = Messages.getString("RemoteRun.timeout.runtime.param"); //$NON-NLS-1$
+	static final String TIMEOUT_PARAM_LONG = Messages.getString("RemoteRun.timeout.runtime.param.long"); //$NON-NLS-1$
 	
-	private static final String NO_WAIT_SWITCH = Messages.getString("RemoteRun.nowait.runtime.param"); //$NON-NLS-1$
-	private static final String NO_WAIT_SWITCH_LONG = Messages.getString("RemoteRun.nowait.runtime.param.long"); //$NON-NLS-1$
+	static final String NO_WAIT_SWITCH = Messages.getString("RemoteRun.nowait.runtime.param"); //$NON-NLS-1$
+	static final String NO_WAIT_SWITCH_LONG = Messages.getString("RemoteRun.nowait.runtime.param.long"); //$NON-NLS-1$
 	
-	private static final String PATCHES_FOLDER = System.getProperty("java.io.tmpdir"); //$NON-NLS-1$
+	static final String NO_USE_SHARES_SWITCH_LONG = Messages.getString("RemoteRun.noshares.runtime.param.long"); //$NON-NLS-1$
+	
+	static final String PATCHES_FOLDER = System.getProperty("java.io.tmpdir"); //$NON-NLS-1$
 	
 	private String myConfigurationId;
 	private Collection<File> myFiles;
@@ -97,11 +106,11 @@ public class RemoteRun implements ICommand {
 		} else {
 			myTimeout = DEFAULT_TIMEOUT;
 		}
-		//lets go...
+		//collect files
 		myFiles = getFiles(args, monitor);
-		myRootMap = getRootMap(myFiles, monitor);
-
-		//start RR
+		//associate files to shares(vcsroots)
+		myRootMap = getRootMap(server, myConfigurationId, myFiles, args.hasArgument(NO_USE_SHARES_SWITCH_LONG), monitor);
+		//fire RR
 		final long chaneListId = fireRemoteRun(myRootMap, monitor);
 		//process result
 		if(isNoWait){
@@ -193,7 +202,7 @@ public class RemoteRun implements ICommand {
 		final int currentUser = myServer.getCurrentUser();
 		try {
 			//prepare change list & patch for remote run
-			final long changeId = createChangeList(myServer.getURL(), currentUser, myConfigurationId, myRootMap, monitor);
+			final long changeId = createChangeList(myServer.getURL(), currentUser, myRootMap, monitor);
 			//schedule for execution and process status
 			final ArrayList<AddToQueueRequest> batch = new ArrayList<AddToQueueRequest>();
 			final AddToQueueRequest request = new AddToQueueRequest(myConfigurationId, changeId);
@@ -212,12 +221,12 @@ public class RemoteRun implements ICommand {
 	}
 	
 	
-	private long createChangeList(String serverURL, int userId, String configuration, HashMap<IShare,ArrayList<File>> map, 
+	private long createChangeList(String serverURL, int userId, final HashMap<IShare,ArrayList<File>> map, 
 			final IProgressMonitor monitor) throws IOException, ECommunicationException {
 		
 		monitor.beginTask(Messages.getString("RemoteRun.preparing.patch..step.name")); //$NON-NLS-1$
 		final File patch = createPatch(createPatchFile(serverURL), map);
-//		patch.deleteOnExit();
+		patch.deleteOnExit();
 		monitor.done();
 		
 		monitor.beginTask(Messages.getString("RemoteRun.send.patch.step.name")); //$NON-NLS-1$
@@ -267,6 +276,7 @@ public class RemoteRun implements ICommand {
 				for(final File file : entry.getValue()){
 					LowLevelPatchBuilder.WriteFileContent content = new PatchBuilderImpl.StreamWriteFileContent(new BufferedInputStream(new FileInputStream(file)), file.length());
 					final String fileUrl = factory.getUrl(file);
+					LOGGER.debug(MessageFormat.format("+ {0}", fileUrl)); //$NON-NLS-1$
 					if(file.exists()){
 						patcher.changeBinary(fileUrl, (int) file.length(), content, false);
 					} else {
@@ -303,35 +313,100 @@ public class RemoteRun implements ICommand {
 		return file;
 	}
 
-	private HashMap<IShare, ArrayList<File>> getRootMap(final Collection<File> files, IProgressMonitor monitor) throws IllegalArgumentException {
-		final TCAccess access = TCAccess.getInstance();
-		if(access.roots().isEmpty()){
-			throw new IllegalArgumentException(Messages.getString("RemoteRun.no.shares.for.remoterun.error.message")); //$NON-NLS-1$
-		}
+	private HashMap<IShare, ArrayList<File>> getRootMap(final Server server, final String cfgId, 
+			final Collection<File> files, final boolean doNotUseShares, IProgressMonitor monitor) throws IllegalArgumentException, ECommunicationException  {
+		
 		final HashMap<IShare, ArrayList<File>> result = new HashMap<IShare, ArrayList<File>>();
-		for(final File file : files){
-			final IShare root = access.getRoot(file.getAbsolutePath());
-			if(root == null){
-				throw new IllegalArgumentException(MessageFormat.format(Messages.getString("RemoteRun.passed.path.is.not.shared.error.message"), file.getAbsolutePath())); //$NON-NLS-1$
+		//if switch is set do not use any sharing info
+		if(doNotUseShares){
+			LOGGER.debug(MessageFormat.format("\"{0}\" detected. Will not use any persisted Sahre's Info for VcsRoot binding", NO_USE_SHARES_SWITCH_LONG)); //$NON-NLS-1$
+			final IShare inplaceShare = createInplaceShare(server, cfgId);
+			result.put(inplaceShare, new ArrayList<File>(files));
+			LOGGER.debug(MessageFormat.format("Virtual Share was created: {0}", inplaceShare)); //$NON-NLS-1$
+			return result;
+		}
+		//use stored sharing info for associate resources to vcsroots
+		try{
+			final TCAccess access = TCAccess.getInstance();
+			if(access.roots().isEmpty()){
+				throw new IllegalArgumentException(Messages.getString("RemoteRun.no.shares.for.remoterun.error.message")); //$NON-NLS-1$
 			}
-			ArrayList<File> rootFiles = result.get(root);
-			if(rootFiles == null){
-				rootFiles = new ArrayList<File>();
-				result.put(root, rootFiles);
+			for(final File file : files){
+				final IShare root = access.getRoot(file.getAbsolutePath());
+				if(root == null){
+					throw new IllegalArgumentException(MessageFormat.format(Messages.getString("RemoteRun.passed.path.is.not.shared.error.message"), file.getAbsolutePath())); //$NON-NLS-1$
+				}
+				LOGGER.debug(MessageFormat.format("Share \"{0}\" found for Remote Run", root)); //$NON-NLS-1$
+				ArrayList<File> rootFiles = result.get(root);
+				if(rootFiles == null){
+					rootFiles = new ArrayList<File>();
+					result.put(root, rootFiles);
+				}
+				rootFiles.add(file);
 			}
-			rootFiles.add(file);
+		} catch (IllegalArgumentException e){
+			//perhaps there is no shares. discard collected and create virtual share by passed configuration
+			LOGGER.debug("Error got during Share association. Will not use any persisted Sahre's Info for VcsRoot binding", e); //$NON-NLS-1$
+			result.clear();
+			final IShare inplaceShare = createInplaceShare(server, cfgId);
+			result.put(inplaceShare, new ArrayList<File>(files));
+			LOGGER.debug(MessageFormat.format("Virtual Share was created: {0}", inplaceShare)); //$NON-NLS-1$
 		}
 		return result;
 	}
 
-	private Collection<File> getFiles(Args args, IProgressMonitor monitor) throws IllegalArgumentException {
+	private IShare createInplaceShare(final Server server, final String cfgId) throws IllegalArgumentException, ECommunicationException {
+		final BuildTypeData configuration = server.getConfiguration(cfgId);
+		if(configuration == null){
+			throw new IllegalArgumentException(MessageFormat.format(Messages.getString("RemoteRun.wrong.configuration.id.error.pattern"), cfgId)); //$NON-NLS-1$
+		}
+		final List<? extends VcsRoot> roots = configuration.getVcsRoots();
+		if(roots.size() != 1){
+			throw new IllegalArgumentException(MessageFormat.format(Messages.getString("RemoteRun.no.default.vcsroot.error.pattern"), cfgId, roots.size())); //$NON-NLS-1$
+		}
+		
+		//construct virtual
+		final VcsRoot singleRoot = roots.get(0);
+		return new IShare(){
+			
+			@Override
+			public String toString() {
+				return MessageFormat.format("local={0}, remote={1}, vcs={2}, properties={3}",  //$NON-NLS-1$
+						getLocal(), getRemote(), getVcs(), getProperties());
+			}
+
+			public String getId() {
+				return String.valueOf(System.currentTimeMillis());
+			}
+
+			public String getLocal() {
+				//let's use current directory
+				return System.getProperty("user.dir"); //$NON-NLS-1$
+			}
+
+			public Map<String, String> getProperties() {
+				return singleRoot.getProperties();
+			}
+
+			public Long getRemote() {
+				return singleRoot.getId();
+			}
+
+			public String getVcs() {
+				return singleRoot.getVcsName();
+			}};
+	}
+
+	Collection<File> getFiles(Args args, IProgressMonitor monitor) throws IllegalArgumentException {
 		monitor.beginTask(Messages.getString("RemoteRun.collect.changes.step.name")); //$NON-NLS-1$
 		final String[] elements = args.getArguments();
 		int i = 0;//skip command
 		while (i < elements.length) {
 			final String currentToken = elements[i].toLowerCase();
 			if(elements[i].startsWith("-")){ //$NON-NLS-1$
-				if(elements[i].toLowerCase().equals(NO_WAIT_SWITCH) || currentToken.equals(NO_WAIT_SWITCH_LONG)){
+				if(elements[i].toLowerCase().equals(NO_WAIT_SWITCH) 
+						|| currentToken.equals(NO_WAIT_SWITCH_LONG) 
+						|| currentToken.equals(NO_USE_SHARES_SWITCH_LONG)){
 					i++; //single token
 				} else {
 					i++; //arg
@@ -344,17 +419,22 @@ public class RemoteRun implements ICommand {
 		}
 		
 		final HashSet<File> result = new HashSet<File>();
-		for (; i < elements.length; i++) {
-			final String path = elements[i];
-			final Collection<File> files;
-			if(!path.startsWith("@")){ //$NON-NLS-1$
-				files = Util.getFiles(path);
-			} else {
-				files = Util.getFiles(new File(path.substring(1, path.length())));
+		if (elements.length > i) {//file's part existing
+			for (; i < elements.length; i++) {
+				final String path = elements[i];
+				final Collection<File> files;
+				if (!path.startsWith("@")) { //$NON-NLS-1$
+					files = Util.getFiles(path);
+				} else {
+					files = Util.getFiles(new File(path.substring(1, path.length())));
+				}
+				// filter out system files
+				result.addAll(Util.SVN_FILES_FILTER.accept(Util.CVS_FILES_FILTER.accept(files)));
 			}
-			//filter out system files 
-			result.addAll(Util.SVN_FILES_FILTER.accept(Util.CVS_FILES_FILTER.accept(files)));
+		} else {//let's use current directory as root if nothing passed
+			result.addAll(Util.SVN_FILES_FILTER.accept(Util.CVS_FILES_FILTER.accept(Util.getFiles(".")))); //$NON-NLS-1$
 		}
+
 		if (result.size() == 0) {
 			throw new IllegalArgumentException(Messages.getString("RemoteRun.no.files.collected.for.remoterun.eror.message")); //$NON-NLS-1$
 		}

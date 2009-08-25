@@ -212,7 +212,8 @@ public class TCAccess {
 		
 		@Override
 		public String toString() {
-			return MessageFormat.format("id={0}, local={1}, remote={2}", getId(), getLocal(), getRemote()); //$NON-NLS-1$
+			return MessageFormat.format("local={0}, remote={1}, vcs={2}, properties={3}",  //$NON-NLS-1$
+					getLocal(), getRemote(), getVcs(), getProperties());
 		}
 
 		@Override

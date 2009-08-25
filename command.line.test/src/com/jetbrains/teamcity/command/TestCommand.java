@@ -39,4 +39,9 @@ public class TestCommand implements ICommand {
 		return null;
 	}
 
+	public void validate(Args args) throws IllegalArgumentException {
+		// TODO Auto-generated method stub
+		
+	}
+
 }

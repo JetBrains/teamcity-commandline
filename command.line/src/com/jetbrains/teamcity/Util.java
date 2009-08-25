@@ -60,19 +60,23 @@ public class Util {
 	}
 
 	public static Collection<File> getFiles(final String path) throws IllegalArgumentException {
-		final File simpleFile = new File(path).getAbsoluteFile();
-		if(simpleFile.exists() && simpleFile.isFile()){
-			return Collections.<File>singletonList(simpleFile);
-		} else if (simpleFile.exists() && simpleFile.isDirectory()){
-			final ArrayList<File> list = new ArrayList<File>();
-			FileUtil.collectMatchedFiles(simpleFile, ASTERISK_PATTERN, list);
-			return list;
-		} else if (hasFilePatterns(path)){
-			final ArrayList<File> list = new ArrayList<File>();
-			FileUtil.collectMatchedFiles(simpleFile, Pattern.compile(path), list);
-			return list;
+		try {
+			final File simpleFile = new File(path).getCanonicalFile().getAbsoluteFile();
+			if(simpleFile.exists() && simpleFile.isFile()){
+				return Collections.<File>singletonList(simpleFile);
+			} else if (simpleFile.exists() && simpleFile.isDirectory()){
+				final ArrayList<File> list = new ArrayList<File>();
+				FileUtil.collectMatchedFiles(simpleFile, ASTERISK_PATTERN, list);
+				return list;
+			} else if (hasFilePatterns(path)){
+				final ArrayList<File> list = new ArrayList<File>();
+				FileUtil.collectMatchedFiles(simpleFile, Pattern.compile(path), list);
+				return list;
+			}
+			return Collections.singletonList(simpleFile);//let it be 
+		} catch (IOException e) {
+			throw new IllegalArgumentException(e);
 		}
-		return Collections.singletonList(simpleFile);//let it be 
 	}
 
 	static boolean hasFilePatterns(String path) {
