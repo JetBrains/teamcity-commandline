@@ -10,6 +10,7 @@ import jetbrains.buildServer.util.FileUtil;
 import org.apache.log4j.Logger;
 
 import com.jetbrains.teamcity.resources.IShare;
+import com.jetbrains.teamcity.vcs.PerforceSupport;
 
 public abstract class URLFactory {
 	
@@ -43,7 +44,7 @@ public abstract class URLFactory {
 		return null;
 	}
 
-	public abstract String getUrl(File file) throws IOException ;
+	public abstract String getUrl(File file) throws IOException, ECommunicationException;
 
 	static class CVSUrlFactory extends URLFactory {
 		
@@ -117,6 +118,7 @@ public abstract class URLFactory {
 	
 	static class PerforceUrlFactory extends URLFactory {
 		
+
 		// perforce://1666:////TeamServer/BuildServer/test-perforce-in-workspace/src/test_perforce_in_workspace/handlers/SampleHandler.java
 		// perforce://localhost:1666:////depot/test-perforce-in-workspace/src/test_perforce_in_workspace/handlers/SampleHandler.java
 		// perforce://rusps-app.SwiftTeams.local:1666:////depot/src/test_perforce_in/ActivatorRenamed.java
@@ -124,58 +126,69 @@ public abstract class URLFactory {
 //		11	null	perforce	{port=rusps-app:1666, client-mapping=//depot/... //team-city-agent/..., p4-exe=p4, user=kdonskov, use-client=false}
 		//TCVCSROOT: //depot/... //team-city-agent/...
 		
-		static final String ID = "perforce";//$NON-NLS-1$
+		private static final String ID = "perforce"; //$NON-NLS-1$
+		
+		private static final String PORT = "port"; //$NON-NLS-1$
 
 		private File myLocalRoot;
-		private String myPort;
-		private String myMapping = "//depot";
+		private String myTeamCityPort;
+		private String myTeamCityMapping;//"//depot";
+		/**
+		 * overriding TeamCity's Server properties
+		 */
+		private String myP4Port;
+		private String myP4Client;
+		private String myP4User;
+		private String myP4Password;
 
 		public PerforceUrlFactory(IShare localRoot) {
 			
-			myLocalRoot = new File(localRoot.getLocal());
-			myPort = localRoot.getProperties().get("port"); //$NON-NLS-1$
+			setupOverridingProperties();
 			
-			//this allows to set url properly for vcsroots that uses "Client" mapping
-			final String depo = System.getProperty(Constants.PERFORCE_DEPO);
-			if(depo != null){
-				myMapping = depo;
+			myLocalRoot = new File(localRoot.getLocal());
+			//check the property was set and override TC values if so.
+			if(myP4Port != null){
+				myTeamCityPort = myP4Port; //$NON-NLS-1$
 				
 			} else {
+				myTeamCityPort = localRoot.getProperties().get(PORT); //$NON-NLS-1$
+			}
+			LOGGER.debug(MessageFormat.format("$P4PORT set to {0}", myTeamCityPort));
+			
+			//check overriding properties and avoid TC properties processing  
+			if(myP4Client == null){
 				//nothing set. use cached root's property
-				final String useClient = localRoot.getProperties().get("use-client");
-				if(!Boolean.TRUE.equals(Boolean.parseBoolean(useClient))){
-					final String clientMapping = localRoot.getProperties().get("client-mapping"); //$NON-NLS-1$
-					if(clientMapping != null){
-						final String[] lines = clientMapping.split("[\n\r]");
-						//FIXME: this ugly hack looking for the shortest second part of client mappings and uses that line as root location
-						if (lines.length > 0) {
-							int shortestLen = Integer.MAX_VALUE;
-							String root = null;
-							for (int i = 0; i < lines.length; i++) {
-								final String[] mappings = lines[i].split(" ");
-								if(mappings.length > 0){
-									if(mappings[1].toLowerCase().startsWith("//team-city-agent/") 
-											&& mappings[1].length() < shortestLen ){
-										shortestLen = mappings[1].length();
-										root = mappings[0];
-									}
-								}
-							}
-							if(root != null && root.length() > 4){
-								root = root.substring(0, root.length() - 4);
-								myMapping = root;
-							}
-						}
-					}
+				final String uniqueRoot = PerforceSupport.findPerforceRoot(localRoot.getProperties());
+				if(uniqueRoot != null){
+					myTeamCityMapping = uniqueRoot;
+					LOGGER.debug(MessageFormat.format("Root mapping set to {0}", myTeamCityMapping));
 				}
+			} else {
+				LOGGER.debug(MessageFormat.format("$P4CLIENT set to {0}", myP4Client));
 			}
 		}
 
+		private void setupOverridingProperties() {
+			myP4Port = System.getProperty(Constants.PERFORCE_P4PORT);
+			myP4Client = System.getProperty(Constants.PERFORCE_P4CLIENT);
+			myP4User = System.getProperty(Constants.PERFORCE_P4USER);
+			myP4Password = System.getProperty(Constants.PERFORCE_P4PASSWORD);
+		}
+
 		@Override
-		public String getUrl(File file) throws IOException {
-			final String relativePath = Util.getRelativePath(myLocalRoot, file);
-			final String url = MessageFormat.format("perforce://{0}://{1}/{2}", myPort, myMapping, relativePath); //$NON-NLS-1$
-			return url;
+		public String getUrl(File file) throws IOException, ECommunicationException {
+			if(myTeamCityMapping != null){
+				final String relativePath = Util.getRelativePath(myLocalRoot, file);
+				final String url = MessageFormat.format("perforce://{0}://{1}/{2}", myTeamCityPort, myTeamCityMapping, relativePath); //$NON-NLS-1$
+				return url;
+			} else {
+				final String path = PerforceSupport.getRepositoryPath(myTeamCityPort, myP4Client, myP4User, myP4Password, file);
+				if(path != null){
+					final String url = MessageFormat.format("perforce://{0}://{1}", myTeamCityPort, path); //$NON-NLS-1$
+					return url;
+				}
+			}
+			return null;
 		}
 
 	}
