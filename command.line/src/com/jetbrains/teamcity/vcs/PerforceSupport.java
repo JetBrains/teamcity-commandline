@@ -16,7 +16,9 @@ public class PerforceSupport {
 	private static final String SPACE = "\\s+"; //$NON-NLS-1$
 	private static final String SLASH = "/"; //$NON-NLS-1$
 	
-	private static final String TEAM_CITY_AGENT = "//team-city-agent/"; //$NON-NLS-1$
+	static final String TEAM_CITY_AGENT = "//team-city-agent/"; //$NON-NLS-1$
+	static final String TEAM_CITY_AGENT_ROOT = "//team-city-agent/..."; //$NON-NLS-1$
+	
 	private static final String USE_CLIENT = "use-client"; //$NON-NLS-1$
 	private static final String CLIENT_MAPPING = "client-mapping"; //$NON-NLS-1$
 
@@ -37,7 +39,7 @@ public class PerforceSupport {
 	/**
 	 * looking for unique string line contains "//team-city-agent/" token
 	 */
-	private static String findPerforceRoot(final String clientMapping) {
+	static String findPerforceRoot(final String clientMapping) {
 		try{
 			final String[] lines = clientMapping.split(NEWLINE_PATTERN);
 			if(lines.length == 1){
@@ -48,11 +50,15 @@ public class PerforceSupport {
 				String root = null;
 				for(String line : lines){
 					final String[] columns = line.split(SPACE);
-					if (columns.length > 1 && columns[1].toLowerCase().startsWith(TEAM_CITY_AGENT)) {
-						if(root == null){
-							root = columns[1].trim();
-						} else {
-							return null; //there are any entries for mapping 
+					if (columns.length > 1) {
+						if(columns[1].trim().equalsIgnoreCase(TEAM_CITY_AGENT_ROOT)){
+							return columns[0].trim().substring(0, columns[0].lastIndexOf(SLASH));
+						} else if (columns[1].toLowerCase().startsWith(TEAM_CITY_AGENT)){
+							if(root == null){
+								root = columns[0].trim();
+							} else {
+								return null; //there are any entries for mapping 
+							}
 						}
 					}
 				}
@@ -92,6 +98,5 @@ public class PerforceSupport {
 		}
 		return null;
 	}
-	
 
 }
