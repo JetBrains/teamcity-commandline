@@ -44,13 +44,13 @@ public class Share implements ICommand {
 
 	public void execute(final Server server, Args args, final IProgressMonitor monitor) throws EAuthorizationException, ECommunicationException, ERemoteError {
 		
-		if (args.hasArgument(VCSROOT_PARAM, VCSROOT_PARAM_LONG) && args.hasArgument(LOCAL_PARAM, LOCAL_PARAM_LONG)) {
+		if (args.hasArgument(VCSROOT_PARAM, VCSROOT_PARAM_LONG)) {
 			final String localPath;
 			//check exists and use current if omit
 			if(args.hasArgument(LOCAL_PARAM, LOCAL_PARAM_LONG)){
 				localPath = args.getArgument(LOCAL_PARAM, LOCAL_PARAM_LONG);
 			} else {
-				localPath = new File(".").getAbsolutePath();
+				localPath = new File(".").getAbsolutePath(); //$NON-NLS-1$
 			}
 			final String vcsRootId = args.getArgument(VCSROOT_PARAM, VCSROOT_PARAM_LONG);
 			if(vcsRootId != null){
@@ -125,7 +125,7 @@ public class Share implements ICommand {
 					// wait for number input
 					while (true) {
 						try{
-							final String selection = Util.readConsoleInput();
+							final String selection = Util.readConsoleInput(Messages.getString("Share.defauilt.mapping.prompt")); //$NON-NLS-1$
 							int choise = Integer.parseInt(selection);
 							if (choise > 0 && choise < doNotSetDefaultMappingIndex) {
 								setDefault(share, mappings[choise - 1]);

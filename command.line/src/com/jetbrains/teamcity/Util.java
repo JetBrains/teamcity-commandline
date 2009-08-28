@@ -261,8 +261,6 @@ public class Util {
 			table.addRow("3\tq\tasdsdsdsd");
 			System.out.println(table);
 		}
-		
-		
 	}
 	
 	public static String readConsoleInput(String prompth) {
@@ -270,7 +268,8 @@ public class Util {
 			System.out.print(prompth);
 		}
 		final Scanner scanner = new Scanner(System.in);
-		return scanner.nextLine();
+		String line = scanner.nextLine();
+		return line;
 	}
 	
 	public static String readConsoleInput() {
