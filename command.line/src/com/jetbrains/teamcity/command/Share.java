@@ -1,5 +1,6 @@
 package com.jetbrains.teamcity.command;
 
+import java.io.File;
 import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -44,7 +45,13 @@ public class Share implements ICommand {
 	public void execute(final Server server, Args args, final IProgressMonitor monitor) throws EAuthorizationException, ECommunicationException, ERemoteError {
 		
 		if (args.hasArgument(VCSROOT_PARAM, VCSROOT_PARAM_LONG) && args.hasArgument(LOCAL_PARAM, LOCAL_PARAM_LONG)) {
-			final String localPath = args.getArgument(LOCAL_PARAM, LOCAL_PARAM_LONG);
+			final String localPath;
+			//check exists and use current if omit
+			if(args.hasArgument(LOCAL_PARAM, LOCAL_PARAM_LONG)){
+				localPath = args.getArgument(LOCAL_PARAM, LOCAL_PARAM_LONG);
+			} else {
+				localPath = new File(".").getAbsolutePath();
+			}
 			final String vcsRootId = args.getArgument(VCSROOT_PARAM, VCSROOT_PARAM_LONG);
 			if(vcsRootId != null){
 				//check format
@@ -94,14 +101,10 @@ public class Share implements ICommand {
 		myResultDescription = getUsageDescription();
 	}
 
-	private String share(final Server server, final String localPath,
-			final long id) throws ECommunicationException {
+	private String share(final Server server, String localPath, final long id) throws ECommunicationException {
 		//try to find root
 		for(final VcsRoot root : server.getVcsRoots()){
 			if (id == root.getId()) {
-				if(localPath == null){
-					throw new IllegalArgumentException(Messages.getString("Share.localpath.not.passed.error.message")); //$NON-NLS-1$
-				}
 				//create new Share
 				final IShare share = TCAccess.getInstance().share(localPath, root);
 				//scan for multiple mappings and prompt to select default one
@@ -173,8 +176,7 @@ public class Share implements ICommand {
 	}
 
 	public boolean isConnectionRequired(final Args args) {
-		return (args.hasArgument(VCSROOT_PARAM, VCSROOT_PARAM_LONG) && args.hasArgument(LOCAL_PARAM, LOCAL_PARAM_LONG)) 
-		|| args.hasArgument(UPDATE_SWITCH, UPDATE_SWITCH_LONG);
+		return (args.hasArgument(VCSROOT_PARAM, VCSROOT_PARAM_LONG)) || args.hasArgument(UPDATE_SWITCH, UPDATE_SWITCH_LONG);
 	}
 
 	public String getUsageDescription() {

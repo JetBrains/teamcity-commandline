@@ -76,7 +76,7 @@ public class Util {
 			}
 			return Collections.singletonList(simpleFile);//let it be 
 		} catch (IOException e) {
-			throw new IllegalArgumentException(e);
+			throw new IllegalArgumentException(MessageFormat.format("Wrong path passed: {0}", path));
 		}
 	}
 
@@ -88,12 +88,12 @@ public class Util {
 		if(!file.exists()){
 			throw new IllegalArgumentException(MessageFormat.format("File is not found \"{0}\"", file.getAbsolutePath())); //$NON-NLS-1$
 		}
+		if(file.length() == 0){
+			throw new IllegalArgumentException(MessageFormat.format("File \"{0}\" is empty", file.getAbsolutePath())); //$NON-NLS-1$	
+		}
 		try {
 			final List<String> content = FileUtil.readFile(file);
 			final HashSet<File> files = new HashSet<File>(content.size());
-			if(files.isEmpty()){
-				throw new IllegalArgumentException(MessageFormat.format("File \"{0}\" is empty", file.getAbsolutePath())); //$NON-NLS-1$	
-			}
 			for(String path : content){
 				if(path.trim().length()>0){
 					files.addAll(getFiles(path));
