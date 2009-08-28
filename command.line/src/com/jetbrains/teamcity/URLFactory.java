@@ -166,14 +166,14 @@ public abstract class URLFactory {
 			} else {
 				myTeamCityPort = localRoot.getProperties().get(PORT); //$NON-NLS-1$
 			}
-			LOGGER.debug(MessageFormat.format("$P4PORT set to {0}", myTeamCityPort));
+			LOGGER.debug(MessageFormat.format("$P4PORT set to {0}", myTeamCityPort)); //$NON-NLS-1$
 			//check Default mapping and use it if exists
 			final String defaultMapping = TCAccess.getInstance().getDefaultMapping(localRoot);
 			//nothing set. use cached root's property
 			final String uniqueRoot = PerforceSupport.findPerforceRoot(localRoot.getProperties(), defaultMapping);
 			if(uniqueRoot != null){
 				myTeamCityMapping = uniqueRoot;
-				LOGGER.debug(MessageFormat.format("Root mapping set to {0}", myTeamCityMapping));
+				LOGGER.debug(MessageFormat.format("Root mapping set to {0}", myTeamCityMapping)); //$NON-NLS-1$
 			}
 		}
 		

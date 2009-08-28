@@ -80,7 +80,7 @@ public class Share implements ICommand {
 				
 				table.addRow(MessageFormat.format(Messages.getString("Share.shares.list.pattern"), //$NON-NLS-1$
 						root.getId(),  root.getLocal(), String.valueOf(root.getRemote()), root.getProperties(), 
-						defaultMapping != null ? defaultMapping : ""));
+						defaultMapping != null ? defaultMapping : "")); //$NON-NLS-1$
 			}
 			myResultDescription = table.toString();
 			return;
@@ -108,16 +108,16 @@ public class Share implements ICommand {
 				final URLFactory factory = URLFactory.getFactory(share);
 				final String[] mappings = factory.getMappings();
 				if (mappings != null && mappings.length > 0) {
-					System.out.println("There were several Clients Mapping found. You can define Default mapping which will be used in ...\nChoose an option:\n");
+					System.out.println(Messages.getString("Share.default.mapping.message")); //$NON-NLS-1$
 					final StringTable table = new Util.StringTable(2);
 					int i = 0;
 					for (; i < mappings.length; i++) {
-						table.addRow(MessageFormat.format("[{0}]\t{1}", String.valueOf(i + 1), mappings[i]));
+						table.addRow(MessageFormat.format(Messages.getString("Share.custom.mapping.row.pattern"), String.valueOf(i + 1), mappings[i])); //$NON-NLS-1$
 					}
-					table.addRow("\t");
+					table.addRow(Messages.getString("Share.custom.mapping.empty.row")); //$NON-NLS-1$
 					int doNotSetDefaultMappingIndex = i + 1;
 					table.addRow(MessageFormat.format(
-							"[{0}]\tDO NOT SET DEFAULT MAPPING", String.valueOf(doNotSetDefaultMappingIndex)));
+							Messages.getString("Share.custom.mapping.do.not.set.default.row.pattern"), String.valueOf(doNotSetDefaultMappingIndex))); //$NON-NLS-1$
 					System.out.println(table.toString());
 					// wait for number input
 					while (true) {
