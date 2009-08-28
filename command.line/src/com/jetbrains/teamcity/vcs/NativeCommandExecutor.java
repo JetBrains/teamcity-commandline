@@ -15,11 +15,14 @@ public class NativeCommandExecutor {
 
 	public static String execute(final String command, final File dir, String ...args) throws IOException {
 		//add shell for pipe e.t.c support
-		String nativeCommand = getNativeShellCommand() + " " + command.trim(); //$NON-NLS-1$
+		String nativePattern = getNativeShellCommand(); //$NON-NLS-1$
+		String commandArguments = "";
 		for(String arg : args){
-			nativeCommand += (" " + arg); //$NON-NLS-1$
+			commandArguments += (" " + arg); //$NON-NLS-1$
 		}
-		LOGGER.debug(MessageFormat.format("execute \"{0}\" in \"{1}\"", nativeCommand, dir)); //$NON-NLS-1$
+		final String nativeCommand = MessageFormat.format(nativePattern, command.trim(), commandArguments.trim());
+		
+		LOGGER.debug(MessageFormat.format("execute \"{0}\" in \"{1}\"", nativeCommand + "\"", dir)); //$NON-NLS-1$
 		try {
 			final Process process = Runtime.getRuntime().exec(nativeCommand, null, dir);
 
@@ -62,9 +65,9 @@ public class NativeCommandExecutor {
 		if (ourNativeShellCommand == null) {
 			final String osname = String.valueOf(System.getProperty("os.name")); //$NON-NLS-1$
 			if (osname.toLowerCase().contains("windows")) { //$NON-NLS-1$
-				ourNativeShellCommand = "cmd /c"; //$NON-NLS-1$
+				ourNativeShellCommand = "cmd /c {0} {1}"; //$NON-NLS-1$
 			} else {
-				ourNativeShellCommand = "sh -c"; //$NON-NLS-1$
+				ourNativeShellCommand = "sh exec {0} {1}"; //$NON-NLS-1$
 			}
 		}
 		return ourNativeShellCommand;
