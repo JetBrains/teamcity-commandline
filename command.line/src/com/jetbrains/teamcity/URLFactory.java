@@ -4,15 +4,19 @@ import java.io.File;
 import java.io.IOException;
 import java.text.MessageFormat;
 import java.util.List;
+import java.util.Map;
 
 import jetbrains.buildServer.util.FileUtil;
 
 import org.apache.log4j.Logger;
 
 import com.jetbrains.teamcity.resources.IShare;
+import com.jetbrains.teamcity.resources.TCAccess;
 import com.jetbrains.teamcity.vcs.PerforceSupport;
 
 public abstract class URLFactory {
+	
+	private static final String[] EMPTY_MAPPING = new String[0];
 	
 	private static Logger LOGGER = Logger.getLogger(URLFactory.class) ;
 
@@ -45,16 +49,16 @@ public abstract class URLFactory {
 	}
 
 	public abstract String getUrl(File file) throws IOException, ECommunicationException;
+	
+	public abstract String[] getMappings();
 
 	static class CVSUrlFactory extends URLFactory {
-		
+
 		static final String ID = "cvs"; //$NON-NLS-1$
 
 		private String myCvsRoot;
 		private String myModule;
 		private File myLocalRoot;
-
-//		private VcsRoot myRoot;
 
 		public CVSUrlFactory(IShare localRoot) {
 			myLocalRoot = new File(localRoot.getLocal());
@@ -69,6 +73,12 @@ public abstract class URLFactory {
 			final String relativePath = Util.getRelativePath(myLocalRoot, file);
 			final String url = MessageFormat.format("cvs://{0}|{1}/{2}", myCvsRoot, myModule, relativePath); //$NON-NLS-1$
 			return url;
+		}
+
+		@Override
+		public String[] getMappings() {
+			//CVS does not support mappings
+			return EMPTY_MAPPING;
 		}
 
 	}
@@ -113,18 +123,17 @@ public abstract class URLFactory {
 			final String url = MessageFormat.format("{0}{1}", myRootId, relativePath); //$NON-NLS-1$
 			return url;
 		}
+		
+		@Override
+		public String[] getMappings() {
+			//SVN does not support mappings
+			return EMPTY_MAPPING;
+		}
+		
 
 	}
 	
 	static class PerforceUrlFactory extends URLFactory {
-		
-
-		// perforce://1666:////TeamServer/BuildServer/test-perforce-in-workspace/src/test_perforce_in_workspace/handlers/SampleHandler.java
-		// perforce://localhost:1666:////depot/test-perforce-in-workspace/src/test_perforce_in_workspace/handlers/SampleHandler.java
-		// perforce://rusps-app.SwiftTeams.local:1666:////depot/src/test_perforce_in/ActivatorRenamed.java
-		// perforce://rusps-app:1666:////depot/src/other/ENotAdded.java
-//		11	null	perforce	{port=rusps-app:1666, client-mapping=//depot/... //team-city-agent/..., p4-exe=p4, user=kdonskov, use-client=false}
-		//TCVCSROOT: //depot/... //team-city-agent/...
 		
 		private static final String ID = "perforce"; //$NON-NLS-1$
 		
@@ -141,7 +150,11 @@ public abstract class URLFactory {
 		private String myP4User;
 		private String myP4Password;
 
+		private IShare myShare;
+
 		public PerforceUrlFactory(IShare localRoot) {
+			
+			myShare = localRoot;
 			
 			setupOverridingProperties();
 			
@@ -154,18 +167,24 @@ public abstract class URLFactory {
 				myTeamCityPort = localRoot.getProperties().get(PORT); //$NON-NLS-1$
 			}
 			LOGGER.debug(MessageFormat.format("$P4PORT set to {0}", myTeamCityPort));
-			
-			//check overriding properties and avoid TC properties processing  
-			if(myP4Client == null){
-				//nothing set. use cached root's property
-				final String uniqueRoot = PerforceSupport.findPerforceRoot(localRoot.getProperties());
-				if(uniqueRoot != null){
-					myTeamCityMapping = uniqueRoot;
-					LOGGER.debug(MessageFormat.format("Root mapping set to {0}", myTeamCityMapping));
-				}
-			} else {
-				LOGGER.debug(MessageFormat.format("$P4CLIENT set to {0}", myP4Client));
+			//check Default mapping and use it if exists
+			final String defaultMapping = TCAccess.getInstance().getDefaultMapping(localRoot);
+			//nothing set. use cached root's property
+			final String uniqueRoot = PerforceSupport.findPerforceRoot(localRoot.getProperties(), defaultMapping);
+			if(uniqueRoot != null){
+				myTeamCityMapping = uniqueRoot;
+				LOGGER.debug(MessageFormat.format("Root mapping set to {0}", myTeamCityMapping));
 			}
+		}
+		
+		@Override
+		public String[] getMappings() {
+			final Map<String, String> properties = myShare.getProperties();
+			final String clientMapping = properties.get(PerforceSupport.CLIENT_MAPPING);
+			if(clientMapping != null && PerforceSupport.findPerforceRoot(properties, null) == null){
+				return clientMapping.split("[\n\r]");
+			}
+			return EMPTY_MAPPING;
 		}
 
 		private void setupOverridingProperties() {
@@ -221,6 +240,11 @@ public abstract class URLFactory {
 			return url;
 		}
 
+		@Override
+		public String[] getMappings() {
+			return EMPTY_MAPPING;
+		}
+
 	}
 	
 	static class StarteamUrlFactory extends URLFactory {
@@ -266,6 +290,11 @@ public abstract class URLFactory {
 			return url;
 		}
 
+		@Override
+		public String[] getMappings() {
+			return EMPTY_MAPPING;
+		}
+		
 	}
 	
 	static class GitUrlFactory extends URLFactory {
@@ -293,6 +322,12 @@ public abstract class URLFactory {
 			final String url = MessageFormat.format("{0}|{1}", myTfsRootId, relativePath); //$NON-NLS-1$
 			return url;
 		}
+		
+		@Override
+		public String[] getMappings() {
+			return EMPTY_MAPPING;
+		}
+		
 
 	}
 	

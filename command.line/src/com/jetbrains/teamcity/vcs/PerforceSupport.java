@@ -19,20 +19,32 @@ public class PerforceSupport {
 	static final String TEAM_CITY_AGENT = "//team-city-agent/"; //$NON-NLS-1$
 	static final String TEAM_CITY_AGENT_ROOT = "//team-city-agent/..."; //$NON-NLS-1$
 	
-	private static final String USE_CLIENT = "use-client"; //$NON-NLS-1$
-	private static final String CLIENT_MAPPING = "client-mapping"; //$NON-NLS-1$
+	public static final String USE_CLIENT = "use-client"; //$NON-NLS-1$
+	public static final String CLIENT_MAPPING = "client-mapping"; //$NON-NLS-1$
 
-	public static String findPerforceRoot(final Map<String, String> properties) {
-		final String useClient = properties.get(USE_CLIENT);
-		if(!Boolean.TRUE.equals(Boolean.parseBoolean(useClient))){
-			final String clientMapping = properties.get(CLIENT_MAPPING); //$NON-NLS-1$
-			if(clientMapping != null && clientMapping.trim().length() != 0){
-				final String uniqueRoot = findPerforceRoot(clientMapping);
-				if(uniqueRoot != null){
-					return uniqueRoot;
+	public static String findPerforceRoot(final Map<String, String> properties, final String defaultMapping) {
+		LOGGER.debug(MessageFormat.format("Seeking for Perforce root in {0}, DefaultMapping: {1}", properties, defaultMapping)); //$NON-NLS-1$
+		if(defaultMapping == null){
+			final String useClient = properties.get(USE_CLIENT);
+			if(!Boolean.TRUE.equals(Boolean.parseBoolean(useClient))){
+				final String clientMapping = properties.get(CLIENT_MAPPING); //$NON-NLS-1$
+				if(clientMapping != null && clientMapping.trim().length() != 0){
+					final String uniqueRoot = findPerforceRoot(clientMapping);
+					if(uniqueRoot != null){
+						LOGGER.debug(MessageFormat.format("Unique root found: {0}", uniqueRoot)); //$NON-NLS-1$					
+						return uniqueRoot;
+					}
 				}
 			}
+		} else {
+			//parse default and convert into prefix
+			final String[] columns = defaultMapping.trim().split(SPACE);
+			if(columns.length>0){
+				final String root = columns[0].trim();
+				return root.substring(0, root.lastIndexOf(SLASH));
+			}
 		}
+		LOGGER.debug("No Unique root found"); //$NON-NLS-1$
 		return null;
 	}
 	
@@ -67,26 +79,27 @@ public class PerforceSupport {
 				}
 			}
 		} catch (Exception e){
-			LOGGER.error(MessageFormat.format("Unexpected error over \"{0}\" ClientMapping parsing", clientMapping), e);
+			LOGGER.error(MessageFormat.format("Unexpected error over \"{0}\" ClientMapping parsing", clientMapping), e); //$NON-NLS-1$
 		}
 		return null;
 	}
 
 	public static String getRepositoryPath(final String port, final String client, final String user, final String password, final File file) throws ECommunicationException {
 		//prepare command
-		final StringBuffer result = new StringBuffer("p4 -p " + port);
+		final StringBuffer result = new StringBuffer("p4 -p " + port); //$NON-NLS-1$
 		if(client != null){
-			result.append(" -c ").append(client);
+			LOGGER.debug(MessageFormat.format("$P4CLIENT set to {0}", client));
+			result.append(" -c ").append(client); //$NON-NLS-1$
 		}
 		if(user != null){
-			result.append(" -u ").append(user);
-			LOGGER.debug(MessageFormat.format("$P4USER set to {0}", user));
+			result.append(" -u ").append(user); //$NON-NLS-1$
+			LOGGER.debug(MessageFormat.format("$P4USER set to {0}", user)); //$NON-NLS-1$
 		}
 		if(password != null){
 			result.append(" -P ").append(password);
-			LOGGER.debug(MessageFormat.format("$P4PASSWD set to {0}", password));
+			LOGGER.debug(MessageFormat.format("$P4PASSWD set to {0}", password)); //$NON-NLS-1$
 		}
-		result.append(" where ");
+		result.append(" where "); //$NON-NLS-1$
 		//run p4
 		try{
 			final String[] where = NativeCommandExecutor.execute(result.toString() + file.getAbsolutePath(), file.getParentFile()).trim().split(SPACE);
@@ -94,7 +107,7 @@ public class PerforceSupport {
 				return where[0];
 			}
 		} catch (Throwable t){
-			throw new ECommunicationException(MessageFormat.format("Check your $P4PORT, $P4CLIENT, $P4USER or $P4PASSWD.\nP4 raw message: {0}", t.getMessage()), t);
+			throw new ECommunicationException(MessageFormat.format("Check your $P4PORT, $P4CLIENT, $P4USER or $P4PASSWD.\nP4 raw message: {0}", t.getMessage()), t); //$NON-NLS-1$
 		}
 		return null;
 	}

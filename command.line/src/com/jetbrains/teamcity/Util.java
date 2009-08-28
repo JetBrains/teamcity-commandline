@@ -10,6 +10,7 @@ import java.util.Collections;
 import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Scanner;
 import java.util.regex.Pattern;
 
 import jetbrains.buildServer.util.FileUtil;
@@ -215,14 +216,16 @@ public class Util {
 			final int[] maxSizes = new int[myNumColumns];
 			for (final String[] row : buffer) {
 				for (int i = 0; i < myNumColumns; i++) {
-					maxSizes[i] = Math.max(row[i].length(), maxSizes[i]);
+					if(row[i] != null){
+						maxSizes[i] = Math.max(row[i].length(), maxSizes[i]);
+					}
 				}
 			}
 			//so, let's format result according to maxSizes...
 			final StringBuffer result = new StringBuffer();
 			for (final String[] row : buffer) {
 				for (int i = 0; i < myNumColumns; i++) {
-					final String column = row[i];
+					final String column = row[i] != null? row[i].replace("\n", "\\") : "";
 					final int maxStringLenght = maxSizes[i];
 					result.append(String.format("%1$-" + ((i != (myNumColumns - 1)) ? (maxStringLenght + 1) : maxStringLenght) + "s", column));
 					
@@ -238,7 +241,7 @@ public class Util {
 		{
 			final StringTable table = new StringTable(new String[] {"Fist Column", "2", "The last"});
 			table.addRow(new String[] {"1", "qwiueiqwiei, qweiuqwieiqiwei", "a"});
-			table.addRow(new String[] {"2", "qweiuqwieiqiwei", "asdsdsdsd, sdsdsdsdsdsdsdsd"});
+			table.addRow(new String[] {"2", "qweiuqwieiqiwei", "asdsdsdsd, sdsdsds\ndsdsdsdsd"});
 			table.addRow(new String[] {"3", "q", "asdsdsdsd"});
 			System.out.println(table);
 		}
@@ -261,5 +264,18 @@ public class Util {
 		
 		
 	}
+	
+	public static String readConsoleInput(String prompth) {
+		if(prompth != null){
+			System.out.print(prompth);
+		}
+		final Scanner scanner = new Scanner(System.in);
+		return scanner.nextLine();
+	}
+	
+	public static String readConsoleInput() {
+		return readConsoleInput(null);
+	}
+	
 	
 }

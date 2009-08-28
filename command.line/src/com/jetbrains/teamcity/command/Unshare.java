@@ -13,21 +13,18 @@ import com.jetbrains.teamcity.runtime.IProgressMonitor;
 
 public class Unshare implements ICommand {
 
-	private static final String SHARE_PARAM = Messages.getString("Unshare.share.runtime.param"); //$NON-NLS-1$
-	private static final String SHARE_PARAM_LONG = Messages.getString("Unshare.share.runtime.param.long"); //$NON-NLS-1$
-	
 	private static final String ID = Messages.getString("Unshare.command.id"); //$NON-NLS-1$
 	
 	private String myResultDescription;
 	
 	public void validate(Args args) throws IllegalArgumentException {
-		if(!args.hasArgument(SHARE_PARAM, SHARE_PARAM_LONG) ){
-			throw new IllegalArgumentException(MessageFormat.format("missing {0}[{1}]", SHARE_PARAM, SHARE_PARAM_LONG));
+		if(args.getLastArgument() == null){
+			throw new IllegalArgumentException("missing <shareId>");
 		}
 	}
 
 	public void execute(final Server server, Args args, final IProgressMonitor monitor) throws EAuthorizationException, ECommunicationException, ERemoteError, InvalidAttributesException {
-		final String shareId = args.getArgument(SHARE_PARAM, SHARE_PARAM_LONG);
+		final String shareId = args.getLastArgument();
 		TCAccess.getInstance().unshare(shareId);
 		myResultDescription = MessageFormat.format(Messages.getString("Unshare.result.ok.pattern"), shareId); //$NON-NLS-1$
 		return;
@@ -42,8 +39,7 @@ public class Unshare implements ICommand {
 	}
 
 	public String getUsageDescription() {
-		return MessageFormat.format(Messages.getString("Unshare.help.usage.pattern"), //$NON-NLS-1$
-				getCommandDescription(),getId(), SHARE_PARAM, SHARE_PARAM_LONG);
+		return MessageFormat.format(Messages.getString("Unshare.help.usage.pattern"), getCommandDescription(), getId());//$NON-NLS-1$
 	}
 	
 	public String getCommandDescription() {

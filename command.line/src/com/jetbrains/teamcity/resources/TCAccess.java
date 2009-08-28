@@ -10,6 +10,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.TreeSet;
@@ -45,6 +46,16 @@ public class TCAccess {
 	
 	};
 	
+	static Storage.IKey<HashMap<String, String>> SHARE_DEFAULT_MAPPING_KEY = new Storage.IKey<HashMap<String, String>>(){
+		
+		private static final long serialVersionUID = 6509717225043443905L;
+
+		public Object getKey() {
+			return TCAccess.class.getName() + ".SHARE_DEFAULT_MAPPING"; //$NON-NLS-1$
+		}
+	
+	};
+	
 	static Storage.IKey<ArrayList<ICredential>> CREDENTIAL_KEY = new Storage.IKey<ArrayList<ICredential>>(){
 		
 		private static final long serialVersionUID = 6509717225043443905L;
@@ -60,6 +71,8 @@ public class TCAccess {
 	private ArrayList<IShare> myShares;
 	
 	private ArrayList<ICredential> myCredentials;
+
+	private HashMap<String, String> myMappings;
 
 	public static synchronized TCAccess getInstance(){
 		if(ourInstance == null){
@@ -82,6 +95,13 @@ public class TCAccess {
 		if(credentials != null){
 			myCredentials.addAll(credentials);
 		}
+		//default mappings
+		final HashMap<String, String> mappings = Storage.getInstance().get(SHARE_DEFAULT_MAPPING_KEY);
+		myMappings = new HashMap<String, String>();
+		if(mappings != null){
+			myMappings.putAll(mappings);
+		}
+		
 	}
 	
 	public Collection<IShare> roots(){
@@ -132,7 +152,8 @@ public class TCAccess {
 			while(iterator.hasNext()){
 				final IShare share = iterator.next();
 				if(share.getLocal().equals(localRoot)){
-					iterator.remove();
+					unshare(share.getId());
+					break;
 				}
 			}
 			//generate new share id
@@ -163,8 +184,6 @@ public class TCAccess {
 			throw new IllegalArgumentException("Could not update Share {0}: read-only"); //$NON-NLS-1$
 		}
 	}
-	
-	
 
 	@Override
 	protected void finalize() throws Throwable {
@@ -179,6 +198,7 @@ public class TCAccess {
 				myShares.remove(root);
 				Storage.getInstance().put(SHARES_KEY, myShares);
 				LOGGER.debug(MessageFormat.format("Share \"{0}\" succesfully removed", id)); //$NON-NLS-1$
+				removeDefaultMapping(root);
 				return;
 			}
 		}
@@ -188,7 +208,9 @@ public class TCAccess {
 	synchronized void clear(){
 		myShares.clear();
 		myCredentials.clear();
+		myMappings.clear();
 		Storage.getInstance().put(SHARES_KEY, myShares, false);
+		Storage.getInstance().put(SHARE_DEFAULT_MAPPING_KEY, myMappings, false);
 		Storage.getInstance().put(CREDENTIAL_KEY, new ArrayList<ICredential>(myCredentials), true);
 	}
 	
@@ -355,5 +377,23 @@ public class TCAccess {
 		return Collections.<ICredential>unmodifiableCollection(myCredentials); //do not allow modification
 	}
 
+	public void setDefaultMapping(final IShare share, String mapping) {
+		myMappings.put(share.getId(), mapping);
+		Storage.getInstance().put(SHARE_DEFAULT_MAPPING_KEY, myMappings);		
+	}
+
+	public String getDefaultMapping(final IShare share) {
+		return myMappings.get(share.getId());
+	}
+
+	public void removeDefaultMapping(final IShare share) {
+		final String shareId = share.getId();
+		if(myMappings.containsKey(shareId)){
+			LOGGER.debug(MessageFormat.format("Default mapping \"{0}\" succesfully removed", myMappings.get(shareId))); //$NON-NLS-1$
+			myMappings.remove(shareId);
+			Storage.getInstance().put(SHARE_DEFAULT_MAPPING_KEY, myMappings);
+		}
+	}
+	
 	
 }

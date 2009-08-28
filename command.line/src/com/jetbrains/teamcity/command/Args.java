@@ -33,5 +33,12 @@ public class Args {
 	public String[] getArguments(){
 		return myArgs;
 	}
+
+	public String getLastArgument() {
+		if (myArgs != null && myArgs.length > 0) {
+			return myArgs[myArgs.length - 1];
+		}
+		return null;
+	}
 	
 }

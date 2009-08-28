@@ -12,6 +12,7 @@ import com.jetbrains.teamcity.EAuthorizationException;
 import com.jetbrains.teamcity.ECommunicationException;
 import com.jetbrains.teamcity.ERemoteError;
 import com.jetbrains.teamcity.Server;
+import com.jetbrains.teamcity.URLFactory;
 import com.jetbrains.teamcity.Util;
 import com.jetbrains.teamcity.Util.StringTable;
 import com.jetbrains.teamcity.resources.IShare;
@@ -53,18 +54,7 @@ public class Share implements ICommand {
 				} catch (NumberFormatException e){
 					throw new IllegalArgumentException(MessageFormat.format(Messages.getString("Share.vcsroot.not.integer.error.message"), vcsRootId), e); //$NON-NLS-1$
 				}
-				//try to find root
-				for(final VcsRoot root : server.getVcsRoots()){
-					if (id == root.getId()) {
-						if(localPath == null){
-							throw new IllegalArgumentException(Messages.getString("Share.localpath.not.passed.error.message")); //$NON-NLS-1$
-						}
-						final String shareId = share(localPath, root).getId();
-						myResultDescription = MessageFormat.format(Messages.getString("Share.result.ok.pattern"), shareId, localPath, vcsRootId); //$NON-NLS-1$
-						return;
-					}
-				}
-				throw new IllegalArgumentException(MessageFormat.format(Messages.getString("Share.vcsroot.not.found.for.sharing.error.message"), vcsRootId)); //$NON-NLS-1$
+				myResultDescription = share(server, localPath, id);
 			}
 			return;
 			
@@ -86,13 +76,17 @@ public class Share implements ICommand {
 			
 			final StringTable table = new Util.StringTable(Messages.getString("Share.shares.list.header")); //$NON-NLS-1$
 			for(final IShare root : roots){
-				table.addRow(MessageFormat.format(Messages.getString("Share.shares.list.pattern"), root.getId(),  root.getLocal(), String.valueOf(root.getRemote()), root.getProperties())); //$NON-NLS-1$
+				final String defaultMapping = TCAccess.getInstance().getDefaultMapping(root);
+				
+				table.addRow(MessageFormat.format(Messages.getString("Share.shares.list.pattern"), //$NON-NLS-1$
+						root.getId(),  root.getLocal(), String.valueOf(root.getRemote()), root.getProperties(), 
+						defaultMapping != null ? defaultMapping : ""));
 			}
 			myResultDescription = table.toString();
 			return;
 			
 		} else if (args.hasArgument(UPDATE_SWITCH, UPDATE_SWITCH_LONG)){//refresh cached info
-			myResultDescription = update(server);
+			myResultDescription = update(server, args.getLastArgument());
 			return;
 			
 		}
@@ -100,7 +94,58 @@ public class Share implements ICommand {
 		myResultDescription = getUsageDescription();
 	}
 
-	private String update(final Server server) throws ECommunicationException {
+	private String share(final Server server, final String localPath,
+			final long id) throws ECommunicationException {
+		//try to find root
+		for(final VcsRoot root : server.getVcsRoots()){
+			if (id == root.getId()) {
+				if(localPath == null){
+					throw new IllegalArgumentException(Messages.getString("Share.localpath.not.passed.error.message")); //$NON-NLS-1$
+				}
+				//create new Share
+				final IShare share = TCAccess.getInstance().share(localPath, root);
+				//scan for multiple mappings and prompt to select default one
+				final URLFactory factory = URLFactory.getFactory(share);
+				final String[] mappings = factory.getMappings();
+				if (mappings != null && mappings.length > 0) {
+					System.out.println("There were several Clients Mapping found. You can define Default mapping which will be used in ...\nChoose an option:\n");
+					final StringTable table = new Util.StringTable(2);
+					int i = 0;
+					for (; i < mappings.length; i++) {
+						table.addRow(MessageFormat.format("[{0}]\t{1}", String.valueOf(i + 1), mappings[i]));
+					}
+					table.addRow("\t");
+					int doNotSetDefaultMappingIndex = i + 1;
+					table.addRow(MessageFormat.format(
+							"[{0}]\tDO NOT SET DEFAULT MAPPING", String.valueOf(doNotSetDefaultMappingIndex)));
+					System.out.println(table.toString());
+					// wait for number input
+					while (true) {
+						try{
+							final String selection = Util.readConsoleInput();
+							int choise = Integer.parseInt(selection);
+							if (choise > 0 && choise < doNotSetDefaultMappingIndex) {
+								setDefault(share, mappings[choise - 1]);
+								break;
+							} else if (choise == doNotSetDefaultMappingIndex) {
+								break;
+							}
+						} catch (Throwable t){
+							//wrong input
+						}
+					}					
+				}
+				return MessageFormat.format(Messages.getString("Share.result.ok.pattern"), share.getId(), localPath, String.valueOf(id)); //$NON-NLS-1$
+			}
+		}
+		throw new IllegalArgumentException(MessageFormat.format(Messages.getString("Share.vcsroot.not.found.for.sharing.error.message"), String.valueOf(id))); //$NON-NLS-1$
+	}
+
+	private void setDefault(final IShare share, final String mapping) {
+		TCAccess.getInstance().setDefaultMapping(share, mapping);
+	}
+
+	private String update(final Server server, String shareId) throws ECommunicationException {
 		final Collection<IShare> all = TCAccess.getInstance().roots();
 		if(all.isEmpty()){
 			return Messages.getString("Share.update.nothing.to.update.message"); //$NON-NLS-1$
@@ -108,21 +153,19 @@ public class Share implements ICommand {
 		int updatedCount = 0;
 		int deletedCount = 0;
 		for(final IShare share : all){
-			final Long vcsRootId = share.getRemote();
-			final VcsRoot root = server.getVcsRoot(vcsRootId);
-			if(root == null){
-				TCAccess.getInstance().unshare(share.getId());
-				deletedCount ++;
-			} else {
-				TCAccess.getInstance().update(share, root);
-				updatedCount ++;
+			if(shareId == null || shareId.equals(share.getId())){
+				final Long vcsRootId = share.getRemote();
+				final VcsRoot root = server.getVcsRoot(vcsRootId);
+				if(root == null){
+					TCAccess.getInstance().unshare(share.getId());
+					deletedCount ++;
+				} else {
+					TCAccess.getInstance().update(share, root);
+					updatedCount ++;
+				}
 			}
 		}
 		return MessageFormat.format(Messages.getString("Share.update.info.pattern"), updatedCount, deletedCount); //$NON-NLS-1$
-	}
-
-	private IShare share(final String localPath, final VcsRoot root) {
-		return TCAccess.getInstance().share(localPath, root);
 	}
 
 	public String getId() {
@@ -154,6 +197,4 @@ public class Share implements ICommand {
 		return myResultDescription;
 	}
 	
-	
-
 }

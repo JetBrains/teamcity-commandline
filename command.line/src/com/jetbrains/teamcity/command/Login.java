@@ -3,7 +3,6 @@ package com.jetbrains.teamcity.command;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.text.MessageFormat;
-import java.util.Scanner;
 
 import javax.naming.directory.InvalidAttributesException;
 
@@ -11,6 +10,7 @@ import com.jetbrains.teamcity.EAuthorizationException;
 import com.jetbrains.teamcity.ECommunicationException;
 import com.jetbrains.teamcity.ERemoteError;
 import com.jetbrains.teamcity.Server;
+import com.jetbrains.teamcity.Util;
 import com.jetbrains.teamcity.resources.TCAccess;
 import com.jetbrains.teamcity.runtime.IProgressMonitor;
 
@@ -52,7 +52,7 @@ public class Login implements ICommand {
 		if (args.hasArgument(CommandRunner.PASSWORD_ARG)) {
 			return args.getArgument(CommandRunner.PASSWORD_ARG);
 		} else {
-			return readLine(Messages.getString("Login.password.prompt")); //$NON-NLS-1$
+			return Util.readConsoleInput(Messages.getString("Login.password.prompt")); //$NON-NLS-1$
 		}
 	}
 
@@ -60,14 +60,8 @@ public class Login implements ICommand {
 		if (args.hasArgument(CommandRunner.USER_ARG)) {
 			return args.getArgument(CommandRunner.USER_ARG);
 		} else {
-			return readLine(Messages.getString("Login.username.prompt")); //$NON-NLS-1$
+			return Util.readConsoleInput(Messages.getString("Login.username.prompt")); //$NON-NLS-1$
 		}
-	}
-
-	private String readLine(String prompth) {
-		System.out.print(prompth);
-		final Scanner scanner = new Scanner(System.in);
-		return scanner.nextLine();
 	}
 
 	public String getCommandDescription() {
