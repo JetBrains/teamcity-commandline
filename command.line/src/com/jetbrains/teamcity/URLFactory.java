@@ -47,6 +47,14 @@ public abstract class URLFactory {
 		}
 		return null;
 	}
+	
+	public static URLFactory getFactory(final File local) {
+		if(SVNUrlFactory.accept(local)){
+			return new SVNUrlFactory(local);
+		}
+		return null;
+	}
+	
 
 	public abstract String getUrl(File file) throws IOException, ECommunicationException;
 	
@@ -88,15 +96,19 @@ public abstract class URLFactory {
 		
 		// svn://5c05b1c6-6b6d-794d-98af-4f7900fed0f9|trunk/tc-test-rusps-app-svn/src/all/New.java
 		
+		static final String SVN_FOLDER = ".svn";
+		static final String ENTRIES_FILE = "entries";
+
 		static final String ID = "svn"; //$NON-NLS-1$
 
 		private File myLocalRoot;
 		private String myRootId;
 
-		public SVNUrlFactory(IShare localRoot) {
+		SVNUrlFactory(IShare localRoot) {
 			myLocalRoot = new File(localRoot.getLocal());
 			//FIXME: ugly hack: get uuid from local 
-			final File entries = new File(myLocalRoot.getAbsolutePath() + File.separator + ".svn" + File.separator + "entries"); //$NON-NLS-1$ //$NON-NLS-2$
+			final String rootPath = myLocalRoot.getAbsolutePath();
+			final File entries = getEntriesFile(rootPath); //$NON-NLS-1$ //$NON-NLS-2$
 			if(entries.exists()){
 				try {
 					final List<String> entriesContent = FileUtil.readFile(entries);
@@ -115,6 +127,29 @@ public abstract class URLFactory {
 					LOGGER.error(e.getMessage(), e);
 				}
 			}
+		}
+
+		SVNUrlFactory(File local) {
+			// TODO Auto-generated constructor stub
+		}
+
+		static File getEntriesFile(String path) {
+			if(path == null){
+				return null;
+			}
+			final File entries = new File(path + File.separator + SVN_FOLDER + File.separator + ENTRIES_FILE);
+			if(entries.exists()){
+				return entries;
+			}
+			//see up to hierarchy to find in parent folder
+			return getEntriesFile(new File(path).getParent());
+		}
+
+		static boolean accept(final File local) {
+			if(local != null && local.getParent() != null && getEntriesFile(local.getParent())!=null){
+				return true;
+			}
+			return false;
 		}
 
 		@Override
