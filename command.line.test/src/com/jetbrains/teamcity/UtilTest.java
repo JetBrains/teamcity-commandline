@@ -77,7 +77,7 @@ public class UtilTest {
 		File child = new File(roots[0], "1/1/1.java");
 		System.err.println("root=" + root);
 		System.err.println("child=" + child + " isAbsolute=" + child.isAbsolute());
-		assertEquals("1/1.javaa", Util.getRelativePath(root, child));
+		assertEquals("1/1.java", Util.getRelativePath(root, child));
 		
 		//extra slash
 		root =  new File(roots[0], "1/");
