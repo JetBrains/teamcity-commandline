@@ -21,6 +21,7 @@ import jetbrains.buildServer.vcs.VcsRoot;
 import org.apache.log4j.Logger;
 
 import com.jetbrains.teamcity.Storage;
+import com.jetbrains.teamcity.Util;
 
 public class TCAccess {
 	
@@ -110,24 +111,24 @@ public class TCAccess {
 	
 	public IShare getRoot(String forPath) throws IllegalArgumentException {
 		try {
-			forPath = new File(forPath.trim()).getCanonicalPath();
+			forPath = Util.toPortableString(new File(forPath.trim()).getCanonicalPath());
 			//make sure the deepest candidate will the last
 			final TreeSet<IShare> rootCandidate = new TreeSet<IShare>(new Comparator<IShare>(){
 				
 				public int compare(IShare o1, IShare o2) {
-					return o1.getLocal().toLowerCase().compareTo(o2.getLocal().toLowerCase());
+					return Util.toPortableString(o1.getLocal().toLowerCase()).compareTo(Util.toPortableString(o2.getLocal().toLowerCase()));
 				}});
 			//scan all to get all hierarchial roots
 			for(final IShare root : myShares){
-				final String existsRootPath = root.getLocal();
-				String parentPath = forPath.toLowerCase();
+				final String existsRootPath = Util.toPortableString(root.getLocal());
+				String parentPath = Util.toPortableString(forPath.toLowerCase().trim());
 				while(parentPath != null){
 					if(parentPath.equalsIgnoreCase(existsRootPath)){
 						rootCandidate.add(root);
 					}
 					parentPath = new File(parentPath).getParent();
 					if(parentPath!= null){
-						parentPath = parentPath.toLowerCase();
+						parentPath = Util.toPortableString(parentPath.toLowerCase());
 					}
 				}
 			}

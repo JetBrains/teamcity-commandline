@@ -71,22 +71,24 @@ public class UtilTest {
 			//true way
 		}
 		
-		File root =  new File("c:\\1");
-		File child = new File("c:\\1\\1\\1.java");
+		final File[] roots = File.listRoots();
+		
+		File root =  new File(roots[0], "1");
+		File child = new File(roots[0], "1/1/1.java");
 		assertEquals("1/1.java", Util.getRelativePath(root, child));
 		
 		//extra slash
-		root =  new File("c:\\1\\");
+		root =  new File(roots[0], "1/");
 		assertEquals("1/1.java", Util.getRelativePath(root, child));
 		
 		//path is not absolute
-		root =  new File("c:\\1");
-		child = new File("1\\1\\1.java");
+		root =  new File(roots[0], "1");
+		child = new File("1/1/1.java");
 		assertEquals("1/1/1.java", Util.getRelativePath(root, child));
 		
 		//path is not absolute
-		root =  new File("c:\\1");
-		child = new File("..\\1\\1.java");
+		root =  new File(roots[0], "1");
+		child = new File("../1/1.java");
 		assertEquals("../1/1.java", Util.getRelativePath(root, child));
 		
 	}
@@ -109,6 +111,17 @@ public class UtilTest {
 		final String pattern = MessageFormat.format("{0}{1}{2}", "rootTestFolder", File.separator, "**.java");
 		final Collection<File> files = Util.getFiles(pattern);
 		assertEquals(pattern, 2, files.size());
+	}
+	
+	@Test(expected=IllegalArgumentException.class)
+	public void getFiles_file_empty() throws Exception {
+		final File contentFile = new File("@files");
+		contentFile.createNewFile();
+		try{
+			Util.getFiles(contentFile);
+		} finally {
+			FileUtil.delete(contentFile);
+		}
 	}
 	
 	@Test

@@ -54,9 +54,9 @@ public class Util {
 			throw new IllegalArgumentException(MessageFormat.format("Null is not supported as argument: {0}, {1}", root, to)); //$NON-NLS-1$
 		}
 		if(to.isAbsolute()){
-			return FileUtil.getRelativePath(root, to).replace("\\", "/"); //$NON-NLS-1$ //$NON-NLS-2$
+			return Util.toPortableString(FileUtil.getRelativePath(root, to)); //$NON-NLS-1$ //$NON-NLS-2$
 		} else {
-			return to.getPath().replace("\\", "/"); //$NON-NLS-1$ //$NON-NLS-2$
+			return Util.toPortableString(to.getPath()); //$NON-NLS-1$ //$NON-NLS-2$
 		}
 	}
 
@@ -114,7 +114,7 @@ public class Util {
 		public Collection<File> accept(Collection<File> files) {
 			final HashSet<File> result = new HashSet<File>();
 			for(final File file : files){
-				final String normalPath = file.getPath().toLowerCase().replace("\\", "/"); //$NON-NLS-1$ //$NON-NLS-2$
+				final String normalPath = Util.toPortableString(file.getPath().toLowerCase());
 				if(!normalPath.endsWith("cvs/entries") && !normalPath.endsWith("cvs/repository") && !normalPath.endsWith("cvs/root")){ //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
 					result.add(file);
 				}
@@ -274,6 +274,13 @@ public class Util {
 	
 	public static String readConsoleInput() {
 		return readConsoleInput(null);
+	}
+	
+	public static String toPortableString(final String path){
+		if(path != null){
+			return path.replace("\\", "/");
+		}
+		return null;
 	}
 	
 	
