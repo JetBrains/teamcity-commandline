@@ -54,7 +54,9 @@ public class Util {
 			throw new IllegalArgumentException(MessageFormat.format("Null is not supported as argument: {0}, {1}", root, to)); //$NON-NLS-1$
 		}
 		if(to.isAbsolute()){
-			return Util.toPortableString(FileUtil.getRelativePath(root, to)); //$NON-NLS-1$ //$NON-NLS-2$
+			String relativePath = FileUtil.getRelativePath(root, to);
+			System.err.println(MessageFormat.format("FileUtil.getRelativePath({0}, {1})={2}", root, to, relativePath));
+			return Util.toPortableString(relativePath); //$NON-NLS-1$ //$NON-NLS-2$
 		} else {
 			return Util.toPortableString(to.getPath()); //$NON-NLS-1$ //$NON-NLS-2$
 		}
