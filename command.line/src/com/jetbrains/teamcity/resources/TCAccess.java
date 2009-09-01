@@ -111,7 +111,8 @@ public class TCAccess {
 	
 	public IShare getRoot(String forPath) throws IllegalArgumentException {
 		try {
-			forPath = Util.toPortableString(new File(forPath.trim()).getCanonicalPath());
+			final String absolutePath = new File(Util.toPortableString(forPath.trim())).getCanonicalFile().getAbsolutePath();
+			forPath = Util.toPortableString(absolutePath);
 			//make sure the deepest candidate will the last
 			final TreeSet<IShare> rootCandidate = new TreeSet<IShare>(new Comparator<IShare>(){
 				
@@ -144,7 +145,7 @@ public class TCAccess {
 	
 	public synchronized IShare share(String localRoot, final VcsRoot remote) throws IllegalArgumentException {
 		try {
-			localRoot = new File(localRoot).getCanonicalFile().getAbsolutePath();
+			localRoot = new File(Util.toPortableString(localRoot)).getCanonicalFile().getAbsolutePath();
 			//check exists
 			validate(localRoot);
 			//TODO: extract method
