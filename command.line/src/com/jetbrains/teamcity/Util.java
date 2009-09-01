@@ -58,6 +58,7 @@ public class Util {
 			System.err.println(MessageFormat.format("FileUtil.getRelativePath({0}, {1})={2}", root, to, relativePath));
 			return Util.toPortableString(relativePath); //$NON-NLS-1$ //$NON-NLS-2$
 		} else {
+			System.err.println("to is not absolute");
 			return Util.toPortableString(to.getPath()); //$NON-NLS-1$ //$NON-NLS-2$
 		}
 	}
