@@ -30,48 +30,48 @@ private static File ourInnerSvnEntries;
 	@BeforeClass
 	public static void setup() throws Exception {
 //		//dirs
-//		final File rootFolder = new File("rootTestFolder");
-//		rootFolder.mkdir();
-//		final File firsChild = new File(rootFolder, "java");
-//		firsChild.mkdir();
-//		final File firsSvnChild = new File(rootFolder, URLFactory.SVNUrlFactory.SVN_FOLDER);
-//		firsSvnChild.mkdir();
-//		ourRootSvnEntries = new File(firsSvnChild, URLFactory.SVNUrlFactory.ENTRIES_FILE);
-//		ourRootSvnEntries.createNewFile();
-//		
-//		final File firsFirstChild = new File(firsChild, "resources");
-//		firsFirstChild.mkdir();
-//		final File secondChild = new File(rootFolder, "cpp");
-//		secondChild.mkdir();
-//		final File secondSvnChild = new File(secondChild, URLFactory.SVNUrlFactory.SVN_FOLDER);
-//		secondSvnChild.mkdir();
-//		ourInnerSvnEntries = new File(secondSvnChild, URLFactory.SVNUrlFactory.ENTRIES_FILE);
-//		ourInnerSvnEntries.createNewFile();
-//		
-//		//files
-//		new File(firsChild, "1.java").createNewFile();
-//		new File(firsFirstChild, "2.java").createNewFile();
-//		new File(firsFirstChild, "1.resources").createNewFile();
-//		new File(secondChild, "1.cpp").createNewFile();
+		final File rootFolder = new File("rootTestFolder");
+		rootFolder.mkdir();
+		final File firsChild = new File(rootFolder, "java");
+		firsChild.mkdir();
+		final File firsSvnChild = new File(rootFolder, URLFactory.SVNUrlFactory.SVN_FOLDER);
+		firsSvnChild.mkdir();
+		ourRootSvnEntries = new File(firsSvnChild, URLFactory.SVNUrlFactory.ENTRIES_FILE);
+		ourRootSvnEntries.createNewFile();
+		
+		final File firsFirstChild = new File(firsChild, "resources");
+		firsFirstChild.mkdir();
+		final File secondChild = new File(rootFolder, "cpp");
+		secondChild.mkdir();
+		final File secondSvnChild = new File(secondChild, URLFactory.SVNUrlFactory.SVN_FOLDER);
+		secondSvnChild.mkdir();
+		ourInnerSvnEntries = new File(secondSvnChild, URLFactory.SVNUrlFactory.ENTRIES_FILE);
+		ourInnerSvnEntries.createNewFile();
+		
+		//files
+		new File(firsChild, "1.java").createNewFile();
+		new File(firsFirstChild, "2.java").createNewFile();
+		new File(firsFirstChild, "1.resources").createNewFile();
+		new File(secondChild, "1.cpp").createNewFile();
 	}
 	
 	@AfterClass
 	public static void clean() throws Exception {
-//		FileUtil.delete(new File("rootTestFolder"));
+		FileUtil.delete(new File("rootTestFolder"));
 	}
 	
 	@Test
 	public void SVNUrlFactory_getEntriesFile_controlledFolderTest() throws Exception {
-//		final File entries = URLFactory.SVNUrlFactory.getEntriesFile("rootTestFolder/cpp/1.cpp");
-//		assertNotNull(entries);
-//		assertEquals(entries, ourInnerSvnEntries);
+		final File entries = URLFactory.SVNUrlFactory.getEntriesFile("rootTestFolder/cpp/1.cpp");
+		assertNotNull(entries);
+		assertEquals(entries, ourInnerSvnEntries);
 	}
 	
 	@Test
 	public void SVNUrlFactory_getEntriesFile_newFolderTest() throws Exception {
-//		final File entries = URLFactory.SVNUrlFactory.getEntriesFile("rootTestFolder/java/resources/2.java");
-//		assertNotNull(entries);
-//		assertEquals(entries, ourRootSvnEntries);
+		final File entries = URLFactory.SVNUrlFactory.getEntriesFile("rootTestFolder/java/resources/2.java");
+		assertNotNull(entries);
+		assertEquals(entries, ourRootSvnEntries);
 	}
 	
 	

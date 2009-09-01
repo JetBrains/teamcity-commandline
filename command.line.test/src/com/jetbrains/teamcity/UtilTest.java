@@ -72,24 +72,28 @@ public class UtilTest {
 		}
 		
 		final File[] roots = File.listRoots();
+		File rootFS = null;
+		for(File fs : roots){
+			if(fs.canRead()){
+				rootFS = fs;
+			}
+		}
 		
-		File root =  new File(roots[0], "1");
-		File child = new File(roots[0], "1/1/1.java");
-		System.err.println("root=" + root);
-		System.err.println("child=" + child + " isAbsolute=" + child.isAbsolute());
+		File root =  new File(rootFS, "1");
+		File child = new File(rootFS, "1/1/1.java");
 		assertEquals("1/1.java", Util.getRelativePath(root, child));
 		
 		//extra slash
-		root =  new File(roots[0], "1/");
+		root =  new File(rootFS, "1/");
 		assertEquals("1/1.java", Util.getRelativePath(root, child));
 		
 		//path is not absolute
-		root =  new File(roots[0], "1");
+		root =  new File(rootFS, "1");
 		child = new File("1/1/1.java");
 		assertEquals("1/1/1.java", Util.getRelativePath(root, child));
 		
 		//path is not absolute
-		root =  new File(roots[0], "1");
+		root =  new File(rootFS, "1");
 		child = new File("../1/1.java");
 		assertEquals("../1/1.java", Util.getRelativePath(root, child));
 		
