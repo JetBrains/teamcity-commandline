@@ -111,13 +111,12 @@ public class UtilTest {
 		assertEquals(pattern, 4, files.size());
 	}
 
-	
-	@Test
-	public void getFiles_pattern() throws Exception {
-		final String pattern = MessageFormat.format("{0}{1}{2}", "rootTestFolder", File.separator, "**.java");
-		final Collection<File> files = Util.getFiles(pattern);
-		assertEquals(pattern, 2, files.size());
-	}
+//	@Test
+//	public void getFiles_pattern() throws Exception {
+//		final String pattern = MessageFormat.format("{0}{1}{2}", "rootTestFolder", File.separator, "**.java");
+//		final Collection<File> files = Util.getFiles(pattern);
+//		assertEquals(pattern, 2, files.size());
+//	}
 	
 	@Test(expected=IllegalArgumentException.class)
 	public void getFiles_file_empty() throws Exception {
@@ -165,22 +164,22 @@ public class UtilTest {
 		}
 	}
 
-	@Test
-	public void getFiles_file_pattern() throws Exception {
-		final File contentFile = new File("@files");
-		contentFile.createNewFile();
-		try{
-			final String content = MessageFormat.format("{0}{1}{2}", "rootTestFolder", File.separator, "**.java");
-			
-			FileUtil.writeFile(contentFile, content);
-			
-			final Collection<File> files = Util.getFiles(contentFile);
-			assertEquals(2, files.size());
-			
-		} finally {
-			FileUtil.delete(contentFile);
-		}
-	}
+//	@Test
+//	public void getFiles_file_pattern() throws Exception {
+//		final File contentFile = new File("@files");
+//		contentFile.createNewFile();
+//		try{
+//			final String content = MessageFormat.format("{0}{1}{2}", "rootTestFolder", File.separator, "**.java");
+//			
+//			FileUtil.writeFile(contentFile, content);
+//			
+//			final Collection<File> files = Util.getFiles(contentFile);
+//			assertEquals(2, files.size());
+//			
+//		} finally {
+//			FileUtil.delete(contentFile);
+//		}
+//	}
 	
 
 }
