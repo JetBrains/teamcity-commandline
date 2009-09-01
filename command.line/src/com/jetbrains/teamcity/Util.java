@@ -13,9 +13,13 @@ import java.util.List;
 import java.util.Scanner;
 import java.util.regex.Pattern;
 
+import org.apache.log4j.Logger;
+
 import jetbrains.buildServer.util.FileUtil;
 
 public class Util {
+	
+	private static Logger LOGGER = Logger.getLogger(URLFactory.class) ;
 	
 	public static IFileFilter CVS_FILES_FILTER = new CVSFilter(); 
 	
@@ -49,12 +53,66 @@ public class Util {
 		return false;
 	}
 	
+	private static List<String> getPathList(File f) {
+		List<String> l = new ArrayList<String>();
+		File r;
+		try {
+			r = f.getCanonicalFile();
+			while (r != null) {
+				l.add(r.getName());
+				r = r.getParentFile();
+			}
+		} catch (IOException e) {
+			l = null;
+			LOGGER.error(e.getMessage(), e);
+		}
+		return l;
+	}
+
+	private static String matchPathLists(List<String> r, List<String> f) {
+		int i;
+		int j;
+		String s;
+		// start at the beginning of the lists
+		// iterate while both lists are equal
+		s = "";
+		i = r.size() - 1;
+		j = f.size() - 1;
+
+		// first eliminate common root
+		while ((i >= 0) && (j >= 0) && (r.get(i).equals(f.get(j)))) {
+			i--;
+			j--;
+		}
+
+		// for each remaining level in the home path, add a ..
+		for (; i >= 0; i--) {
+			s += ".." + File.separator;
+		}
+
+		// for each level in the file path, add the path
+		for (; j >= 1; j--) {
+			s += f.get(j) + File.separator;
+		}
+
+		// file name
+		s += f.get(j);
+		return s;
+	}
+
+	public static String getRelativePathImpl(File home,File f){
+		final List<String> homelist = getPathList(home);
+		final List<String> filelist = getPathList(f);
+		final String s = matchPathLists(homelist, filelist);
+		return s;
+	}
+	
 	public static String getRelativePath(final File root, final File to) throws IOException, IllegalArgumentException {
 		if(root == null || to==null){
 			throw new IllegalArgumentException(MessageFormat.format("Null is not supported as argument: {0}, {1}", root, to)); //$NON-NLS-1$
 		}
 		if(to.isAbsolute()){
-			String relativePath = FileUtil.getRelativePath(root, to);
+			String relativePath = getRelativePathImpl(root, to);
 			return Util.toPortableString(relativePath); //$NON-NLS-1$ //$NON-NLS-2$
 		} else {
 			return Util.toPortableString(to.getPath()); //$NON-NLS-1$ //$NON-NLS-2$
