@@ -44,6 +44,11 @@ public class Build {
         <include name="**/?*.properties"/>
       </fileset>
     </copy>
+    <copy todir="${tmp}/scripts">
+      <fileset dir="${tool.home}/scripts">
+        <include name="**/*.*"/>
+      </fileset>
+    </copy>
 
   </target>
 
@@ -60,6 +65,9 @@ public class Build {
 
     <jar destfile="${tmp}/${product.name}.jar" manifest="${tmp}/MANIFEST.MF">
       <fileset dir="${tmp}/bin">
+        <include name="**/**"/>
+      </fileset>
+      <fileset dir="${tmp}/scripts">
         <include name="**/**"/>
       </fileset>
     </jar>
