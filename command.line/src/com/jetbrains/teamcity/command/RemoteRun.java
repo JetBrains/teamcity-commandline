@@ -12,6 +12,7 @@ import java.security.NoSuchAlgorithmException;
 import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -81,9 +82,7 @@ public class RemoteRun implements ICommand {
 	
 	static final String PATCHES_FOLDER = System.getProperty("java.io.tmpdir"); //$NON-NLS-1$
 	
-	private String myConfigurationId;
-	private Collection<File> myFiles;
-	private HashMap<IShare, ArrayList<File>> myRootMap;
+//	private String myConfigurationId;
 	private Server myServer;
 	private String myComments;
 	private boolean isNoWait = false;
@@ -93,7 +92,7 @@ public class RemoteRun implements ICommand {
 	public void execute(final Server server, Args args, final IProgressMonitor monitor) throws EAuthorizationException, ECommunicationException, ERemoteError, InvalidAttributesException {
 		myServer = server;
 		//configuration
-		myConfigurationId = args.getArgument(CONFIGURATION_PARAM, CONFIGURATION_PARAM_LONG);
+		final String cfgId = args.getArgument(CONFIGURATION_PARAM, CONFIGURATION_PARAM_LONG);
 		//comment
 		myComments = args.getArgument(MESSAGE_PARAM, MESSAGE_PARAM_LONG);
 		//wait/no wait for build result
@@ -107,11 +106,13 @@ public class RemoteRun implements ICommand {
 			myTimeout = DEFAULT_TIMEOUT;
 		}
 		//collect files
-		myFiles = getFiles(args, monitor);
+		final Collection<File> files = getFiles(args, monitor);
 		//associate files to shares(vcsroots)
-		myRootMap = getRootMap(server, myConfigurationId, myFiles, args.hasArgument(NO_USE_SHARES_SWITCH_LONG), monitor);
+		final Map<IShare, ArrayList<File>> rootsMap = getRootMap(server, cfgId, files, args.hasArgument(NO_USE_SHARES_SWITCH_LONG), monitor);
+		//collect configurations for running
+		final Collection<String> configurations = getApplicableConfigurations(cfgId, rootsMap, monitor);
 		//fire RR
-		final long chaneListId = fireRemoteRun(myRootMap, monitor);
+		final long chaneListId = fireRemoteRun(configurations, rootsMap, monitor);
 		//process result
 		if(isNoWait){
 			myResultDescription = MessageFormat.format(Messages.getString("RemoteRun.schedule.result.ok.pattern"), String.valueOf(chaneListId)); //$NON-NLS-1$
@@ -123,7 +124,35 @@ public class RemoteRun implements ICommand {
 		return;
 	}
 	
-	private PersonalChangeDescriptor waitForSuccessResult(final long changeListId, final long timeOut, IProgressMonitor monitor) throws ECommunicationException, ERemoteError {
+	Collection<String> getApplicableConfigurations(final String cfgId, final Map<IShare, ArrayList<File>> rootsMap, final IProgressMonitor monitor) throws ECommunicationException {
+		if(cfgId != null){
+			return Collections.singletonList(cfgId);
+		}
+		final HashSet<String> buffer = new HashSet<String>();
+		monitor.beginTask("Collecting configurations for running"); //$NON-NLS-1$
+		final HashSet<String> resources = new HashSet<String>();
+		for(Map.Entry<IShare, ArrayList<File>>  entry : rootsMap.entrySet()){
+			final URLFactory factory = URLFactory.getFactory(entry.getKey());
+			if(factory != null){
+				for(final File file : entry.getValue()){
+					try {
+						final String url = factory.getUrl(file);
+						if(url != null){
+							resources.add(url);			
+						}
+					} catch (IOException e) {
+						throw new ECommunicationException(e);
+					}
+				}
+			}
+			
+		}
+		buffer.addAll(myServer.getApplicableConfigurations(resources));
+		monitor.done(MessageFormat.format(Messages.getString("RemoteRun.collected.configuration.done.pattern"), buffer.size(), buffer)); //$NON-NLS-1$
+		return buffer;
+	}
+
+	PersonalChangeDescriptor waitForSuccessResult(final long changeListId, final long timeOut, IProgressMonitor monitor) throws ECommunicationException, ERemoteError {
 		monitor.beginTask(Messages.getString("RemoteRun.wait.for.build.step.name")); //$NON-NLS-1$
 		final long startTime = System.currentTimeMillis();
 		UserChangeStatus prevCurrentStatus = null;
@@ -198,19 +227,25 @@ public class RemoteRun implements ICommand {
 		return currentStatus;
 	}
 
-	private long fireRemoteRun(final HashMap<IShare, ArrayList<File>> map, final IProgressMonitor monitor) throws ECommunicationException, ERemoteError {
+	long fireRemoteRun(final Collection<String> configurations, final Map<IShare, ArrayList<File>> map, final IProgressMonitor monitor) throws ECommunicationException, ERemoteError {
 		final int currentUser = myServer.getCurrentUser();
 		try {
 			//prepare change list & patch for remote run
-			final long changeId = createChangeList(myServer.getURL(), currentUser, myRootMap, monitor);
+			final long changeId = createChangeList(myServer.getURL(), currentUser, map, monitor);
 			//schedule for execution and process status
 			final ArrayList<AddToQueueRequest> batch = new ArrayList<AddToQueueRequest>();
-			final AddToQueueRequest request = new AddToQueueRequest(myConfigurationId, changeId);
-			batch.add(request);
+			for(final String cfgId : configurations){
+				final AddToQueueRequest request = new AddToQueueRequest(cfgId, changeId);
+				batch.add(request);
+			}
 			monitor.beginTask(Messages.getString("RemoteRun.scheduling.build.step.name")); //$NON-NLS-1$
 			final AddToQueueResult result = myServer.addRemoteRunToQueue(batch, myComments);//TODO: process Result here
 			if(result.hasFailures()){
-				throw new ERemoteError(result.getFailureReason(myConfigurationId));
+				final StringBuffer errors = new StringBuffer();
+				for(final String cfgId : configurations){
+					errors.append(result.getFailureReason(cfgId)).append("\n"); //$NON-NLS-1$
+				}
+				throw new ERemoteError(errors.toString());
 			}
 			monitor.done();
 			return changeId;
@@ -221,7 +256,7 @@ public class RemoteRun implements ICommand {
 	}
 	
 	
-	private long createChangeList(String serverURL, int userId, final HashMap<IShare,ArrayList<File>> map, 
+	long createChangeList(String serverURL, int userId, final Map<IShare, ArrayList<File>> map, 
 			final IProgressMonitor monitor) throws IOException, ECommunicationException {
 		
 		monitor.beginTask(Messages.getString("RemoteRun.preparing.patch..step.name")); //$NON-NLS-1$
@@ -263,8 +298,7 @@ public class RemoteRun implements ICommand {
 		return Long.parseLong(response);
 	}
 
-
-	private File createPatch(File patchFile, final HashMap<IShare, ArrayList<File>> map) throws IOException, ECommunicationException {
+	File createPatch(File patchFile, final Map<IShare, ArrayList<File>> map) throws IOException, ECommunicationException {
 		DataOutputStream os = null;
 		LowLevelPatchBuilderImpl patcher = null;
 		try{
@@ -301,7 +335,7 @@ public class RemoteRun implements ICommand {
 
 	}
 
-	private static File createPatchFile(String url) {
+	static File createPatchFile(String url) {
 		File stateLocation = new File(PATCHES_FOLDER == null ? "." : PATCHES_FOLDER); //$NON-NLS-1$
 		try {
 			url = new String(Base64.encodeBase64(MessageDigest.getInstance("MD5").digest(url.getBytes()))); //$NON-NLS-1$
@@ -313,20 +347,17 @@ public class RemoteRun implements ICommand {
 		return file;
 	}
 
-	private HashMap<IShare, ArrayList<File>> getRootMap(final Server server, final String cfgId, 
+	Map<IShare, ArrayList<File>> getRootMap(final Server server, final String cfgId, 
 			final Collection<File> files, final boolean doNotUseShares, IProgressMonitor monitor) throws IllegalArgumentException, ECommunicationException  {
 		
-		final HashMap<IShare, ArrayList<File>> result = new HashMap<IShare, ArrayList<File>>();
 		//if switch is set do not use any sharing info
-		if(doNotUseShares){
+		if(doNotUseShares && cfgId != null){//can not provide service without any info vcsroots about(can be obtained from cfg)
 			LOGGER.debug(MessageFormat.format("\"{0}\" detected. Will not use any persisted Sahre's Info for VcsRoot binding", NO_USE_SHARES_SWITCH_LONG)); //$NON-NLS-1$
-			final IShare inplaceShare = createInplaceShare(server, cfgId);
-			result.put(inplaceShare, new ArrayList<File>(files));
-			LOGGER.debug(MessageFormat.format("Virtual Share was created: {0}", inplaceShare)); //$NON-NLS-1$
-			return result;
+			return Collections.singletonMap(createInplaceShare(server, cfgId), new ArrayList<File>(files));
 		}
 		//use stored sharing info for associate resources to vcsroots
 		try{
+			final HashMap<IShare, ArrayList<File>> result = new HashMap<IShare, ArrayList<File>>();
 			final TCAccess access = TCAccess.getInstance();
 			if(access.roots().isEmpty()){
 				throw new IllegalArgumentException(Messages.getString("RemoteRun.no.shares.for.remoterun.error.message")); //$NON-NLS-1$
@@ -344,30 +375,38 @@ public class RemoteRun implements ICommand {
 				}
 				rootFiles.add(file);
 			}
+			return result;
+			
 		} catch (IllegalArgumentException e){
 			//perhaps there is no shares. discard collected and create virtual share by passed configuration
 			LOGGER.debug("Error got during Share association. Will not use any persisted Sahre's Info for VcsRoot binding", e); //$NON-NLS-1$
-			result.clear();
-			final IShare inplaceShare = createInplaceShare(server, cfgId);
-			result.put(inplaceShare, new ArrayList<File>(files));
-			LOGGER.debug(MessageFormat.format("Virtual Share was created: {0}", inplaceShare)); //$NON-NLS-1$
+			return Collections.singletonMap(createInplaceShare(server, cfgId), new ArrayList<File>(files));
 		}
-		return result;
+		
 	}
 
-	private IShare createInplaceShare(final Server server, final String cfgId) throws IllegalArgumentException, ECommunicationException {
+	IShare createInplaceShare(final Server server, final String cfgId) throws IllegalArgumentException, ECommunicationException {
+		//check Configuration is defined
+		if(cfgId == null){
+			throw new IllegalArgumentException(MessageFormat.format(Messages.getString("RemoteRun.configuration.omitted.with.unshared.folder.error.pattern"), Share.ID));			 //$NON-NLS-1$
+		}
+		//seek Configuration
 		final BuildTypeData configuration = server.getConfiguration(cfgId);
 		if(configuration == null){
 			throw new IllegalArgumentException(MessageFormat.format(Messages.getString("RemoteRun.wrong.configuration.id.error.pattern"), cfgId)); //$NON-NLS-1$
 		}
+		//get single VcsRoot
 		final List<? extends VcsRoot> roots = configuration.getVcsRoots();
-		if(roots.size() != 1){
+		if(roots.isEmpty()){
+			throw new IllegalArgumentException(MessageFormat.format("Could not get Default VcsRoot in Configuration \"{0}\": no one VcsRoot attached.", cfgId)); //$NON-NLS-1$
+			
+		} else if(roots.size() > 1){
 			throw new IllegalArgumentException(MessageFormat.format(Messages.getString("RemoteRun.no.default.vcsroot.error.pattern"), cfgId, roots.size())); //$NON-NLS-1$
+			
 		}
-		
 		//construct virtual
 		final VcsRoot singleRoot = roots.get(0);
-		return new IShare(){
+		final IShare inplaceShare = new IShare(){
 			
 			@Override
 			public String toString() {
@@ -396,6 +435,8 @@ public class RemoteRun implements ICommand {
 				return singleRoot.getVcsName();
 			}
 		};
+		LOGGER.debug(MessageFormat.format("Virtual Share was created: {0}", inplaceShare)); //$NON-NLS-1$
+		return inplaceShare;
 	}
 
 	Collection<File> getFiles(Args args, IProgressMonitor monitor) throws IllegalArgumentException {
@@ -476,10 +517,7 @@ public class RemoteRun implements ICommand {
 	}
 
 	public void validate(Args args) throws IllegalArgumentException {
-		if(!args.hasArgument(CONFIGURATION_PARAM, CONFIGURATION_PARAM_LONG) ){
-			throw new IllegalArgumentException(MessageFormat.format(Messages.getString("RemoteRun.missing.configuration.para.error.pattern"), CONFIGURATION_PARAM, CONFIGURATION_PARAM_LONG)); //$NON-NLS-1$
-		}
-		if(!args.hasArgument(MESSAGE_PARAM, MESSAGE_PARAM_LONG)){
+		if(args == null || !args.hasArgument(MESSAGE_PARAM, MESSAGE_PARAM_LONG)){
 			throw new IllegalArgumentException(MessageFormat.format(Messages.getString("RemoteRun.missing.message.para.error.pattern"), MESSAGE_PARAM, MESSAGE_PARAM_LONG));		 //$NON-NLS-1$
 		}
 	}

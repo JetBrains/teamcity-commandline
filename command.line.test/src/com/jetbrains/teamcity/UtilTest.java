@@ -146,6 +146,7 @@ public class UtilTest {
 			FileUtil.delete(contentFile);
 		}
 	}
+//	p4 -p rusps-app01:1666 -u kdonskov -P cisak21 -c konstantin.donskov fstat -T "path" -P -Oc -e 12 -W //konstantin.donskov/...
 	
 	@Test
 	public void getFiles_file_folder() throws Exception {

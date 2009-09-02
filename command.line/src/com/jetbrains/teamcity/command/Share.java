@@ -22,7 +22,7 @@ import com.jetbrains.teamcity.runtime.IProgressMonitor;
 
 public class Share implements ICommand {
 	
-	private static final String ID = Messages.getString("Share.command.id"); //$NON-NLS-1$
+	public static final String ID = Messages.getString("Share.command.id"); //$NON-NLS-1$
 
 	private static final String INFO_PARAM = Messages.getString("Share.info.runtime.param"); //$NON-NLS-1$
 	private static final String INFO_PARAM_LONG = Messages.getString("Share.info.runtime.param.long"); //$NON-NLS-1$

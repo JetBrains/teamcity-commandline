@@ -96,6 +96,8 @@ public class CommandRunner {
 			
 		} else if (e instanceof IllegalArgumentException){
 			System.err.println(MessageFormat.format(Messages.getString("CommandRunner.invalid.command.arguments.error.pattern"), e.getMessage())); //$NON-NLS-1$
+			System.err.println();
+			System.err.println(command.getUsageDescription());
 			
 		} else {
 			e.printStackTrace();

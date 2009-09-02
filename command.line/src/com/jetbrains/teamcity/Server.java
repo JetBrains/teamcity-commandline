@@ -1,5 +1,6 @@
 package com.jetbrains.teamcity;
 
+import java.io.File;
 import java.io.IOException;
 import java.net.Proxy;
 import java.net.URL;
@@ -7,6 +8,7 @@ import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Vector;
 
 import jetbrains.buildServer.AddToQueueRequest;
@@ -17,6 +19,7 @@ import jetbrains.buildServer.ProjectData;
 import jetbrains.buildServer.TeamServerSummaryData;
 import jetbrains.buildServer.messages.XStreamHolder;
 import jetbrains.buildServer.serverProxy.ApplicationFacade;
+import jetbrains.buildServer.serverProxy.ClientXmlRpcExecutorFacade;
 import jetbrains.buildServer.serverProxy.RemoteBuildServer;
 import jetbrains.buildServer.serverProxy.RemoteBuildServerImpl;
 import jetbrains.buildServer.serverProxy.VersionChecker;
@@ -38,7 +41,6 @@ public class Server {
 	
 	private URL myUrl;
 	private SessionXmlRpcTargetImpl mySession;
-//	private Proxy myProxy;
 	private RemoteBuildServer myServerProxy;
 	private ArrayList<ProjectData> myProjects;
 
@@ -87,12 +89,21 @@ public class Server {
 		}
 	}
 	
+//	private RemoteBuildServer getServerProxy() throws ECommunicationException {
+//		if(myServerProxy == null){
+//			myServerProxy = new RemoteBuildServerImpl(mySession, new ApplicationFacadeStub(), new VersionCheckerStub());
+//			ClientXmlRpcExecutorFacade aaa = new ClientXmlRpcExecutorFacade(mySession, new ApplicationFacadeStub(), "VersionControlServer", new VersionCheckerStub());
+//		}
+//		return myServerProxy;
+//	}
+	
 	private RemoteBuildServer getServerProxy() throws ECommunicationException {
 		if(myServerProxy == null){
 			myServerProxy = new RemoteBuildServerImpl(mySession, new ApplicationFacadeStub(), new VersionCheckerStub());
 		}
 		return myServerProxy;
 	}
+	
 	
 	public void logout() {
 		mySession.logout();
@@ -209,6 +220,17 @@ public class Server {
 
 	public AddToQueueResult addRemoteRunToQueue(ArrayList<AddToQueueRequest> batch, String myComments) throws ECommunicationException {
 		return deserializeObject(getServerProxy().addToQueue(XStreamWrapper.serializeObjects(batch, ourXStreamHolder), myComments));
+	}
+
+	@SuppressWarnings("unchecked")
+	public Collection<String> getApplicableConfigurations(final Collection<String> urls) {
+		final ClientXmlRpcExecutorFacade xmlExecutor = new ClientXmlRpcExecutorFacade(mySession, new ApplicationFacadeStub(), "VersionControlServer", new VersionCheckerStub());
+		final Vector ids = xmlExecutor.callXmlRpc("getSuitableConfigurations", new Vector(urls));
+		final HashSet<String> buffer = new HashSet<String>(ids.size());
+		for(final Object id : ids){
+			buffer.add(String.valueOf(id));
+		}
+		return buffer;
 	}
 	
 

@@ -48,14 +48,6 @@ public abstract class URLFactory {
 		return null;
 	}
 	
-	public static URLFactory getFactory(final File local) {
-		if(SVNUrlFactory.accept(local)){
-			return new SVNUrlFactory(local);
-		}
-		return null;
-	}
-	
-
 	public abstract String getUrl(File file) throws IOException, ECommunicationException;
 	
 	public abstract String[] getMappings();
@@ -129,10 +121,6 @@ public abstract class URLFactory {
 			}
 		}
 
-		SVNUrlFactory(File local) {
-			// TODO Auto-generated constructor stub
-		}
-
 		static File getEntriesFile(String path) {
 			if(path == null){
 				return null;
@@ -143,13 +131,6 @@ public abstract class URLFactory {
 			}
 			//see up to hierarchy to find in parent folder
 			return getEntriesFile(new File(path).getParent());
-		}
-
-		static boolean accept(final File local) {
-			if(local != null && local.getParent() != null && getEntriesFile(local.getParent())!=null){
-				return true;
-			}
-			return false;
 		}
 
 		@Override
