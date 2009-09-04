@@ -14,6 +14,7 @@ import org.junit.BeforeClass;
 import org.junit.Test;
 
 import com.jetbrains.teamcity.TestServer;
+import com.jetbrains.teamcity.TestingUtil;
 import com.jetbrains.teamcity.resources.IShare;
 import com.jetbrains.teamcity.runtime.NullProgressMonitor;
 
@@ -27,20 +28,7 @@ public class RemoteRunTest {
 	@BeforeClass
 	public static void setup() throws Exception {
 		//dirs
-		ourRootFolder = new File("rootTestFolder");
-		ourRootFolder.mkdir();
-		final File firsChild = new File(ourRootFolder, "java");
-		firsChild.mkdir();
-		
-		final File firsFirstChild = new File(firsChild, "resources");
-		firsFirstChild.mkdir();
-		final File secondChild = new File(ourRootFolder, "cpp");
-		secondChild.mkdir();
-		//files
-		new File(firsChild, "1.java").createNewFile();
-		new File(firsFirstChild, "2.java").createNewFile();
-		new File(firsFirstChild, "1.resources").createNewFile();
-		new File(secondChild, "1.cpp").createNewFile();
+		ourRootFolder = TestingUtil.createFS();
 		
 		//keep current directory
 		ourCurrentDirectory = System.getProperty("user.dir");
@@ -55,7 +43,7 @@ public class RemoteRunTest {
 	@AfterClass
 	public static void clean() throws Exception {
 		System.setProperty("user.dir", ourCurrentDirectory);
-		FileUtil.delete(ourRootFolder);
+		TestingUtil.releaseFS(ourRootFolder);
 	}
 	
 	@Test
@@ -126,7 +114,7 @@ public class RemoteRunTest {
 	public void getFiles_nothing_passed() {
 		final Collection<File> files = ourCommand.getFiles(new Args(new String[] {RemoteRun.NO_WAIT_SWITCH_LONG, RemoteRun.CONFIGURATION_PARAM_LONG, "bt2"}), new NullProgressMonitor());
 		assertNotNull("null file's collection got", files);
-		assertEquals("wrong files count collected", 4, files.size());
+		assertEquals("wrong files count collected", 5, files.size());
 	}
 	
 	@Test
