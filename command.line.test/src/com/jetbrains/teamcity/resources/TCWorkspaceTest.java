@@ -104,7 +104,14 @@ public class TCWorkspaceTest {
 			itcResource = ourTestWorkspace.getResource(javaResource);
 			assertNotNull("No ITCResource created for: " + javaResource, itcResource);// in_hierarchy
 			assertEquals("//depo/test/java/resources/java.resources", itcResource.getRepositoryPath());// in_hierarchy
-
+			//overriding
+			final File cppRootAdminFile = new File(root, "cpp/" + TCWorkspace.TCC_ADMIN_FILE).getAbsoluteFile();
+			FileUtil.writeFile(cppRootAdminFile, ".=//depo/test/CPLUSPLUS/src\n");
+			File cppResource = new File(root, "cpp/resources/cpp.resources");
+			itcResource = ourTestWorkspace.getResource(cppResource);
+			assertNotNull("No ITCResource created for: " + cppResource, itcResource);// in_hierarchy
+			assertEquals("//depo/test/CPLUSPLUS/src/resources/cpp.resources", itcResource.getRepositoryPath());// in_hierarchy
+			
 			
 		} finally {
 			TestingUtil.releaseFS(root);
