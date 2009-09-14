@@ -8,25 +8,49 @@ import java.util.List;
 
 import jetbrains.buildServer.util.FileUtil;
 
+import org.apache.log4j.Logger;
+
+import com.jetbrains.teamcity.Storage;
 import com.jetbrains.teamcity.Util;
 
 public class TCWorkspace {
 	
+	private static Logger LOGGER = Logger.getLogger(TCWorkspace.class) ;
+	
 	public static final String TCC_ADMIN_FILE = ".tcc";
 	
 	private HashMap<File, AdminFile> myCache = new HashMap<File, AdminFile>();
-	
-	private TCWorkspace(){
-	}
-	
-	public static TCWorkspace getWorkspace(){
-		return new TCWorkspace();
-	}
 
+	private File myRootFolder;
+
+	private AdminFile myGlobalAdmin;
+	
+	public TCWorkspace(final File rootFolder, final File adminFile){
+		if(rootFolder == null){
+			throw new IllegalArgumentException("Root directory cannot be null");
+		}
+		myRootFolder = rootFolder;
+		
+		//setup global admin
+		if(adminFile != null && adminFile.exists()){
+			myGlobalAdmin = new AdminFile(adminFile);
+		} else {
+			final String home = System.getProperty("user.home"); //$NON-NLS-1$
+			final String myDefaultConfigFile = home + File.separator + Storage.TC_CLI_HOME + File.separator + ".tcc.global.config";
+			LOGGER.debug(MessageFormat.format("Could not find \"{0}\" admin file. Will check for Default one: {1}", adminFile, myDefaultConfigFile));
+			final File defaultConfig = new File(myDefaultConfigFile);
+			if(defaultConfig.exists()){
+				myGlobalAdmin = new AdminFile(defaultConfig);
+			}
+		}
+		
+	}
+	
 	static AdminFile getAdminFileFor(final File local) throws IllegalArgumentException {
 		if(local == null){
 			throw new IllegalArgumentException("File cannot be null");
 		}
+		//per-folder search
 		final File folder = local.getParentFile();
 		if(folder != null){
 			try {
@@ -55,7 +79,12 @@ public class TCWorkspace {
 		//seek for uncached
 		admin = getAdminFileFor(local);
 		if(admin == null){
-			throw new IllegalArgumentException(MessageFormat.format("Could not find \"{0}\" for \"{1}\"", TCC_ADMIN_FILE, local));
+			//look into Global
+			if(myGlobalAdmin != null){
+				return new TCResource(local, myGlobalAdmin.getRepositoryLocation(local));
+			}
+			LOGGER.debug(MessageFormat.format("Neither Local nor Global admin files found for \"{1}\"", local));
+			return null;
 		}
 		//cache found
 		myCache.put(local.getParentFile(), admin);
@@ -142,6 +171,12 @@ public class TCWorkspace {
 		public String getRepositoryPath() {
 			return myRepositoryPath;
 		}
+		
+		@Override
+		public String toString() {
+			return MessageFormat.format("local={0}, repo={1}", getLocal(), getRepositoryPath());
+		}
+		
 		
 	}
 	

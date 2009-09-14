@@ -47,8 +47,8 @@ class CommandRegistry {
 		register(new Login());
 		register(new Logout());
 		register(new RemoteRun());
-		register(new Share());
-		register(new Unshare());		
+//		register(new Share());
+//		register(new Unshare());		
 		//scan for new
 		final Collection<ICommand> extensions = findCommand();
 		for(final ICommand command : extensions){

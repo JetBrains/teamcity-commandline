@@ -13,13 +13,13 @@ import java.util.List;
 import java.util.Scanner;
 import java.util.regex.Pattern;
 
-import org.apache.log4j.Logger;
-
 import jetbrains.buildServer.util.FileUtil;
+
+import org.apache.log4j.Logger;
 
 public class Util {
 	
-	private static Logger LOGGER = Logger.getLogger(URLFactory.class) ;
+	private static Logger LOGGER = Logger.getLogger(Util.class) ;
 	
 	public static IFileFilter CVS_FILES_FILTER = new CVSFilter(); 
 	
@@ -340,6 +340,10 @@ public class Util {
 			return path.replace("\\", "/");
 		}
 		return null;
+	}
+	
+	public static File getCurrentDirectory(){
+		return new File(System.getProperty("user.dir"));
 	}
 	
 	

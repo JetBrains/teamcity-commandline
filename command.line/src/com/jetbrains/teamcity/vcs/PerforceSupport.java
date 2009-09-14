@@ -51,7 +51,7 @@ public class PerforceSupport {
 	/**
 	 * looking for unique string line contains "//team-city-agent/" token
 	 */
-	static String findPerforceRoot(final String clientMapping) {
+	public static String findPerforceRoot(final String clientMapping) {
 		try{
 			final String[] lines = clientMapping.split(NEWLINE_PATTERN);
 			if(lines.length == 1){

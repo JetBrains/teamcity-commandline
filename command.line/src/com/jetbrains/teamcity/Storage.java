@@ -24,7 +24,8 @@ public class Storage {
 
 	public static final String TC_STORAGE_PROPERTY_NAME = "teamcity.cli.configfile"; //$NON-NLS-1$
 	public static final String TC_STORAGE_ENVIRONMENT_VARIABLE_PROPERTY_NAME = "TEAMCITY_CLI_CONFIGFILE"; //$NON-NLS-1$
-	public static final String TC_STORAGE_DEFAULT_FILENAME = "/.TeamCity-CommandLine/.tcstorage"; //$NON-NLS-1$
+	public static final String TC_CLI_HOME = "/.TeamCity-CommandLine"; //$NON-NLS-1$
+	public static final String TC_STORAGE_DEFAULT_FILENAME = TC_CLI_HOME + "/.tcstorage"; //$NON-NLS-1$
 
 	private static Storage ourInstance;
 	

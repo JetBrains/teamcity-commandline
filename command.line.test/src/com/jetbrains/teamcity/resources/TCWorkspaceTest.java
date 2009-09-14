@@ -22,7 +22,7 @@ public class TCWorkspaceTest {
 
 	@BeforeClass
 	public static void setup(){
-		ourTestWorkspace = TCWorkspace.getWorkspace();
+		ourTestWorkspace = new TCWorkspace(new File(System.getProperty("user.dir")), null);
 	}
 	
 	@AfterClass
