@@ -3,8 +3,10 @@ package com.jetbrains.teamcity.resources;
 import java.io.File;
 import java.io.IOException;
 import java.text.MessageFormat;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
+import java.util.TreeMap;
 
 import jetbrains.buildServer.util.FileUtil;
 
@@ -25,25 +27,29 @@ public class TCWorkspace {
 
 	private AdminFile myGlobalAdmin;
 	
-	public TCWorkspace(final File rootFolder, final File adminFile){
+	public TCWorkspace(final File rootFolder){
 		if(rootFolder == null){
 			throw new IllegalArgumentException("Root directory cannot be null");
 		}
 		myRootFolder = rootFolder;
-		
 		//setup global admin
+		final String home = System.getProperty("user.home"); //$NON-NLS-1$
+		final String myDefaultConfigFile = home + File.separator + Storage.TC_CLI_HOME + File.separator + ".tcc.global.config";
+		final File defaultConfig = new File(myDefaultConfigFile);
+		if(defaultConfig.exists()){
+			myGlobalAdmin = new AdminFile(defaultConfig);
+		} else {
+			LOGGER.debug(MessageFormat.format("Default Admin file \"{0}\" is not found", myDefaultConfigFile));			
+		}
+	}
+	
+	public TCWorkspace(final File rootFolder, final File adminFile){
+		this(rootFolder);
 		if(adminFile != null && adminFile.exists()){
 			myGlobalAdmin = new AdminFile(adminFile);
 		} else {
-			final String home = System.getProperty("user.home"); //$NON-NLS-1$
-			final String myDefaultConfigFile = home + File.separator + Storage.TC_CLI_HOME + File.separator + ".tcc.global.config";
-			LOGGER.debug(MessageFormat.format("Could not find \"{0}\" admin file. Will check for Default one: {1}", adminFile, myDefaultConfigFile));
-			final File defaultConfig = new File(myDefaultConfigFile);
-			if(defaultConfig.exists()){
-				myGlobalAdmin = new AdminFile(defaultConfig);
-			}
+			LOGGER.debug(MessageFormat.format("Admin file \"{0}\" is not found", adminFile));			
 		}
-		
 	}
 	
 	static AdminFile getAdminFileFor(final File local) throws IllegalArgumentException {
@@ -71,31 +77,51 @@ public class TCWorkspace {
 		if(local == null){
 			throw new IllegalArgumentException("File cannot be null");
 		}
-		//look into cache
-		AdminFile admin = myCache.get(local.getParentFile()); 
-		if(admin != null){
-			return new TCResource(local, admin.getRepositoryLocation(local));
-		}
-		//seek for uncached
-		admin = getAdminFileFor(local);
-		if(admin == null){
-			//look into Global
-			if(myGlobalAdmin != null){
-				return new TCResource(local, myGlobalAdmin.getRepositoryLocation(local));
+		try{
+			//look into cache(cache keep file for files resides in same folder only)
+			AdminFile admin = myCache.get(local.getParentFile()); 
+			if(admin == null){
+				//seek for uncached
+				admin = getAdminFileFor(local);
+				if(admin == null){
+					//look into Global
+					admin = myGlobalAdmin;
+					if(myGlobalAdmin == null){
+						LOGGER.debug(MessageFormat.format("Neither Local nor Global admin files found for \"{0}\"", local));
+						return null;
+					}
+				}
 			}
-			LOGGER.debug(MessageFormat.format("Neither Local nor Global admin files found for \"{1}\"", local));
+			if(admin != null){
+				//cache found
+				myCache.put(local.getParentFile(), admin);
+				final Matching matching = admin.getMatching(local);
+				if(matching == null){
+					LOGGER.debug(MessageFormat.format("No Matching found for \"{0}\"", local));
+					return null;
+				}
+				//All found
+				final String prefix = matching.getTCID();
+				final String relativePath = matching.getRelativePath();
+				return new TCResource(local, MessageFormat.format("{0}/{1}", prefix, relativePath)); 
+			}
 			return null;
+
+		} catch (IOException e){
+			throw new IllegalArgumentException(e);
 		}
-		//cache found
-		myCache.put(local.getParentFile(), admin);
-		return new TCResource(local, admin.getRepositoryLocation(local));
 	}
 	
 	static class AdminFile {
 		
+		private static final Comparator<String> PATH_SORTER = new Comparator<String>(){
+			public int compare(final String key0, final String key1) {
+				return key1.toLowerCase().compareTo(key0.toLowerCase());
+			}};
+		
 		File myFile;
 		private List<String> myItems;
-		private String myDefaultPrefix;
+		private TreeMap<String, String> myRulesMap = new TreeMap<String, String>(PATH_SORTER);
 
 		AdminFile(File file){
 			try {
@@ -108,35 +134,34 @@ public class TCWorkspace {
 				//looking for default
 				for(final String item : myItems){
 					final String[] columns = item.trim().split("=");
-					if(columns.length<2){
+					if (columns.length < 2) {
 						throw new IllegalArgumentException(MessageFormat.format("\"{0}\" format is wrong", myFile));		
 					}
 					
-					if(".".equals(columns[0].trim())){
-						myDefaultPrefix = FileUtil.removeTailingSlash(Util.toPortableString(columns[1].trim()));
-						break;
+					final String path = columns[0];
+					final String tcid = FileUtil.removeTailingSlash(columns[1]);//slash will be added to Url later
+					//absolute or not
+					File ruleContainer = new File(path);
+					if(!ruleContainer.isAbsolute()){
+						ruleContainer = new File(myFile.getParentFile().getAbsoluteFile(), path);
 					}
+					myRulesMap.put(Util.toPortableString(ruleContainer.getCanonicalFile().getAbsolutePath()), tcid);
 				}
 			} catch (IOException e) {
 				throw new IllegalArgumentException(e);
 			}
 		}
 		
-		public String getRepositoryLocation(final File local) throws IllegalArgumentException {
-			try {
-				//TODO: check pattern from file
-				final String pathFromHere = Util.getRelativePath(myFile.getParentFile().getAbsoluteFile(), local.getAbsoluteFile());
-				final String prefix = getMatching(pathFromHere);
-				return MessageFormat.format("{0}/{1}", prefix, pathFromHere);
-			} catch (IOException e) {
-				throw new IllegalArgumentException(e);
+		public Matching getMatching(final File file) throws IOException {
+			final String absolutePath = Util.toPortableString(file.getCanonicalFile().getAbsolutePath());
+			for(final String path : myRulesMap.keySet()){
+				if(absolutePath.startsWith(path)){
+					final String prefix = myRulesMap.get(path);
+					final String relativePath = absolutePath.substring(path.length() + 1/*do not include slash*/, absolutePath.length());//TODO: check +1 
+					return new Matching(prefix, relativePath);
+				}
 			}
-
-			
-		}
-		
-		private String getMatching(final String pathFromHere) {
-			return myDefaultPrefix;
+			return null;
 		}
 
 		@Override
@@ -150,6 +175,25 @@ public class TCWorkspace {
 		@Override
 		public int hashCode() {
 			return myFile.hashCode();
+		}
+		
+	}
+	
+	static class Matching {
+		private String myPrefix;
+		private String myRelativePath;
+		
+		Matching(final String prefix, final String relativePath){
+			myPrefix = prefix;
+			myRelativePath = relativePath;
+		}
+		
+		public String getTCID() {
+			return myPrefix;
+		}
+		
+		public String getRelativePath() {
+			return myRelativePath;
 		}
 		
 	}
