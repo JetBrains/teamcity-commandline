@@ -45,6 +45,7 @@ import com.jetbrains.teamcity.ECommunicationException;
 import com.jetbrains.teamcity.ERemoteError;
 import com.jetbrains.teamcity.Server;
 import com.jetbrains.teamcity.Util;
+import com.jetbrains.teamcity.Util.IFileFilter;
 import com.jetbrains.teamcity.resources.FileBasedMatcher;
 import com.jetbrains.teamcity.resources.ITCResource;
 import com.jetbrains.teamcity.resources.ITCResourceMatcher;
@@ -55,6 +56,20 @@ import com.jetbrains.teamcity.runtime.IProgressMonitor;
 public class RemoteRun implements ICommand {
 	
 	private static Logger LOGGER = Logger.getLogger(RemoteRun.class) ;	
+	
+	private static final IFileFilter TCC_FILTER = new  IFileFilter() {
+		
+		public Collection<File> accept(Collection<File> files) {
+			final HashSet<File> result = new HashSet<File>();
+			for(final File file : files){
+				if(!file.getName().toLowerCase().equals(TCWorkspace.TCC_ADMIN_FILE)){
+					result.add(file);
+				}
+			}
+			return result;
+		}
+	};
+
 
 	static final int SLEEP_INTERVAL = 1000 * 10;
 	static final int DEFAULT_TIMEOUT = 1000 * 60 * 60;
@@ -489,10 +504,10 @@ public class RemoteRun implements ICommand {
 					files = Util.getFiles(new File(path.substring(1, path.length())));
 				}
 				// filter out system files
-				result.addAll(Util.SVN_FILES_FILTER.accept(Util.CVS_FILES_FILTER.accept(files)));
+				result.addAll(TCC_FILTER.accept(Util.SVN_FILES_FILTER.accept(Util.CVS_FILES_FILTER.accept(files))));
 			}
 		} else {//let's use current directory as root if nothing passed
-			result.addAll(Util.SVN_FILES_FILTER.accept(Util.CVS_FILES_FILTER.accept(Util.getFiles(".")))); //$NON-NLS-1$
+			result.addAll(TCC_FILTER.accept(Util.SVN_FILES_FILTER.accept(Util.CVS_FILES_FILTER.accept(Util.getFiles("."))))); //$NON-NLS-1$
 		}
 
 		if (result.size() == 0) {

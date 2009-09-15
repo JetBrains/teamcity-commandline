@@ -181,7 +181,7 @@ public class Util {
 			return result;
 		}
 	}
-	
+
 	private static class SVNFilter implements IFileFilter {
 		
 		public Collection<File> accept(Collection<File> files) {
