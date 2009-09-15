@@ -13,7 +13,7 @@ public class TCWorkspace {
 	
 	private static Logger LOGGER = Logger.getLogger(TCWorkspace.class) ;
 	
-	public static final String TCC_ADMIN_FILE = ".tcc";
+	public static final String TCC_ADMIN_FILE = ".tcc"; //$NON-NLS-1$
 	
 	private HashMap<File, ITCResourceMatcher> myCache = new HashMap<File, ITCResourceMatcher>();
 
@@ -40,7 +40,7 @@ public class TCWorkspace {
 	public TCWorkspace(final File rootFolder, final ITCResourceMatcher externMatcher){
 		this(rootFolder);
 		if(externMatcher != null){
-			myGlobalMatcher = externMatcher;//new AdminFile(configFile);
+			myGlobalMatcher = externMatcher;
 		} else {
 			LOGGER.debug(MessageFormat.format("Extern matcher is null", externMatcher));			
 		}
