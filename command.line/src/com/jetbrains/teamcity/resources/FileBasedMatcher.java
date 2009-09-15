@@ -33,7 +33,7 @@ public class FileBasedMatcher implements ITCResourceMatcher {
 			if(myItems.isEmpty()){
 				throw new IllegalArgumentException(MessageFormat.format("\"{0}\" is empty", myFile));
 			}
-			//looking for default
+			//will build ordered by full path map for next local files mapping 
 			for(final String item : myItems){
 				final String[] columns = item.trim().split("=");
 				if (columns.length < 2) {
@@ -42,7 +42,7 @@ public class FileBasedMatcher implements ITCResourceMatcher {
 				
 				final String path = columns[0];
 				final String tcid = FileUtil.removeTailingSlash(columns[1]);//slash will be added to Url later
-				//absolute or not
+				//absolute or not: if relative have to add the source file location to paths describes mappings from the file
 				File ruleContainer = new File(path);
 				if(!ruleContainer.isAbsolute()){
 					ruleContainer = new File(myFile.getParentFile().getAbsoluteFile(), path);
