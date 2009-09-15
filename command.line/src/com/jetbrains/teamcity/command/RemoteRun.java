@@ -45,7 +45,9 @@ import com.jetbrains.teamcity.ECommunicationException;
 import com.jetbrains.teamcity.ERemoteError;
 import com.jetbrains.teamcity.Server;
 import com.jetbrains.teamcity.Util;
+import com.jetbrains.teamcity.resources.FileBasedMatcher;
 import com.jetbrains.teamcity.resources.ITCResource;
+import com.jetbrains.teamcity.resources.ITCResourceMatcher;
 import com.jetbrains.teamcity.resources.TCWorkspace;
 import com.jetbrains.teamcity.runtime.IProgressMonitor;
 
@@ -100,7 +102,7 @@ public class RemoteRun implements ICommand {
 		} else {
 			myTimeout = DEFAULT_TIMEOUT;
 		}
-		final TCWorkspace workspace = new TCWorkspace(Util.getCurrentDirectory(), getConfigFile(args));
+		final TCWorkspace workspace = new TCWorkspace(Util.getCurrentDirectory(), getMatcher(args));
 		//collect files
 		final Collection<File> files = getFiles(args, monitor);
 		//associate files to shares(vcsroots)
@@ -126,9 +128,9 @@ public class RemoteRun implements ICommand {
 		return;
 	}
 	
-	File getConfigFile(final Args args) {
+	ITCResourceMatcher getMatcher(final Args args) {
 		if(args.hasArgument(CONFIG_FILE_PARAM)){
-			return new File(args.getArgument(CONFIG_FILE_PARAM));
+			return new FileBasedMatcher(new File(args.getArgument(CONFIG_FILE_PARAM)));
 			
 		}
 		return null;
@@ -142,7 +144,7 @@ public class RemoteRun implements ICommand {
 		monitor.beginTask("Collecting configurations for running"); //$NON-NLS-1$
 		final HashSet<String> resources = new HashSet<String>();
 		for(File file : files){
-			resources.add(workspace.getResource(file).getRepositoryPath());
+			resources.add(workspace.getTCResource(file).getRepositoryPath());
 //			final URLFactory factory = URLFactory.getFactory(entry.getKey());
 //			if(factory != null){
 //				for(final File file : entry.getValue()){
@@ -320,7 +322,7 @@ public class RemoteRun implements ICommand {
 			patcher = new LowLevelPatchBuilderImpl(os);
 			for(final File file : files){
 				LowLevelPatchBuilder.WriteFileContent content = new PatchBuilderImpl.StreamWriteFileContent(new BufferedInputStream(new FileInputStream(file)), file.length());
-				final ITCResource resource = workspace.getResource(file);
+				final ITCResource resource = workspace.getTCResource(file);
 				if(resource != null && resource.getRepositoryPath() != null){
 					LOGGER.debug(MessageFormat.format("+ {0}", resource.getRepositoryPath())); //$NON-NLS-1$
 					if(file.exists()){

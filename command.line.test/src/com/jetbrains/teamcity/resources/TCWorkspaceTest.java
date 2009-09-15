@@ -14,7 +14,6 @@ import org.junit.BeforeClass;
 import org.junit.Test;
 
 import com.jetbrains.teamcity.TestingUtil;
-import com.jetbrains.teamcity.resources.TCWorkspace.Matching;
 
 
 public class TCWorkspaceTest {
@@ -35,16 +34,16 @@ public class TCWorkspaceTest {
 	public void getAdminFileFor_error_handling() throws Exception {
 		//null
 		try{
-			TCWorkspace.getAdminFileFor(null);
+			TCWorkspace.getMatcherFor(null);
 			assertTrue("Exception must be thrown", true);
 		} catch (IllegalArgumentException e){
 			//okj
 		}
 		//root 
 		final File fsRoot = TestingUtil.getFSRoot();
-		assertNull(TCWorkspace.getAdminFileFor(fsRoot));
+		assertNull(TCWorkspace.getMatcherFor(fsRoot));
 		//file in root 
-		TCWorkspace.getAdminFileFor(new File(fsRoot, "file.txt"));// no exception
+		TCWorkspace.getMatcherFor(new File(fsRoot, "file.txt"));// no exception
 		
 	}
 	
@@ -54,23 +53,16 @@ public class TCWorkspaceTest {
 		try{
 			
 			File file = new File(root, "java/resources/java.resources");
-			assertNull("Admin file found for: " + file, TCWorkspace.getAdminFileFor(file));// still_not_created
+			assertNull("Admin file found for: " + file, TCWorkspace.getMatcherFor(file));// still_not_created
 			
 			final File rootAdminFile = new File(root, TCWorkspace.TCC_ADMIN_FILE);
 			FileUtil.writeFile(rootAdminFile, ".=//depo/test/\n");
 			
 			File java = new File(root, "1.java");
-			assertNotNull("No Admin file found for: " + java, TCWorkspace.getAdminFileFor(java));// the_same_place
+			assertNotNull("No Admin file found for: " + java, TCWorkspace.getMatcherFor(java));// the_same_place
 			
 			File javaResource = new File(root, "java/resources/java.resources");
-			assertNotNull("No Admin file found for: " + javaResource, TCWorkspace.getAdminFileFor(javaResource));// in_hierarchy
-			
-			//let's create overriding .tcc
-			final File cppRootAdminFile = new File(root, "cpp/" + TCWorkspace.TCC_ADMIN_FILE).getAbsoluteFile();
-			FileUtil.writeFile(cppRootAdminFile, ".=//depo/test/\n");
-			
-			File cppResources = new File(root, "cpp/resources/cpp.resources");
-			assertEquals("Unexpected Admin file found for: " + cppResources, cppRootAdminFile, TCWorkspace.getAdminFileFor(cppResources).myFile);// in_hierarchy
+			assertNotNull("No Admin file found for: " + javaResource, TCWorkspace.getMatcherFor(javaResource));// in_hierarchy
 			
 		} finally {
 			TestingUtil.releaseFS(root);
@@ -86,14 +78,14 @@ public class TCWorkspaceTest {
 			FileUtil.writeFile(globalAdminFile, ".=//depo/test/dot\n" +
 					"cpp=//depo/test/cpp_root\n" +
 					"cpp/resources=//depo/test/cpp_resources\n");
-			final TCWorkspace.AdminFile admin = new TCWorkspace.AdminFile(globalAdminFile);
+			final ITCResourceMatcher admin = new FileBasedMatcher(globalAdminFile);
 			
 			//overriding
 			File cpp = new File(root, "cpp/1.cpp");
 			File cppResource = new File(root, "cpp/resources/cpp.resources");
 			
-			Matching cppMatching = admin.getMatching(cpp);
-			Matching resCppMatching = admin.getMatching(cppResource);
+			ITCResourceMatcher.Matching cppMatching = admin.getMatching(cpp);
+			ITCResourceMatcher.Matching resCppMatching = admin.getMatching(cppResource);
 			
 			assertNotNull(cppMatching);
 			assertEquals("//depo/test/cpp_root", cppMatching.getTCID());// in_hierarchy
@@ -111,7 +103,7 @@ public class TCWorkspaceTest {
 	public void getResource_error_handling() throws Exception {
 		//null
 		try{
-			ourTestWorkspace.getResource(null);
+			ourTestWorkspace.getTCResource(null);
 			assertTrue("Exception must be thrown", true);
 		} catch (IllegalArgumentException e){
 			//okj
@@ -127,19 +119,19 @@ public class TCWorkspaceTest {
 			
 			//simple
 			File java = new File(root, "1.java");
-			ITCResource itcResource = ourTestWorkspace.getResource(java);
+			ITCResource itcResource = ourTestWorkspace.getTCResource(java);
 			assertNotNull("No ITCResource created for: " + java, itcResource);
 			assertEquals("//depo/test/1.java", itcResource.getRepositoryPath());
 			//in hierarchy
 			File javaResource = new File(root, "java/resources/java.resources");
-			itcResource = ourTestWorkspace.getResource(javaResource);
+			itcResource = ourTestWorkspace.getTCResource(javaResource);
 			assertNotNull("No ITCResource created for: " + javaResource, itcResource);// in_hierarchy
 			assertEquals("//depo/test/java/resources/java.resources", itcResource.getRepositoryPath());// in_hierarchy
 			//overriding
 			final File cppRootAdminFile = new File(root, "cpp/" + TCWorkspace.TCC_ADMIN_FILE).getAbsoluteFile();
 			FileUtil.writeFile(cppRootAdminFile, ".=//depo/test/CPLUSPLUS/src\n");
 			File cppResource = new File(root, "cpp/resources/cpp.resources");
-			itcResource = ourTestWorkspace.getResource(cppResource);
+			itcResource = ourTestWorkspace.getTCResource(cppResource);
 			assertNotNull("No ITCResource created for: " + cppResource, itcResource);// in_hierarchy
 			assertEquals("//depo/test/CPLUSPLUS/src/resources/cpp.resources", itcResource.getRepositoryPath());// in_hierarchy
 			
@@ -158,19 +150,19 @@ public class TCWorkspaceTest {
 			
 			//simple
 			File java = new File(root, "1.java");
-			ITCResource itcResource = ourTestWorkspace.getResource(java);
+			ITCResource itcResource = ourTestWorkspace.getTCResource(java);
 			assertNotNull("No ITCResource created for: " + java, itcResource);
 			assertEquals("//depo/test/1.java", itcResource.getRepositoryPath());
 			//in hierarchy
 			File javaResource = new File(root, "java/resources/java.resources");
-			itcResource = ourTestWorkspace.getResource(javaResource);
+			itcResource = ourTestWorkspace.getTCResource(javaResource);
 			assertNotNull("No ITCResource created for: " + javaResource, itcResource);// in_hierarchy
 			assertEquals("//depo/test/java/resources/java.resources", itcResource.getRepositoryPath());// in_hierarchy
 			//overriding
 			final File cppRootAdminFile = new File(root, "cpp/" + TCWorkspace.TCC_ADMIN_FILE).getAbsoluteFile();
 			FileUtil.writeFile(cppRootAdminFile, ".=//depo/test/CPLUSPLUS/src\n");
 			File cppResource = new File(root, "cpp/resources/cpp.resources");
-			itcResource = ourTestWorkspace.getResource(cppResource);
+			itcResource = ourTestWorkspace.getTCResource(cppResource);
 			assertNotNull("No ITCResource created for: " + cppResource, itcResource);// in_hierarchy
 			assertEquals("//depo/test/CPLUSPLUS/src/resources/cpp.resources", itcResource.getRepositoryPath());// in_hierarchy
 			
@@ -188,16 +180,16 @@ public class TCWorkspaceTest {
 			//create global Admin
 			final File testRootFolder = root.getCanonicalFile();
 			FileUtil.writeFile(globalAdminFile, testRootFolder.getAbsolutePath() + "=//depo/test/\n");
-			final TCWorkspace workspace = new TCWorkspace(testRootFolder, globalAdminFile);
+			final TCWorkspace workspace = new TCWorkspace(testRootFolder, new FileBasedMatcher(globalAdminFile));
 			
 			//simple
 			File java = new File(root, "1.java");
-			ITCResource itcResource = workspace.getResource(java);
+			ITCResource itcResource = workspace.getTCResource(java);
 			assertNotNull("No ITCResource created for: " + java, itcResource);
 			assertEquals("//depo/test/1.java", itcResource.getRepositoryPath());
 			//in hierarchy
 			File javaResource = new File(root, "java/resources/java.resources");
-			itcResource = workspace.getResource(javaResource);
+			itcResource = workspace.getTCResource(javaResource);
 			assertNotNull("No ITCResource created for: " + javaResource, itcResource);// in_hierarchy
 			assertEquals("//depo/test/java/resources/java.resources", itcResource.getRepositoryPath());// in_hierarchy
 		} finally {
@@ -213,13 +205,13 @@ public class TCWorkspaceTest {
 		try{
 			//create global Admin
 			FileUtil.writeFile(globalAdminFile, root.getCanonicalFile().getAbsolutePath() + "=//depo/test/\n");
-			final TCWorkspace workspace = new TCWorkspace(root, globalAdminFile);
+			final TCWorkspace workspace = new TCWorkspace(root, new FileBasedMatcher(globalAdminFile));
 			
 			//overriding
 			final File cppRootAdminFile = new File(root, "cpp/" + TCWorkspace.TCC_ADMIN_FILE).getAbsoluteFile();
 			FileUtil.writeFile(cppRootAdminFile, ".=//depo/test/CPLUSPLUS/src\n");
 			File cppResource = new File(root, "cpp/resources/cpp.resources");
-			ITCResource itcResource = workspace.getResource(cppResource);
+			ITCResource itcResource = workspace.getTCResource(cppResource);
 			assertNotNull("No ITCResource created for: " + cppResource, itcResource);// in_hierarchy
 			assertEquals("//depo/test/CPLUSPLUS/src/resources/cpp.resources", itcResource.getRepositoryPath());// in_hierarchy
 		} finally {

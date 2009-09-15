@@ -8,12 +8,15 @@ import static org.junit.Assert.assertTrue;
 import java.io.File;
 import java.util.Collection;
 
+import jetbrains.buildServer.util.FileUtil;
+
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
 import com.jetbrains.teamcity.TestServer;
 import com.jetbrains.teamcity.TestingUtil;
+import com.jetbrains.teamcity.resources.ITCResourceMatcher;
 import com.jetbrains.teamcity.runtime.NullProgressMonitor;
 
 public class RemoteRunTest {
@@ -140,13 +143,41 @@ public class RemoteRunTest {
 	}
 	
 	@Test
-	public void getGlobalConfigFile() {
+	public void getGlobalConfigFile() throws Exception {
 		
-		File config = ourCommand.getConfigFile(new Args(new String[] {RemoteRun.ID}));
+		//null on null
+		ITCResourceMatcher config = ourCommand.getMatcher(new Args(new String[] {RemoteRun.ID}));
 		assertNull(config);
-
-		config = ourCommand.getConfigFile(new Args(new String[] {RemoteRun.ID, RemoteRun.CONFIG_FILE_PARAM, "global_config"}));
-		assertNotNull(config);
+		
+		//error on virtual file 
+		try{
+			config = ourCommand.getMatcher(new Args(new String[] {RemoteRun.ID, RemoteRun.CONFIG_FILE_PARAM, "global_config"}));
+			assertTrue(false); //should not be here
+		} catch (IllegalArgumentException e){
+			//OK: file is not exist
+		}
+		
+		//wrong format
+		File configFile = new File(ourCurrentDirectory, "global_config");
+		configFile.createNewFile();
+		try{
+			config = ourCommand.getMatcher(new Args(new String[] {RemoteRun.ID, RemoteRun.CONFIG_FILE_PARAM, configFile.getAbsolutePath()}));
+			assertTrue(false); //should not be here
+		} catch (IllegalArgumentException e){
+			//OK: file format is wrong
+		} finally {
+			FileUtil.delete(configFile);
+		}
+		
+		//all ok
+		configFile = new File(ourCurrentDirectory, "global_config");
+		try{
+			FileUtil.writeFile(configFile, ".=//depo/test/\n");
+			config = ourCommand.getMatcher(new Args(new String[] {RemoteRun.ID, RemoteRun.CONFIG_FILE_PARAM, configFile.getAbsolutePath()}));
+			assertNotNull(config);
+		} finally {
+			FileUtil.delete(configFile);
+		}
 		
 	}
 	

@@ -26,6 +26,9 @@ public class TestingUtil {
 	public static File createFS() throws IOException {
 		//dirs
 		File root = new File("rootTestFolder");
+		//clean to be sure
+		FileUtil.delete(root);
+		
 		root.mkdir();
 		final File javaFolder = new File(root, "java");
 		javaFolder.mkdir();

@@ -20,6 +20,7 @@ public class UtilTest {
 	
 	@BeforeClass
 	public static void setup() throws Exception {
+		FileUtil.delete(new File("rootTestFolder"));
 		//dirs
 		final File rootFolder = new File("rootTestFolder");
 		rootFolder.mkdir();
