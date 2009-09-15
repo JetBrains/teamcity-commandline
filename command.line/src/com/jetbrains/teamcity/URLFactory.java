@@ -1,4 +1,7 @@
-//package com.jetbrains.teamcity;
+package com.jetbrains.teamcity;
+public abstract class URLFactory {
+	
+}
 //
 //import java.io.File;
 //import java.io.IOException;
