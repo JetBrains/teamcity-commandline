@@ -102,7 +102,7 @@ public class RemoteRun implements ICommand {
 		} else {
 			myTimeout = DEFAULT_TIMEOUT;
 		}
-		final TCWorkspace workspace = new TCWorkspace(Util.getCurrentDirectory(), getMatcher(args));
+		final TCWorkspace workspace = new TCWorkspace(Util.getCurrentDirectory(), getOverridingMatcher(args));
 		//collect files
 		final Collection<File> files = getFiles(args, monitor);
 		//associate files to shares(vcsroots)
@@ -128,7 +128,7 @@ public class RemoteRun implements ICommand {
 		return;
 	}
 	
-	ITCResourceMatcher getMatcher(final Args args) {
+	ITCResourceMatcher getOverridingMatcher(final Args args) {
 		if(args.hasArgument(CONFIG_FILE_PARAM)){
 			return new FileBasedMatcher(new File(args.getArgument(CONFIG_FILE_PARAM)));
 			

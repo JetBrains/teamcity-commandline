@@ -27,7 +27,7 @@ public class FileBasedMatcher implements ITCResourceMatcher {
 			throw new IllegalArgumentException(MessageFormat.format("File is null or not extists: \"{0}\"", file));
 		}
 		try {
-			myFile = file;
+			myFile = file.getAbsoluteFile();
 			//parse content
 			myItems = FileUtil.readFile(myFile);
 			if(myItems.isEmpty()){

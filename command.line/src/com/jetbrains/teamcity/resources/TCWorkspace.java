@@ -128,9 +128,6 @@ public class TCWorkspace {
 			return MessageFormat.format("local={0}, repo={1}", getLocal(), getRepositoryPath());
 		}
 		
-		
 	}
-	
-	
 	
 }
