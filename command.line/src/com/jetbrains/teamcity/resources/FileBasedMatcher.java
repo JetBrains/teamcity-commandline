@@ -4,7 +4,9 @@ import java.io.File;
 import java.io.IOException;
 import java.text.MessageFormat;
 import java.util.Comparator;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.TreeMap;
 
 import jetbrains.buildServer.util.FileUtil;
@@ -13,6 +15,10 @@ import com.jetbrains.teamcity.Util;
 
 public class FileBasedMatcher implements ITCResourceMatcher {
 	
+	private static final String CURRENT_DIR = ".";
+
+	private static final String FIELD_DEVIDER = "=";
+
 	private static final Comparator<String> PATH_SORTER = new Comparator<String>(){
 		public int compare(final String key0, final String key1) {
 			return key1.toLowerCase().compareTo(key0.toLowerCase());
@@ -21,6 +27,46 @@ public class FileBasedMatcher implements ITCResourceMatcher {
 	File myFile;
 	private List<String> myItems;
 	private TreeMap<String, String> myRulesMap = new TreeMap<String, String>(PATH_SORTER);
+	
+	public static FileBasedMatcher create(final File rootFolder, final Map<File, String> localToRepo) throws IllegalArgumentException {
+		//check arguments
+		if(rootFolder == null || localToRepo == null){
+			throw new IllegalArgumentException(MessageFormat.format("Root or Map is null: {0}, {1}", rootFolder, localToRepo));
+		}
+		//create content
+		try{
+			final File absoluteRoot = rootFolder.getCanonicalFile().getAbsoluteFile();
+			final HashMap<String, String> pathToRepoMap = new HashMap<String, String>();
+			
+			//transform into plain Strings 
+			for(final Map.Entry<File, String> entry : localToRepo.entrySet()){
+
+				final File absoluteEntryFile = entry.getKey().getCanonicalFile();
+				final String repoPrefix = Util.toPortableString(entry.getValue());
+
+				if(absoluteRoot.equals(absoluteEntryFile)){
+					//provide "."
+					pathToRepoMap.put(CURRENT_DIR, repoPrefix);
+				} else {
+					final String relativePath = FileUtil.getRelativePath(absoluteRoot, absoluteEntryFile);
+					pathToRepoMap.put(relativePath, repoPrefix);
+				}
+			}
+			//persist
+			final StringBuffer buffer = new StringBuffer();
+			for(Map.Entry<String, String> entry : pathToRepoMap.entrySet()){
+				buffer.append(entry.getKey()).append(FIELD_DEVIDER).append(entry.getValue()).append("\n");
+			}
+			final File adminFile = new File(rootFolder, TCWorkspace.TCC_ADMIN_FILE);
+			FileUtil.writeFile(adminFile, buffer.toString().trim());
+			
+			return new FileBasedMatcher(adminFile);
+
+		} catch (IOException e){
+			throw new IllegalArgumentException(e);
+
+		}
+	}
 
 	public FileBasedMatcher(final File file){
 		if (file == null || !file.exists()) {
@@ -35,7 +81,7 @@ public class FileBasedMatcher implements ITCResourceMatcher {
 			}
 			//will build ordered by full path map for next local files mapping 
 			for(final String item : myItems){
-				final String[] columns = item.trim().split("=");
+				final String[] columns = item.trim().split(FIELD_DEVIDER);
 				if (columns.length < 2) {
 					throw new IllegalArgumentException(MessageFormat.format("\"{0}\" format is wrong", myFile));		
 				}
@@ -90,6 +136,17 @@ public class FileBasedMatcher implements ITCResourceMatcher {
 		}
 		
 	}
+
+	@Override
+	public String toString() {
+		final StringBuffer buffer = new StringBuffer();
+		for(Map.Entry<String, String> entry : myRulesMap.entrySet()){
+			buffer.append(entry.getKey()).append(FIELD_DEVIDER).append(entry.getValue()).append("\n");
+		}
+		return buffer.toString().trim();
+	}
+	
+	
 	
 	
 

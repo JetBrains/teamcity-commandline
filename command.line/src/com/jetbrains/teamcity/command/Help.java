@@ -25,7 +25,7 @@ class Help implements ICommand {
 		buffer.append(MessageFormat.format(Messages.getString("Help.command.header"),  //$NON-NLS-1$
 				Build.major, Build.build));
 		
-		final String commandId = args != null && args.getArguments() != null && args.getArguments().length >0 ? args.getArguments()[0] : "";
+		final String commandId = args != null && args.getArguments() != null && args.getArguments().length > 0 ? args.getArguments()[0] : null;
 		if (args != null && args.getCommandId() != null && args.getCommandId().equals(ID) && commandId!= null && !commandId.equals(ID)) {//help command used
 			buffer.append(printDescription(commandId));
 			myResultDescription = buffer.toString();
@@ -55,12 +55,9 @@ class Help implements ICommand {
 			}});
 
 		knownCommands.addAll(CommandRegistry.getInstance().commands());
-//		final StringTable table = new Util.StringTable(3);
 		for(final ICommand command : knownCommands){
 			buffer.append(MessageFormat.format(Messages.getString("Help.available.commands.list.pattern"), String.valueOf(command.getId()), String.valueOf(command.getCommandDescription()))); //$NON-NLS-1$
-//			table.addRow(MessageFormat.format(Messages.getString("Help.available.commands.list.pattern"), String.valueOf(command.getId()), String.valueOf(command.getCommandDescription()))); //$NON-NLS-1$
 		}
-//		buffer.append(table.toString());
 		buffer.append(Messages.getString("Help.command.usage.text")); //$NON-NLS-1$
 		buffer.append(printGlobalOptions());
 		return buffer.toString();

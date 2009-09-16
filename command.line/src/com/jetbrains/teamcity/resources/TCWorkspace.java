@@ -4,6 +4,7 @@ import java.io.File;
 import java.io.IOException;
 import java.text.MessageFormat;
 import java.util.HashMap;
+import java.util.Map;
 
 import org.apache.log4j.Logger;
 
@@ -128,6 +129,12 @@ public class TCWorkspace {
 			return MessageFormat.format("local={0}, repo={1}", getLocal(), getRepositoryPath());
 		}
 		
+	}
+
+	public void setSharing(final Map<File, String> localToRepo) {
+		final FileBasedMatcher matcher = FileBasedMatcher.create(getRoot(), localToRepo);
+		LOGGER.debug(MessageFormat.format("New sharing for \"{0}\" created successfully\n=>\n", getRoot()));
+		LOGGER.debug(matcher);
 	}
 
 }

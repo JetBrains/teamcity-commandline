@@ -105,11 +105,13 @@ public class TCAccess {
 		
 	}
 	
-	public Collection<IShare> roots(){
+	@Deprecated
+	Collection<IShare> roots(){
 		return Collections.<IShare>unmodifiableCollection(myShares); //do not allow modification
 	}
 	
-	public IShare getRoot(String forPath) throws IllegalArgumentException {
+	@Deprecated
+	IShare getRoot(String forPath) throws IllegalArgumentException {
 		try {
 			final String absolutePath = new File(Util.toPortableString(forPath.trim())).getCanonicalFile().getAbsolutePath();
 			forPath = Util.toPortableString(absolutePath);
@@ -143,7 +145,8 @@ public class TCAccess {
 		}
 	}
 	
-	public synchronized IShare share(String localRoot, final VcsRoot remote) throws IllegalArgumentException {
+	@Deprecated
+	synchronized IShare share(String localRoot, final VcsRoot remote) throws IllegalArgumentException {
 		try {
 			localRoot = new File(Util.toPortableString(localRoot)).getCanonicalFile().getAbsolutePath();
 			//check exists
@@ -178,7 +181,8 @@ public class TCAccess {
 		}
 	}
 	
-	public void update(IShare share, VcsRoot root) {
+	@Deprecated
+	void update(IShare share, VcsRoot root) {
 		if(share instanceof TeamCityRoot){
 			((TeamCityRoot)share).update(root.getProperties());
 			Storage.getInstance().put(SHARES_KEY, myShares);
@@ -194,7 +198,9 @@ public class TCAccess {
 		super.finalize();
 	}
 
-	public synchronized void unshare(final String id) throws IllegalArgumentException {
+	
+	@Deprecated
+	synchronized void unshare(final String id) throws IllegalArgumentException {
 		for(IShare root : roots()){
 			if(id.equals(root.getId())){
 				myShares.remove(root);
@@ -228,6 +234,7 @@ public class TCAccess {
 		}
 	}
 	
+	@Deprecated
 	static class TeamCityRoot implements IShare, Serializable {
 		
 		private static final long serialVersionUID = -5096247011911645590L;
@@ -379,16 +386,19 @@ public class TCAccess {
 		return Collections.<ICredential>unmodifiableCollection(myCredentials); //do not allow modification
 	}
 
-	public void setDefaultMapping(final IShare share, String mapping) {
+	@Deprecated
+	void setDefaultMapping(final IShare share, String mapping) {
 		myMappings.put(share.getId(), mapping);
 		Storage.getInstance().put(SHARE_DEFAULT_MAPPING_KEY, myMappings);		
 	}
 
-	public String getDefaultMapping(final IShare share) {
+	@Deprecated
+	String getDefaultMapping(final IShare share) {
 		return myMappings.get(share.getId());
 	}
 
-	public void removeDefaultMapping(final IShare share) {
+	@Deprecated
+	void removeDefaultMapping(final IShare share) {
 		final String shareId = share.getId();
 		if(myMappings.containsKey(shareId)){
 			LOGGER.debug(MessageFormat.format("Default mapping \"{0}\" succesfully removed", myMappings.get(shareId))); //$NON-NLS-1$

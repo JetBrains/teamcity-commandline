@@ -337,7 +337,7 @@ public class Util {
 	
 	public static String toPortableString(final String path){
 		if(path != null){
-			return path.replace("\\", "/");
+			return FileUtil.removeTailingSlash(path.replace("\\", "/"));
 		}
 		return null;
 	}

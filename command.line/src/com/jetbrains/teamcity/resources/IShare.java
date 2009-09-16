@@ -2,7 +2,7 @@ package com.jetbrains.teamcity.resources;
 
 import java.util.Map;
 
-
+@Deprecated
 public interface IShare {
 	
 	public String getId();
