@@ -1,5 +1,19 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE beans PUBLIC "-//SPRING//DTD BEAN//EN" "http://www.springframework.org/dtd/spring-beans.dtd">
 
-<beans>
+<beans default-autowire="constructor">
+  
+  <bean id="commandlineProfileTab" class="jetbrains.buildServer.web.openapi.SimpleCustomTab" init-method="register">
+    <property name="tabTitle" value="Command line tool"/>
+    <property name="placeId" value="MY_TOOLS_TABS"/>
+    <property name="pluginName" value="command.line"/>
+    <property name="includeUrl" value="commandlineSettings.jsp"/>
+  </bean>
+
+  <bean id="commandlineSection" class="jetbrains.buildServer.commandline.CommandLineSection" init-method="register">
+    <property name="placeId" value="MY_TOOLS_SECTION"/>
+    <property name="pluginName" value="command.line"/>
+    <property name="includeUrl" value="commandlineSection.jsp"/>
+  </bean>
+
 </beans>
