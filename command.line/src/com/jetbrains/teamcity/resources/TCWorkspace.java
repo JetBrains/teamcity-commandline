@@ -14,7 +14,7 @@ public class TCWorkspace {
 	
 	private static Logger LOGGER = Logger.getLogger(TCWorkspace.class) ;
 	
-	public static final String TCC_ADMIN_FILE = ".tcc"; //$NON-NLS-1$
+	public static final String TCC_ADMIN_FILE = Messages.getString("TCWorkspace.per.folder.admin.file"); //$NON-NLS-1$
 	
 	private HashMap<File, ITCResourceMatcher> myCache = new HashMap<File, ITCResourceMatcher>();
 
@@ -29,7 +29,7 @@ public class TCWorkspace {
 		myRootFolder = rootFolder;
 		//setup global admin
 		final String home = System.getProperty("user.home"); //$NON-NLS-1$
-		final String myDefaultConfigFile = home + File.separator + Storage.TC_CLI_HOME + File.separator + ".tcc.global.config";
+		final String myDefaultConfigFile = home + File.separator + Storage.TC_CLI_HOME + File.separator + Messages.getString("TCWorkspace.global.admin.file"); //$NON-NLS-1$
 		final File defaultConfig = new File(myDefaultConfigFile);
 		if(defaultConfig.exists()){
 			myGlobalMatcher = new FileBasedMatcher(defaultConfig);
@@ -43,7 +43,7 @@ public class TCWorkspace {
 		if(externMatcher != null){
 			myGlobalMatcher = externMatcher;
 		} else {
-			LOGGER.debug(MessageFormat.format("Extern matcher is null", externMatcher));			
+			LOGGER.debug(MessageFormat.format("Extern matcher is null", externMatcher)); //$NON-NLS-1$
 		}
 	}
 	
@@ -101,7 +101,7 @@ public class TCWorkspace {
 			//All found
 			final String prefix = matching.getTCID();
 			final String relativePath = matching.getRelativePath();
-			return new TCResource(local, MessageFormat.format("{0}/{1}", prefix, relativePath)); 
+			return new TCResource(local, MessageFormat.format("{0}/{1}", prefix, relativePath));  //$NON-NLS-1$
 		}
 		return null;
 	}
@@ -126,7 +126,7 @@ public class TCWorkspace {
 		
 		@Override
 		public String toString() {
-			return MessageFormat.format("local={0}, repo={1}", getLocal(), getRepositoryPath());
+			return MessageFormat.format("local={0}, repo={1}", getLocal(), getRepositoryPath()); //$NON-NLS-1$
 		}
 		
 	}
