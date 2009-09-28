@@ -3,6 +3,7 @@
   <test name="Commandline Tool plugin tests">
     <classes>
       <class name="jetbrains.buildServer.commandline.MappingGeneratorTest"  />
+      <class name="jetbrains.buildServer.commandline.GetBuildTypeMappingActionTest"/>
     </classes>
   </test>
 </suite>

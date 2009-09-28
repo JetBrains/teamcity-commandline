@@ -3,9 +3,11 @@ package jetbrains.buildServer.commandline;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
+import jetbrains.buildServer.log.Loggers;
 import jetbrains.buildServer.serverSide.SBuildType;
-import jetbrains.buildServer.vcs.*;
+import jetbrains.buildServer.util.FileUtil;
 import jetbrains.buildServer.util.StringUtil;
+import jetbrains.buildServer.vcs.*;
 
 public class MappingGenerator {
   private final VcsManager myVcsManager;
@@ -40,6 +42,7 @@ public class MappingGenerator {
         obtainMappingUsing(personalSupport);
       }
     } catch (VcsException e) {
+      Loggers.SERVER.warn(e);
       // TODO
     }
   }
@@ -59,7 +62,7 @@ public class MappingGenerator {
       for (VcsUrlInfo2TargetPath info2TargetPath : pathPrefixes) {
 
         final String leftPart = createLeftPart(info2TargetPath, includeRule.getTo());
-        final String rightPart = info2TargetPath.getVcsUrlInfo();
+        final String rightPart = FileUtil.removeTailingSlash(info2TargetPath.getVcsUrlInfo());
         myLines.add(new MappingElement(leftPart, rightPart, vcsRoot.getDescription()));
       }
 
@@ -69,6 +72,7 @@ public class MappingGenerator {
   private String createLeftPart(final VcsUrlInfo2TargetPath info2TargetPath, final String target) {
 
     String result = StringUtil.join("/", nullIfEmpty(target), nullIfEmpty(info2TargetPath.getTargetPath()));
+    result = FileUtil.removeTailingSlash(result);
 
     return "".equals(result) ? "." : result;
   }

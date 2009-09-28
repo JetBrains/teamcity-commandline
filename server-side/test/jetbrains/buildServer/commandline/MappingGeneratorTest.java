@@ -1,16 +1,12 @@
 package jetbrains.buildServer.commandline;
 
 import java.util.List;
-import java.util.Collection;
 import java.util.ArrayList;
 import jetbrains.buildServer.serverSide.impl.BaseServerTestCase;
-import jetbrains.buildServer.serverSide.impl.MockVcsSupport;
-import jetbrains.buildServer.serverSide.impl.MockPersonalSupport;
 import jetbrains.buildServer.vcs.impl.SVcsRootImpl;
 import jetbrains.buildServer.vcs.*;
 import org.testng.annotations.Test;
 import org.testng.annotations.BeforeMethod;
-import org.jetbrains.annotations.NotNull;
 
 @Test
 public class MappingGeneratorTest extends BaseServerTestCase {
@@ -122,23 +118,7 @@ public class MappingGeneratorTest extends BaseServerTestCase {
   protected void setUp() throws Exception {
     super.setUp();    //To change body of overridden methods use File | Settings | File Templates.
     myPathPrefixes = new ArrayList<VcsUrlInfo2TargetPath>();
-    registerMockVcsSupport();
-  }
-
-  private void registerMockVcsSupport() {
-    myFixture.getVcsManager().registerVcsSupport(new MockVcsSupport("mock") {
-      @Override
-      public VcsPersonalSupport getPersonalSupport() {
-        return new MockPersonalSupport() {
-          @Override
-          public Collection<VcsUrlInfo2TargetPath> getPossiblePathPrefixes(@NotNull final VcsRoot vcsRoot,
-                                                                           @NotNull final IncludeRule includeRule)
-            throws VcsException {
-            return myPathPrefixes;
-          }
-        };
-      }
-    });
+    PathPrefixesSupport.register(myPathPrefixes, myServer.getVcsManager());
   }
 
 }
