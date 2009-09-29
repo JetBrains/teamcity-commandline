@@ -12,4 +12,10 @@
   <bean id="commandLineSettingsController" class="jetbrains.buildServer.commandline.CommandLineController" init-method="register">
   </bean>
 
+  <bean id="mappingProviderAction" class="jetbrains.buildServer.commandline.GetBuildTypeMappingAction" init-method="register">
+    <constructor-arg index="0" ref="projectManager"/>
+    <constructor-arg index="1" ref="vcsManager"/>
+    <constructor-arg index="2" ref="ajaxController"/>
+  </bean>
+
 </beans>

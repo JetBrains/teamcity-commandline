@@ -15,6 +15,7 @@ import java.util.regex.Pattern;
 
 import jetbrains.buildServer.util.FileUtil;
 
+import jetbrains.buildServer.util.StringUtil;
 import org.apache.log4j.Logger;
 
 public class Util {
@@ -337,7 +338,7 @@ public class Util {
 	
 	public static String toPortableString(final String path){
 		if(path != null){
-			return FileUtil.removeTailingSlash(path.replace("\\", "/"));
+			return StringUtil.removeTailingSlash(path.replace("\\", "/"));
 		}
 		return null;
 	}

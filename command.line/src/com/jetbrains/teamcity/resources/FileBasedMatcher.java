@@ -12,6 +12,7 @@ import java.util.TreeMap;
 import jetbrains.buildServer.util.FileUtil;
 
 import com.jetbrains.teamcity.Util;
+import jetbrains.buildServer.util.StringUtil;
 
 public class FileBasedMatcher implements ITCResourceMatcher {
 	
@@ -87,7 +88,7 @@ public class FileBasedMatcher implements ITCResourceMatcher {
 				}
 				
 				final String path = columns[0];
-				final String tcid = FileUtil.removeTailingSlash(columns[1]);//slash will be added to Url later
+				final String tcid = StringUtil.removeTailingSlash(columns[1]);//slash will be added to Url later
 				//absolute or not: if relative have to add the source file location to paths describes mappings from the file
 				File ruleContainer = new File(path);
 				if(!ruleContainer.isAbsolute()){

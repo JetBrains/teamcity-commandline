@@ -39,6 +39,12 @@
         <fileset id="fileset1" name="My Fileset" removed="false">
           <file>file://$MODULE_DIR$/src/META-INF/build-server-plugin-commandline.xml</file>
           <file>jar://$MODULE_DIR$/../../../lib/spring.jar!/org/springframework/jdbc/support/sql-error-codes.xml</file>
+          <file>file://$MODULE_DIR$/../../../server/src/META-INF/build-server-plugin-agents-statistics.xml</file>
+          <file>file://$MODULE_DIR$/../../../server/src/META-INF/build-server-plugin-declarative-extensibility.xml</file>
+          <file>file://$MODULE_DIR$/../../../server/src/META-INF/buildServerCompatMode.xml</file>
+          <file>file://$MODULE_DIR$/../../../server/src/META-INF/buildServerPermissions.xml</file>
+          <file>file://$MODULE_DIR$/../../../server/src/META-INF/buildServerPluginsSupport.xml</file>
+          <file>file://$MODULE_DIR$/../../../server/src/META-INF/buildServerSpring.xml</file>
         </fileset>
       </configuration>
     </facet>

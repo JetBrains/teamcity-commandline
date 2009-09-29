@@ -2,6 +2,7 @@ package jetbrains.buildServer.commandline;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import jetbrains.buildServer.controllers.BaseAjaxActionController;
 import jetbrains.buildServer.serverSide.ProjectManager;
 import jetbrains.buildServer.serverSide.SBuildType;
 import jetbrains.buildServer.util.StringUtil;
@@ -17,10 +18,14 @@ public class GetBuildTypeMappingAction implements ControllerAction {
 
   private final ProjectManager myProjectManager;
   private final VcsManager myVcsManager;
+  private final BaseAjaxActionController myController;
 
-  public GetBuildTypeMappingAction(final ProjectManager projectManager, final VcsManager vcsManager) {
+  public GetBuildTypeMappingAction(final ProjectManager projectManager,
+                                   final VcsManager vcsManager,
+                                   final BaseAjaxActionController controller) {
     myProjectManager = projectManager;
     myVcsManager = vcsManager;
+    myController = controller;
   }
 
   public boolean canProcess(final HttpServletRequest request) {
@@ -50,5 +55,9 @@ public class GetBuildTypeMappingAction implements ControllerAction {
 
   private static String btId(final HttpServletRequest request) {
     return request.getParameter(MAPPING_FOR);
+  }
+
+  public void register() {
+    myController.registerAction(this);
   }
 }

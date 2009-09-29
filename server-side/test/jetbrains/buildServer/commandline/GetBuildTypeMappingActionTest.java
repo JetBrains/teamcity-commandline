@@ -53,7 +53,7 @@ public class GetBuildTypeMappingActionTest extends BaseWebTestCase {
   @BeforeMethod
   protected void setUp() throws Exception {
     super.setUp();
-    myAction = new GetBuildTypeMappingAction(myServer.getProjectManager(), myServer.getVcsManager());
+    myAction = new GetBuildTypeMappingAction(myServer.getProjectManager(), myServer.getVcsManager(), null);
     myPathPrefixes = new ArrayList<VcsUrlInfo2TargetPath>();
     PathPrefixesSupport.register(myPathPrefixes, myServer.getVcsManager());
   }
