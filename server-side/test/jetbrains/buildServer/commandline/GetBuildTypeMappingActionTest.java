@@ -36,14 +36,14 @@ public class GetBuildTypeMappingActionTest extends BaseWebTestCase {
 
   public void should_process_request_with_data() throws Exception {
     myFixture.addVcsRoot("mock", "");
-    myPathPrefixes.add(new VcsUrlInfo2TargetPath("perforce://rusps-app01:1666:////depot/src/", ""));
+    myPathPrefixes.add(new VcsUrlInfo2TargetPath("rusps-app01:1666:////depot/src/", ""));
 
     final Element response = runActionForBuildType();
 
     assertEquals(XmlUtil.to_s(XmlUtil.from_s(
       "<response>" +
       "  <mapping>" +
-      "    <map from=\".\" to=\"perforce://rusps-app01:1666:////depot/src\" comment=\"mock\" />" +
+      "    <map from=\".\" to=\"mock://rusps-app01:1666:////depot/src\" comment=\"mock\" />" +
       "  </mapping>" +
       "</response>"))
     , XmlUtil.to_s(response));
