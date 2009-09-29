@@ -18,6 +18,10 @@ public class CommandLineSection extends SimplePageExtension {
   @Override
   public void fillModel(@NotNull final Map<String, Object> model, @NotNull final HttpServletRequest request) {
     super.fillModel(model, request);
-    model.put("downloadLink", request.getContextPath() + myPluginDescriptor.getPluginResourcesPath("tcc.jar"));
+    addPathPrefix(model, request, myPluginDescriptor);
+  }
+
+  static void addPathPrefix(final Map<String, Object> model, final HttpServletRequest request, final PluginDescriptor pluginDescriptor) {
+    model.put("cmdPathPrefix", request.getContextPath() + pluginDescriptor.getPluginResourcesPath());
   }
 }

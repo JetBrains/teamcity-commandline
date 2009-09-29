@@ -37,7 +37,7 @@ public class MappingGeneratorTest extends BaseServerTestCase {
   }
 
   private void verifySimpleMapping(final MappingElement mapping, final SVcsRootImpl vcsRoot) {
-    verifyMapping(mapping, vcsRoot, ".", "UID|some/path");
+    verifyMapping(mapping, vcsRoot, ".", "mock://UID|some/path");
   }
 
   private void verifyMapping(final MappingElement mapping,
@@ -72,8 +72,8 @@ public class MappingGeneratorTest extends BaseServerTestCase {
     final List<MappingElement> mapping = generateMappingForBuildType();
     assertEquals(mapping.toString(), 2, mapping.size());
 
-    verifyMapping(mapping.get(0), vcsRoot, ".", "UID|some/path");
-    verifyMapping(mapping.get(1), vcsRoot, "path3", "UID|some/path/subpath");
+    verifyMapping(mapping.get(0), vcsRoot, ".", "mock://UID|some/path");
+    verifyMapping(mapping.get(1), vcsRoot, "path3", "mock://UID|some/path/subpath");
   }
 
   public void generate_mapping_with_target_checkout_rule() throws Exception {
@@ -86,7 +86,7 @@ public class MappingGeneratorTest extends BaseServerTestCase {
     final List<MappingElement> mapping = generateMappingForBuildType();
     assertEquals(mapping.toString(), 1, mapping.size());
 
-    verifyMapping(mapping.get(0), vcsRoot, "svnrepo", "UID|some/path");
+    verifyMapping(mapping.get(0), vcsRoot, "svnrepo", "mock://UID|some/path");
   }
 
   public void generate_mapping_with_2_include_rules() throws Exception {
@@ -100,10 +100,10 @@ public class MappingGeneratorTest extends BaseServerTestCase {
     final List<MappingElement> mapping = generateMappingForBuildType();
     assertEquals(mapping.toString(), 4, mapping.size());
 
-    verifyMapping(mapping.get(0), vcsRoot, "dddPath", "UID|some/path");
-    verifyMapping(mapping.get(1), vcsRoot, "dddPath/subpathMapping", "UID|some/path/subpath");
-    verifyMapping(mapping.get(2), vcsRoot, "svnrepo", "UID|some/path");
-    verifyMapping(mapping.get(3), vcsRoot, "svnrepo/subpathMapping", "UID|some/path/subpath");
+    verifyMapping(mapping.get(0), vcsRoot, "dddPath", "mock://UID|some/path");
+    verifyMapping(mapping.get(1), vcsRoot, "dddPath/subpathMapping", "mock://UID|some/path/subpath");
+    verifyMapping(mapping.get(2), vcsRoot, "svnrepo", "mock://UID|some/path");
+    verifyMapping(mapping.get(3), vcsRoot, "svnrepo/subpathMapping", "mock://UID|some/path/subpath");
   }
 
   // TODO: kir - error reporting

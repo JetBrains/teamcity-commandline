@@ -1,0 +1,30 @@
+
+#mappingTable {
+  margin-top: 1em;
+}
+
+#mappingTable .fromInput {
+  width: 15em;
+}
+
+#mappingTable .toInput {
+  width: 35em;
+}
+
+#mappingTable .remove {
+  max-width: 7em;
+}
+
+#mappingTable input {
+  width: 97%;
+}
+
+.resultsPreview {
+  width: 50em;
+  padding: .5em;
+}
+
+.resultsPreview textarea {
+  width: 100%;
+  padding: .5em;
+}

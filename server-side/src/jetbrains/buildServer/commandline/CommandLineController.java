@@ -33,20 +33,22 @@ public class CommandLineController extends BaseController {
     myProjectManager = projectManager;
   }
 
-  @Override
-  protected ModelAndView doHandle(final HttpServletRequest request, final HttpServletResponse response) throws Exception {
-    if (!isPost(request)) {
-
-      final List<SBuildType> buildTypes = myProjectManager.getActiveBuildTypes();
-      final HashMap model = new HashMap();
-      model.put("buildTypes", buildTypes);
-
-      return new ModelAndView(myPluginDescriptor.getPluginResourcesPath(MY_JSP), model);
-    }
-    return null;
-  }
-
   public void register() {
     myWebControllerManager.registerController(CONTROLLER_PATH, this);
   }
+
+  @Override
+  protected ModelAndView doHandle(final HttpServletRequest request, final HttpServletResponse response) throws Exception {
+    final HashMap model = new HashMap();
+    addBuildTypes(model);
+    CommandLineSection.addPathPrefix(model, request, myPluginDescriptor);
+
+    return new ModelAndView(myPluginDescriptor.getPluginResourcesPath(MY_JSP), model);
+  }
+
+  private void addBuildTypes(final HashMap model) {
+    final List<SBuildType> buildTypes = myProjectManager.getActiveBuildTypes();
+    model.put("buildTypes", buildTypes);
+  }
+
 }

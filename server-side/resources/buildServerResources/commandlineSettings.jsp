@@ -14,10 +14,10 @@
 
 <jsp:attribute name="head_include">
 
-  <bs:linkCSS>
-  </bs:linkCSS>
-  <bs:linkScript>
-  </bs:linkScript>
+  <style type="text/css">
+    @import "${cmdPathPrefix}commandLine.css";
+  </style>
+  <script type="text/javascript" src="${cmdPathPrefix}commandLine.js"></script>
 
 
   <!-- ===== JS files, provided by plugins: ==== -->
@@ -39,47 +39,9 @@
     <jsp:useBean id="buildTypes" type="java.util.List<jetbrains.buildServer.serverSide.SBuildType>" scope="request"/>
     BS.BuildTypes = [
       <c:forEach items="${buildTypes}" var="buildType">
-      {"id": "${buildType.id}", fullName: '<bs:escapeForJs text="${buildType.fullName}"/>'},
-      </c:forEach>
+      {"id": "${buildType.id}", fullName: '<bs:escapeForJs text="${buildType.fullName}"/>'},</c:forEach>
       {}
     ];
-
-    function fillBuildTypesList() {
-      var select = $('buildConfigurationSelector');
-      while(select.length > 1) {
-        select.remove(1);
-      }
-
-      for(var i = 0; i < BS.BuildTypes.length; i ++) {
-        var buildType = BS.BuildTypes[i];
-        if (buildType.id) {
-          var option = document.createElement("option");
-          option.value = buildType.id;
-          option.text  = buildType.fullName;
-          select.add(option, null);
-        }
-      }
-    }
-
-    function installControlHandlers() {
-      var select = $('buildConfigurationSelector');
-      select.observe("change", function() {
-        $('addMapping').disabled = select.selectedIndex == 0;
-
-        //var el = select.options[select.selectedIndex];
-
-      });
-
-      $('addMapping').observe("click", function() {
-      });
-    }
-
-    document.observe("dom:loaded", function() {
-      fillBuildTypesList();
-      installControlHandlers();
-    });
-
-
     //-->
   </script>
 </jsp:attribute>
@@ -88,6 +50,7 @@
 
   <p>
       On this page you can generate a configuration file for a tool which allows to <strong>run personal builds</strong> from <strong>command line</strong>.
+      <a href="${cmdPathPrefix}tcc.jar">Download the tool</a>
   </p>
   <p>
       To operate, this tool requires a <strong>configuration file</strong> which maps local paths in your project to VCS settings in Teamcity.
@@ -106,12 +69,30 @@
       <option>-- Select a build configuration --</option>
     </select>
 
-    <button id="addMapping" disabled="true">Add mapping</button>
+    <button id="addMapping" disabled="true" title="Add VCS mapping for selected build configuration">Add mapping</button>
+    <forms:saving id="updateIndicator" style="float: none;" savingTitle="Adding VCS mapping for selected configuration, please wait"/>
   </div>
 
+  <div style="display: none;">
 
-  <p>Resulting configuration file contents:</p>
-  <textarea rows="10" cols="80" id="results"></textarea>
+    <a href="#" onclick="BS.CommandLine.removeAll(); return false;" class="red actionLink" style="float:right;">Remove all</a> 
+    <table id="mappingTable" class="dark">
+      <tr>
+        <th class="fromInput">Local Path</th>
+        <th class="toInput">VCS Path</th>
+        <th>VCS description</th>
+        <th class="remove">Remove</th>
+      </tr>
+    </table>
+
+    <div class="resultsPreview">
+      <a href="#" onclick="BS.CommandLine.updatePreview(); return false;" style="float: right;">Update from table</a>
+      <strong>Resulting configuration file contents:</strong><br/>
+      <textarea rows="10" cols="80" id="resultsConfig"></textarea>
+    </div>
+
+  </div>
+
 
 </jsp:attribute>
 

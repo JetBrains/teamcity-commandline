@@ -4,6 +4,7 @@
     <classes>
       <class name="jetbrains.buildServer.commandline.MappingGeneratorTest"  />
       <class name="jetbrains.buildServer.commandline.GetBuildTypeMappingActionTest"/>
+      <class name="jetbrains.buildServer.commandline.CommandLineControllerTest"/>
     </classes>
   </test>
 </suite>

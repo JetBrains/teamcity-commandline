@@ -5,6 +5,7 @@ import java.util.Collection;
 import java.util.List;
 import jetbrains.buildServer.log.Loggers;
 import jetbrains.buildServer.serverSide.SBuildType;
+import jetbrains.buildServer.serverSide.impl.personal.PersonalPatchUtil;
 import jetbrains.buildServer.util.StringUtil;
 import jetbrains.buildServer.vcs.*;
 
@@ -61,7 +62,8 @@ public class MappingGenerator {
       for (VcsUrlInfo2TargetPath info2TargetPath : pathPrefixes) {
 
         final String leftPart = createLeftPart(info2TargetPath, includeRule.getTo());
-        final String rightPart = StringUtil.removeTailingSlash(info2TargetPath.getVcsUrlInfo());
+        final String rightPart = vcsRoot.getVcsName() + PersonalPatchUtil.SEPARATOR + 
+                                 StringUtil.removeTailingSlash(info2TargetPath.getVcsUrlInfo());
         myLines.add(new MappingElement(leftPart, rightPart, vcsRoot.getDescription()));
       }
 
