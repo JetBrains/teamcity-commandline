@@ -116,6 +116,16 @@ BS.CommandLine = {
       var to = inputs[1].value;
       $('resultsConfig').value += from + "=" + to + "\r\n";
     }, this);  
+  },
+
+  removeAll: function() {
+    $$('#mappingTable tr').each(function(trElement) {
+      var inputs = trElement.getElementsByTagName('input');
+      if (!inputs || inputs.length != 2) return;
+      trElement.remove();
+    }, this);
+    this.updatePreview();
+    this.hideMapping();
   }
 
 };

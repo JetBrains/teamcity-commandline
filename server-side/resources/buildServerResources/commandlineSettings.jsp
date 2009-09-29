@@ -60,7 +60,8 @@
   </p>
   <ol>
     <li><strong>Local path</strong> in your project, which can be either absolute path on your hard drive or it can be relative to the project root.</li>
-    <li>Corresponding <strong>path in VCS</strong>. This path is formatted according to TeamCity formatting rules, and usually comprises identifier of the VCS repository and path within this repository.</li>
+    <li><strong>VCS path</strong>. This path points to a location under VCS root and is formatted according to TeamCity formatting rules.
+      It usually comprises identifier of the VCS repository and path within this repository.</li>
   </ol>
 
   <div>
@@ -75,7 +76,7 @@
 
   <div style="display: none;">
 
-    <a href="#" onclick="BS.CommandLine.removeAll(); return false;" class="red actionLink" style="float:right;">Remove all</a> 
+    <a href="#" onclick="BS.CommandLine.removeAll(); return false;" class="red actionLink" style="float:right; margin-bottom: .2em;">Remove all</a> 
     <table id="mappingTable" class="dark">
       <tr>
         <th class="fromInput">Local Path</th>

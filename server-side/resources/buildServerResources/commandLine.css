@@ -1,6 +1,7 @@
 
 #mappingTable {
-  margin-top: 1em;
+  margin-top: .5em;
+  clear: both;
 }
 
 #mappingTable .fromInput {

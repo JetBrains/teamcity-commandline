@@ -37,13 +37,12 @@ public class MappingGeneratorTest extends BaseServerTestCase {
   }
 
   private void verifySimpleMapping(final MappingElement mapping, final SVcsRootImpl vcsRoot) {
-    verifyMapping(mapping, vcsRoot, ".", "mock://UID|some/path");
+    verifyMapping(mapping, ".", "mock://UID|some/path", vcsRoot.getDescription());
   }
 
   private void verifyMapping(final MappingElement mapping,
-                             final SVcsRootImpl vcsRoot,
-                             final String localPath, final String targetLocation) {
-    final MappingElement expected = new MappingElement(localPath, targetLocation, vcsRoot.getDescription());
+                             final String localPath, final String targetLocation, final String description) {
+    final MappingElement expected = new MappingElement(localPath, targetLocation, description);
     assertEquals(expected,  mapping);
   }
 
@@ -72,8 +71,8 @@ public class MappingGeneratorTest extends BaseServerTestCase {
     final List<MappingElement> mapping = generateMappingForBuildType();
     assertEquals(mapping.toString(), 2, mapping.size());
 
-    verifyMapping(mapping.get(0), vcsRoot, ".", "mock://UID|some/path");
-    verifyMapping(mapping.get(1), vcsRoot, "path3", "mock://UID|some/path/subpath");
+    verifyMapping(mapping.get(0), ".", "mock://UID|some/path", vcsRoot.getDescription());
+    verifyMapping(mapping.get(1), "path3", "mock://UID|some/path/subpath", vcsRoot.getDescription());
   }
 
   public void generate_mapping_with_target_checkout_rule() throws Exception {
@@ -86,7 +85,7 @@ public class MappingGeneratorTest extends BaseServerTestCase {
     final List<MappingElement> mapping = generateMappingForBuildType();
     assertEquals(mapping.toString(), 1, mapping.size());
 
-    verifyMapping(mapping.get(0), vcsRoot, "svnrepo", "mock://UID|some/path");
+    verifyMapping(mapping.get(0), "svnrepo", "mock://UID|some/path", vcsRoot.getDescription() + "; .=>svnrepo");
   }
 
   public void generate_mapping_with_2_include_rules() throws Exception {
@@ -100,10 +99,10 @@ public class MappingGeneratorTest extends BaseServerTestCase {
     final List<MappingElement> mapping = generateMappingForBuildType();
     assertEquals(mapping.toString(), 4, mapping.size());
 
-    verifyMapping(mapping.get(0), vcsRoot, "dddPath", "mock://UID|some/path");
-    verifyMapping(mapping.get(1), vcsRoot, "dddPath/subpathMapping", "mock://UID|some/path/subpath");
-    verifyMapping(mapping.get(2), vcsRoot, "svnrepo", "mock://UID|some/path");
-    verifyMapping(mapping.get(3), vcsRoot, "svnrepo/subpathMapping", "mock://UID|some/path/subpath");
+    verifyMapping(mapping.get(0), "dddPath", "mock://UID|some/path", vcsRoot.getDescription() + "; dddPath=>dddPath");
+    verifyMapping(mapping.get(1), "dddPath/subpathMapping", "mock://UID|some/path/subpath", vcsRoot.getDescription() + "; dddPath=>dddPath");
+    verifyMapping(mapping.get(2), "svnrepo", "mock://UID|some/path", vcsRoot.getDescription() + "; .=>svnrepo");
+    verifyMapping(mapping.get(3), "svnrepo/subpathMapping", "mock://UID|some/path/subpath", vcsRoot.getDescription()+ "; .=>svnrepo");
   }
 
   // TODO: kir - error reporting

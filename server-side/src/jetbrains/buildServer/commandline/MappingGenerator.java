@@ -64,10 +64,17 @@ public class MappingGenerator {
         final String leftPart = createLeftPart(info2TargetPath, includeRule.getTo());
         final String rightPart = vcsRoot.getVcsName() + PersonalPatchUtil.SEPARATOR + 
                                  StringUtil.removeTailingSlash(info2TargetPath.getVcsUrlInfo());
-        myLines.add(new MappingElement(leftPart, rightPart, vcsRoot.getDescription()));
+        myLines.add(new MappingElement(leftPart, rightPart, makeDescription(vcsRoot, includeRule)));
       }
 
     }
+  }
+
+  private static String makeDescription(final SVcsRoot vcsRoot, final IncludeRule includeRule) {
+    if ("".equals(includeRule.getFrom()) && "".equals(includeRule.getTo())) {
+      return vcsRoot.getDescription();
+    }
+    return vcsRoot.getDescription() + "; " + includeRule.toDescriptiveString();
   }
 
   private String createLeftPart(final VcsUrlInfo2TargetPath info2TargetPath, final String target) {
