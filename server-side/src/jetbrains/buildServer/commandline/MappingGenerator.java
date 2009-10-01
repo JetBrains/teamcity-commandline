@@ -70,19 +70,19 @@ public class MappingGenerator {
     }
   }
 
-  private static String makeDescription(final SVcsRoot vcsRoot, final IncludeRule includeRule) {
-    if ("".equals(includeRule.getFrom()) && "".equals(includeRule.getTo())) {
-      return vcsRoot.getDescription();
-    }
-    return vcsRoot.getDescription() + "; " + includeRule.toDescriptiveString();
-  }
-
   private String createLeftPart(final VcsUrlInfo2TargetPath info2TargetPath, final String target) {
 
     String result = StringUtil.join("/", nullIfEmpty(target), nullIfEmpty(info2TargetPath.getTargetPath()));
     result = StringUtil.removeTailingSlash(result);
 
     return "".equals(result) ? "." : result;
+  }
+
+  private static String makeDescription(final SVcsRoot vcsRoot, final IncludeRule includeRule) {
+    if ("".equals(includeRule.getFrom()) && "".equals(includeRule.getTo())) {
+      return vcsRoot.getDescription();
+    }
+    return vcsRoot.getDescription() + "; " + includeRule.toDescriptiveString();
   }
 
   private static String nullIfEmpty(String result) {
