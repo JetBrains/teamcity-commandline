@@ -3,7 +3,7 @@ BS.CommandLine = {
   ROW_TEMPLATE: new Template("<tr><td class='fromInput'><input type='text' name='from' value='#{from}'/></td>" +
                             "<td class='toInput'><input type='text' name='to' value='#{to}'/></td>" +
                             "<td class='comment'>#{comment}</td>" +
-                            "<td class='remove'><a title='Remove this mapping' onclick='$(this.parentNode.parentNode).remove(); BS.CommandLine.updatePreview(); return false;' href='#' class='actionLink red'>Remove</a></td></tr>"),
+                            "<td class='remove'><a title='Remove this mapping' onclick='BS.CommandLine.removeRow(this.parentNode.parentNode); BS.CommandLine.updatePreview(); return false;' href='#' class='actionLink red'>Remove</a></td></tr>"),
 
   selectElement: function() {
     return $('buildConfigurationSelector');
@@ -29,7 +29,7 @@ BS.CommandLine = {
       if (buildType.id) {
         var option = document.createElement("option");
         option.value = buildType.id;
-        option.text = buildType.fullName;
+        option.text = "[" + buildType.id + "] " + buildType.fullName;
         selectElement.add(option, null);
       }
     }
@@ -45,6 +45,9 @@ BS.CommandLine = {
       var buildTypeId = this.buildTypeId();
       if (buildTypeId) {
         this.addMappingFor(buildTypeId);
+        if ($('btId')) {
+          $('btId').innerHTML = buildTypeId;
+        }
       }
     }.bind(this));
   },
@@ -105,6 +108,10 @@ BS.CommandLine = {
 
   addMappingRow: function(from, to, comment) {
     $('mappingTable').innerHTML += this.ROW_TEMPLATE.evaluate({from: from, to: to, comment: comment});
+    $('mappingTable').select("input").each(function(input_element){
+      input_element.onblur = BS.CommandLine.updatePreview;
+      input_element.onkeypress = BS.CommandLine.updatePreviewDelayed;
+    });
   },
 
   updatePreview: function() {
@@ -115,17 +122,23 @@ BS.CommandLine = {
       var from = inputs[0].value; 
       var to = inputs[1].value;
       $('resultsConfig').value += from + "=" + to + "\r\n";
-    }, this);  
+    }, this);
+
+    if ($$('#mappingTable tr').size() == 1) {
+      this.hideMapping();
+    }
   },
 
-  removeAll: function() {
-    $$('#mappingTable tr').each(function(trElement) {
-      var inputs = trElement.getElementsByTagName('input');
-      if (!inputs || inputs.length != 2) return;
-      trElement.remove();
-    }, this);
-    this.updatePreview();
-    this.hideMapping();
+  updatePreviewDelayed: function() {
+    setTimeout(BS.CommandLine.updatePreview, 20);
+  },
+
+  removeRow: function(tr_element) {
+    $(tr_element).select("input").each(function(input_element){
+      input_element.onblur = null;
+      input_element.onkeypress = null;
+    });
+    $(tr_element).remove();
   }
 
 };

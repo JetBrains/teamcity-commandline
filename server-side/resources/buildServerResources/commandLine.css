@@ -1,3 +1,6 @@
+#content {
+  padding: 0 1em;
+}
 
 #mappingTable {
   margin-top: .5em;
@@ -20,12 +23,24 @@
   width: 97%;
 }
 
+.hiddenBlock {
+  display: none;
+  margin-top: 1em;
+}
+
 .resultsPreview {
   width: 50em;
-  padding: .5em;
+  margin: 0 3em .5em .5em;
+  float: left;
 }
 
 .resultsPreview textarea {
-  width: 100%;
+  width: 99%;
   padding: .5em;
+}
+
+pre, code {
+  font-family: Courier, monospace;
+  padding: 0;
+  margin: 0;
 }
