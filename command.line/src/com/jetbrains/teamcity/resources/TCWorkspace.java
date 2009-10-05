@@ -4,7 +4,6 @@ import java.io.File;
 import java.io.IOException;
 import java.text.MessageFormat;
 import java.util.HashMap;
-import java.util.Map;
 
 import org.apache.log4j.Logger;
 
@@ -16,11 +15,20 @@ public class TCWorkspace {
 	
 	public static final String TCC_ADMIN_FILE = Messages.getString("TCWorkspace.per.folder.admin.file"); //$NON-NLS-1$
 	
+	public static final String TCC_GLOBAL_ADMIN_FILE = System
+			.getProperty("user.home") //$NON-NLS-1$
+			+ File.separator
+			+ Storage.TC_CLI_HOME
+			+ File.separator
+			+ Messages.getString("TCWorkspace.global.admin.file"); //$NON-NLS-1$
+	
 	private HashMap<File, ITCResourceMatcher> myCache = new HashMap<File, ITCResourceMatcher>();
 
 	private File myRootFolder;
 
 	private ITCResourceMatcher myGlobalMatcher;
+	
+	private ITCResourceMatcher myOverridingMatcher;
 	
 	public TCWorkspace(final File rootFolder){
 		if(rootFolder == null){
@@ -28,23 +36,29 @@ public class TCWorkspace {
 		}
 		myRootFolder = rootFolder;
 		//setup global admin
-		final String home = System.getProperty("user.home"); //$NON-NLS-1$
-		final String myDefaultConfigFile = home + File.separator + Storage.TC_CLI_HOME + File.separator + Messages.getString("TCWorkspace.global.admin.file"); //$NON-NLS-1$
-		final File defaultConfig = new File(myDefaultConfigFile);
+		final File defaultConfig = getGlobalAdminFile();
 		if(defaultConfig.exists()){
 			myGlobalMatcher = new FileBasedMatcher(defaultConfig);
 		} else {
-			LOGGER.debug(MessageFormat.format("Default Admin file \"{0}\" is not found", myDefaultConfigFile));			
+			LOGGER.debug(MessageFormat.format("Default Admin file \"{0}\" is not found", defaultConfig));			
 		}
+	}
+	
+	private File getGlobalAdminFile() {
+		final String globalConfigEnv = System.getenv("TC_DEFAULT_CONFIG");
+		if(globalConfigEnv != null && globalConfigEnv.length()>0){
+			LOGGER.debug(String.format("Default Admin file \"%s\" got from Environment variable", globalConfigEnv));
+			return new File(globalConfigEnv);
+		}
+		final String myDefaultConfigFile = TCC_GLOBAL_ADMIN_FILE;
+		LOGGER.debug(String.format("Default Admin file \"%s\" got from default location", myDefaultConfigFile));
+		return new File(myDefaultConfigFile);
 	}
 	
 	public TCWorkspace(final File rootFolder, final ITCResourceMatcher externMatcher){
 		this(rootFolder);
-		if(externMatcher != null){
-			myGlobalMatcher = externMatcher;
-		} else {
-			LOGGER.debug(MessageFormat.format("Extern matcher is null", externMatcher)); //$NON-NLS-1$
-		}
+		myOverridingMatcher = externMatcher;
+		LOGGER.debug(String.format("Overriding Matcher set to \"%s\"", externMatcher)); //$NON-NLS-1$
 	}
 	
 	public File getRoot() {
@@ -76,17 +90,23 @@ public class TCWorkspace {
 		if(local == null){
 			throw new IllegalArgumentException("File cannot be null");
 		}
-		//look into cache(cache keep file for files resides in same folder only)
-		ITCResourceMatcher matcher = myCache.get(local.getParentFile()); 
-		if(matcher == null){
-			//seek for uncached
-			matcher = getMatcherFor(local);
+		ITCResourceMatcher matcher;
+		//set to OverridingMatcher if defined
+		if(myOverridingMatcher != null){
+			matcher = myOverridingMatcher;
+		} else {
+			//look into cache(cache keep file for files resides in same folder only)
+			matcher = myCache.get(local.getParentFile()); 
 			if(matcher == null){
-				//look into Global
-				matcher = myGlobalMatcher;
-				if(myGlobalMatcher == null){
-					LOGGER.debug(MessageFormat.format("Neither Local nor Global admin files found for \"{0}\"", local));
-					return null;
+				//seek for uncached
+				matcher = getMatcherFor(local);
+				if(matcher == null){
+					//look into Global
+					matcher = myGlobalMatcher;
+					if(myGlobalMatcher == null){
+						LOGGER.debug(MessageFormat.format("Neither Local nor Global admin files found for \"{0}\"", local));
+						return null;
+					}
 				}
 			}
 		}
@@ -129,12 +149,6 @@ public class TCWorkspace {
 			return MessageFormat.format("local={0}, repo={1}", getLocal(), getRepositoryPath()); //$NON-NLS-1$
 		}
 		
-	}
-
-	public void setSharing(final Map<File, String> localToRepo) {
-		final FileBasedMatcher matcher = FileBasedMatcher.create(getRoot(), localToRepo);
-		LOGGER.debug(MessageFormat.format("New sharing for \"{0}\" created successfully\n=>\n", getRoot()));
-		LOGGER.debug(matcher);
 	}
 
 }

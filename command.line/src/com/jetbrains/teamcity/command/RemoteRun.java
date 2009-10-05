@@ -76,7 +76,7 @@ public class RemoteRun implements ICommand {
 
 	static final String ID = Messages.getString("RemoteRun.command.id"); //$NON-NLS-1$
 	
-	static final String CONFIG_FILE_PARAM = "--config-file";
+	static final String MAPPING_FILE_PARAM = Messages.getString("RemoteRun.overriding.config.file.argument"); //$NON-NLS-1$
 	
 	static final String CONFIGURATION_PARAM = Messages.getString("RemoteRun.config.runtime.param"); //$NON-NLS-1$
 	static final String CONFIGURATION_PARAM_LONG = Messages.getString("RemoteRun.config.runtime.param.long"); //$NON-NLS-1$
@@ -94,7 +94,6 @@ public class RemoteRun implements ICommand {
 	
 	static final String PATCHES_FOLDER = System.getProperty("java.io.tmpdir"); //$NON-NLS-1$
 	
-//	private String myConfigurationId;
 	private Server myServer;
 	private String myComments;
 	private boolean isNoWait = false;
@@ -120,8 +119,6 @@ public class RemoteRun implements ICommand {
 		final TCWorkspace workspace = new TCWorkspace(Util.getCurrentDirectory(), getOverridingMatcher(args));
 		//collect files
 		final Collection<File> files = getFiles(args, monitor);
-		//associate files to shares(vcsroots)
-//		final Map<IShare, ArrayList<File>> rootsMap = getRootMap(server, cfgId, files, args.hasArgument(NO_USE_SHARES_SWITCH_LONG), monitor);
 		
 		//collect configurations for running
 		final Collection<String> configurations = getApplicableConfigurations(cfgId, workspace, files, monitor);
@@ -144,8 +141,8 @@ public class RemoteRun implements ICommand {
 	}
 	
 	ITCResourceMatcher getOverridingMatcher(final Args args) {
-		if(args.hasArgument(CONFIG_FILE_PARAM)){
-			return new FileBasedMatcher(new File(args.getArgument(CONFIG_FILE_PARAM)));
+		if(args.hasArgument(MAPPING_FILE_PARAM)){
+			return new FileBasedMatcher(new File(args.getArgument(MAPPING_FILE_PARAM)));
 			
 		}
 		return null;
@@ -160,20 +157,6 @@ public class RemoteRun implements ICommand {
 		final HashSet<String> resources = new HashSet<String>();
 		for(File file : files){
 			resources.add(workspace.getTCResource(file).getRepositoryPath());
-//			final URLFactory factory = URLFactory.getFactory(entry.getKey());
-//			if(factory != null){
-//				for(final File file : entry.getValue()){
-//					try {
-//						final String url = factory.getUrl(file);
-//						if(url != null){
-//							resources.add(url);			
-//						}
-//					} catch (IOException e) {
-//						throw new ECommunicationException(e);
-//					}
-//				}
-//			}
-//			
 		}
 		buffer.addAll(myServer.getApplicableConfigurations(resources));
 		monitor.done(MessageFormat.format(Messages.getString("RemoteRun.collected.configuration.done.pattern"), buffer.size(), buffer)); //$NON-NLS-1$

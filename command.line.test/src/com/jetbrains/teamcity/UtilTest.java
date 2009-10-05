@@ -18,29 +18,16 @@ import org.junit.Test;
 
 public class UtilTest {
 	
+	private static File ourTestFs;
+	
 	@BeforeClass
 	public static void setup() throws Exception {
-		FileUtil.delete(new File("rootTestFolder"));
-		//dirs
-		final File rootFolder = new File("rootTestFolder");
-		rootFolder.mkdir();
-		final File firsChild = new File(rootFolder, "java");
-		firsChild.mkdir();
-		
-		final File firsFirstChild = new File(firsChild, "resources");
-		firsFirstChild.mkdir();
-		final File secondChild = new File(rootFolder, "cpp");
-		secondChild.mkdir();
-		//files
-		new File(firsChild, "1.java").createNewFile();
-		new File(firsFirstChild, "2.java").createNewFile();
-		new File(firsFirstChild, "1.resources").createNewFile();
-		new File(secondChild, "1.cpp").createNewFile();
+		ourTestFs = TestingUtil.createFS();
 	}
 	
 	@AfterClass
 	public static void clean() throws Exception {
-		FileUtil.delete(new File("rootTestFolder"));
+		TestingUtil.releaseFS(ourTestFs);
 	}
 	
 	@Test
@@ -109,7 +96,7 @@ public class UtilTest {
 	public void getFiles_all() throws Exception {
 		final String pattern = MessageFormat.format("{0}{1}", "rootTestFolder", File.separator);
 		final Collection<File> files = Util.getFiles(pattern);
-		assertEquals(pattern, 4, files.size());
+		assertEquals(pattern, 5, files.size());
 	}
 
 //	@Test
