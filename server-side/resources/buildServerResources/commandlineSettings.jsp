@@ -13,7 +13,7 @@
 
 <c:set var="title" value="Command Line Tool Settings" scope="request"/>
 <c:set var="loginLine" >java -jar c:\tcc.jar login --host <%= WebUtil.getRootUrl(request)%> --user <%= SessionUser.getUser(request).getUsername()%></c:set>
-<c:set var="remoteRunLine" >java -jar c:\tcc.jar run --host <%= WebUtil.getRootUrl(request)%> -m "remote run message"--config-file tcc.config -c <span id="btId">btXXX</span> &lt;path to source directory&gt;</c:set>
+<c:set var="remoteRunLine" >java -jar c:\tcc.jar run --host <%= WebUtil.getRootUrl(request)%> -m "remote run message" --config-file tcc.config -c <span id="btId">btXXX</span> &lt;list of modified files&gt;</c:set>
 <bs:page>
 
 <jsp:attribute name="head_include">
