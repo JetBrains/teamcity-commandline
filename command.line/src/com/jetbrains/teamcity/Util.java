@@ -14,8 +14,8 @@ import java.util.Scanner;
 import java.util.regex.Pattern;
 
 import jetbrains.buildServer.util.FileUtil;
-
 import jetbrains.buildServer.util.StringUtil;
+
 import org.apache.log4j.Logger;
 
 public class Util {

@@ -7,6 +7,7 @@ import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.Map;
 
 import jetbrains.buildServer.serverSide.crypt.EncryptUtil;
 
@@ -27,6 +28,16 @@ public class TCAccess {
 		}
 	};
 	
+	static Storage.IKey<ArrayList<?>> SHARES_KEY = new Storage.IKey<ArrayList<?>>(){
+		
+		private static final long serialVersionUID = 6509717225043443905L;
+
+		public Object getKey() {
+			return TCAccess.class.getName() + ".SHARES"; //$NON-NLS-1$
+		}
+	
+	};
+	
 
 	private static TCAccess ourInstance;
 	
@@ -40,6 +51,8 @@ public class TCAccess {
 	}
 
 	private TCAccess(){
+//		//cleanup
+//		Storage.getInstance().remove(SHARES_KEY);
 		//credentials. note: password encoded
 		final ArrayList<ICredential> credentials = Storage.getInstance().get(CREDENTIAL_KEY);
 		myCredentials = new ArrayList<ICredential>();
@@ -142,6 +155,19 @@ public class TCAccess {
 	
 	public Collection<ICredential> credentials(){
 		return Collections.<ICredential>unmodifiableCollection(myCredentials); //do not allow modification
+	}
+
+	//TODO: remove next release & uncomment "cleanup"
+	@Deprecated
+	public static class TeamCityRoot implements Serializable {
+
+		private static final long serialVersionUID = 1L;
+		private Long myRemote;
+		private String myLocal;
+		private String myId;
+		private Map<String, String> myProperies;
+		private String myVcs;
+		
 	}
 	
 }

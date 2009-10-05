@@ -10,9 +10,9 @@ import java.util.Map;
 import java.util.TreeMap;
 
 import jetbrains.buildServer.util.FileUtil;
+import jetbrains.buildServer.util.StringUtil;
 
 import com.jetbrains.teamcity.Util;
-import jetbrains.buildServer.util.StringUtil;
 
 public class FileBasedMatcher implements ITCResourceMatcher {
 	

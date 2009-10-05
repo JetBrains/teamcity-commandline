@@ -70,6 +70,11 @@ public class Storage {
 	public synchronized <T extends Serializable> T get(final IKey<T> key) {
 		return (T) myStorage.get(key.getKey());
 	}
+	
+	public synchronized void remove(final IKey<?> key) {
+		myStorage.remove(key.getKey());
+		flush();
+	}
 
 	public synchronized <T extends Serializable> void put(final IKey<T> key, T value, final boolean flush) {
 		myStorage.put(key.getKey(), value);
