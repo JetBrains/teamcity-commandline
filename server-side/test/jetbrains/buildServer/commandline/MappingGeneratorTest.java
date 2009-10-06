@@ -85,7 +85,7 @@ public class MappingGeneratorTest extends BaseServerTestCase {
     final List<MappingElement> mapping = generateMappingForBuildType();
     assertEquals(mapping.toString(), 1, mapping.size());
 
-    verifyMapping(mapping.get(0), "svnrepo", "mock://UID|some/path", vcsRoot.getDescription() + "; .=>svnrepo");
+    verifyMapping(mapping.get(0), ".", "mock://UID|some/path", vcsRoot.getDescription() + "; .=>svnrepo");
   }
 
   public void generate_mapping_with_2_include_rules() throws Exception {
@@ -99,10 +99,10 @@ public class MappingGeneratorTest extends BaseServerTestCase {
     final List<MappingElement> mapping = generateMappingForBuildType();
     assertEquals(mapping.toString(), 4, mapping.size());
 
-    verifyMapping(mapping.get(0), "dddPath", "mock://UID|some/path", vcsRoot.getDescription() + "; dddPath=>dddPath");
-    verifyMapping(mapping.get(1), "dddPath/subpathMapping", "mock://UID|some/path/subpath", vcsRoot.getDescription() + "; dddPath=>dddPath");
-    verifyMapping(mapping.get(2), "svnrepo", "mock://UID|some/path", vcsRoot.getDescription() + "; .=>svnrepo");
-    verifyMapping(mapping.get(3), "svnrepo/subpathMapping", "mock://UID|some/path/subpath", vcsRoot.getDescription()+ "; .=>svnrepo");
+    verifyMapping(mapping.get(0), ".", "mock://UID|some/path", vcsRoot.getDescription() + "; dddPath=>dddPath");
+    verifyMapping(mapping.get(1), "subpathMapping", "mock://UID|some/path/subpath", vcsRoot.getDescription() + "; dddPath=>dddPath");
+    verifyMapping(mapping.get(2), ".", "mock://UID|some/path", vcsRoot.getDescription() + "; .=>svnrepo");
+    verifyMapping(mapping.get(3), "subpathMapping", "mock://UID|some/path/subpath", vcsRoot.getDescription()+ "; .=>svnrepo");
   }
 
   // TODO: kir - error reporting

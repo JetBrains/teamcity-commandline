@@ -61,7 +61,7 @@ public class MappingGenerator {
 
       for (VcsUrlInfo2TargetPath info2TargetPath : pathPrefixes) {
 
-        final String leftPart = createLeftPart(info2TargetPath, includeRule.getTo());
+        final String leftPart = createLeftPart(info2TargetPath);
         final String rightPart = vcsRoot.getVcsName() + PersonalPatchUtil.SEPARATOR + 
                                  StringUtil.removeTailingSlash(info2TargetPath.getVcsUrlInfo());
         myLines.add(new MappingElement(leftPart, rightPart, makeDescription(vcsRoot, includeRule)));
@@ -70,11 +70,8 @@ public class MappingGenerator {
     }
   }
 
-  private String createLeftPart(final VcsUrlInfo2TargetPath info2TargetPath, final String target) {
-
-    String result = StringUtil.join("/", nullIfEmpty(target), nullIfEmpty(info2TargetPath.getTargetPath()));
-    result = StringUtil.removeTailingSlash(result);
-
+  private String createLeftPart(final VcsUrlInfo2TargetPath info2TargetPath) {
+    String result = StringUtil.removeTailingSlash(info2TargetPath.getTargetPath());
     return "".equals(result) ? "." : result;
   }
 
