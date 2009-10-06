@@ -34,17 +34,21 @@ public class TCWorkspace {
 		if(rootFolder == null){
 			throw new IllegalArgumentException("Root directory cannot be null");
 		}
-		myRootFolder = rootFolder;
-		//setup global admin
-		final File defaultConfig = getGlobalAdminFile();
-		if(defaultConfig.exists()){
-			myGlobalMatcher = new FileBasedMatcher(defaultConfig);
-		} else {
-			LOGGER.debug(MessageFormat.format("Default Admin file \"{0}\" is not found", defaultConfig));			
+		try {
+			myRootFolder = rootFolder.getAbsoluteFile().getCanonicalFile();
+			//setup global admin
+			final File defaultConfig = getGlobalAdminFile();
+			if(defaultConfig != null && defaultConfig.exists()){
+				myGlobalMatcher = new FileBasedMatcher(defaultConfig);
+			} else {
+				LOGGER.debug(MessageFormat.format("Default Admin file \"{0}\" is not found", defaultConfig));			
+			}
+		} catch (IOException e) {
+			throw new RuntimeException(e);
 		}
 	}
 	
-	private File getGlobalAdminFile() {
+	protected File getGlobalAdminFile() {
 		final String globalConfigEnv = System.getenv("TC_DEFAULT_CONFIG");
 		if(globalConfigEnv != null && globalConfigEnv.length()>0){
 			LOGGER.debug(String.format("Default Admin file \"%s\" got from Environment variable", globalConfigEnv));
@@ -70,25 +74,31 @@ public class TCWorkspace {
 			throw new IllegalArgumentException("File cannot be null");
 		}
 		//per-folder search
-		final File folder = local.getParentFile();
-		if(folder != null){
-			try {
-				final File adminFile = new File(folder.getCanonicalFile().getAbsoluteFile(), TCC_ADMIN_FILE);
+		try {
+			File folder = local.getParentFile();
+			if(folder != null){
+				folder = folder.getCanonicalFile().getAbsoluteFile();
+				final File adminFile = new File(folder, TCC_ADMIN_FILE);
 				if(adminFile != null && adminFile.exists()){
 					return new FileBasedMatcher(adminFile);
 				} else {
 					return getMatcherFor(folder);
 				}
-			} catch (IOException e) {
-				throw new IllegalArgumentException(e);
 			}
+		} catch (IOException e) {
+			throw new IllegalArgumentException(e);
 		}
 		return null;
 	}
 	
-	public ITCResource getTCResource(final File local) throws IllegalArgumentException {
+	public ITCResource getTCResource(File local) throws IllegalArgumentException {
 		if(local == null){
 			throw new IllegalArgumentException("File cannot be null");
+		}
+		try {
+			local = local.getAbsoluteFile().getCanonicalFile();
+		} catch (IOException e) {
+			throw new IllegalArgumentException(e);
 		}
 		ITCResourceMatcher matcher;
 		//set to OverridingMatcher if defined

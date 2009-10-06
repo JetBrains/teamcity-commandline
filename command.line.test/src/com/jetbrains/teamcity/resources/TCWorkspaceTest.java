@@ -158,12 +158,17 @@ public class TCWorkspaceTest {
 	@Test
 	public void getResource_global_absolute_path() throws Exception {
 		final File root = TestingUtil.createFS();
-		final File globalAdminFile = new File(TCWorkspace.TCC_GLOBAL_ADMIN_FILE);
+		final File testGlobalAdminFile = new File(TCWorkspace.TCC_GLOBAL_ADMIN_FILE + ".test");
 		try{
 			//create global Admin
 			final File testRootFolder = root.getCanonicalFile();
-			FileUtil.writeFile(globalAdminFile, testRootFolder.getAbsolutePath() + "=//depo/test/\n");
-			final TCWorkspace workspace = new TCWorkspace(testRootFolder, null/*new FileBasedMatcher(globalAdminFile)*/);
+			FileUtil.writeFile(testGlobalAdminFile, testRootFolder.getAbsolutePath() + "=//depo/test/\n");
+			final TCWorkspace workspace = new TCWorkspace(testRootFolder, null/*new FileBasedMatcher(globalAdminFile)*/){
+				@Override
+				protected File getGlobalAdminFile() {
+					return testGlobalAdminFile;
+				}
+			};
 			
 			//simple
 			File java = new File(root, "1.java");
@@ -176,7 +181,7 @@ public class TCWorkspaceTest {
 			assertNotNull("No ITCResource created for: " + javaResource, itcResource);// in_hierarchy
 			assertEquals("//depo/test/java/resources/java.resources", itcResource.getRepositoryPath());// in_hierarchy
 		} finally {
-			globalAdminFile.deleteOnExit();
+			testGlobalAdminFile.deleteOnExit();
 			TestingUtil.releaseFS(root);
 		}
 	}
@@ -184,11 +189,16 @@ public class TCWorkspaceTest {
 	@Test
 	public void getResource_global_overrided_with_per_folder() throws Exception {
 		final File root = TestingUtil.createFS();
-		final File globalAdminFile = new File(TCWorkspace.TCC_GLOBAL_ADMIN_FILE);
+		final File testGlobalAdminFile = new File(TCWorkspace.TCC_GLOBAL_ADMIN_FILE + ".test");
 		try{
 			//create global Admin
-			FileUtil.writeFile(globalAdminFile, root.getCanonicalFile().getAbsolutePath() + "=//depo/test/\n");
-			final TCWorkspace workspace = new TCWorkspace(root, null);
+			FileUtil.writeFile(testGlobalAdminFile, root.getCanonicalFile().getAbsolutePath() + "=//depo/test/\n");
+			final TCWorkspace workspace = new TCWorkspace(root, null){
+				@Override
+				protected File getGlobalAdminFile() {
+					return testGlobalAdminFile;
+				}
+			};
 			
 			//overriding
 			final File cppRootAdminFile = new File(root, "cpp/" + TCWorkspace.TCC_ADMIN_FILE).getAbsoluteFile();
@@ -198,7 +208,7 @@ public class TCWorkspaceTest {
 			assertNotNull("No ITCResource created for: " + cppResource, itcResource);// in_hierarchy
 			assertEquals("//depo/test/CPLUSPLUS/src/resources/cpp.resources", itcResource.getRepositoryPath());// in_hierarchy
 		} finally {
-			globalAdminFile.deleteOnExit();
+			testGlobalAdminFile.deleteOnExit();
 			TestingUtil.releaseFS(root);
 		}
 	}

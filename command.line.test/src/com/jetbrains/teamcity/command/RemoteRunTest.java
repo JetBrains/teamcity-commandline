@@ -7,6 +7,7 @@ import static org.junit.Assert.assertTrue;
 
 import java.io.File;
 import java.util.Collection;
+import java.util.Collections;
 
 import jetbrains.buildServer.util.FileUtil;
 
@@ -17,6 +18,7 @@ import org.junit.Test;
 import com.jetbrains.teamcity.TestServer;
 import com.jetbrains.teamcity.TestingUtil;
 import com.jetbrains.teamcity.resources.ITCResourceMatcher;
+import com.jetbrains.teamcity.resources.TCWorkspace;
 import com.jetbrains.teamcity.runtime.NullProgressMonitor;
 
 public class RemoteRunTest {
@@ -62,33 +64,29 @@ public class RemoteRunTest {
 		//TODO: implement it
 	}
 	
-//	@Test
-//	public void createInplaceShare() throws Exception {
-//		try{
-//			ourCommand.createInplaceShare(null, null);
-//			assertTrue("Exception expected", true);
-//		} catch (IllegalArgumentException e){
-//			//ok
-//		}
-//		try{
-//			ourCommand.createInplaceShare(ourTestServer, TestServer.TC_CONFIG_NO_ROOTS);
-//			assertTrue("Exception expected", true);
-//		} catch (IllegalArgumentException e){
-//			//ok
-//		}
-//		try{
-//			ourCommand.createInplaceShare(ourTestServer, TestServer.TC_CONFIG_MULTIPLE_ROOT);
-//			assertTrue("Exception expected", true);
-//		} catch (IllegalArgumentException e){
-//			//ok
-//		}
-//		final IShare singleRootShare = ourCommand.createInplaceShare(ourTestServer, TestServer.TC_CONFIG_SINGLE_ROOT);
-//		assertNotNull(singleRootShare);
-//	}
-	
 	@Test
-	public void getRootMap() {
-		//TODO: implement it
+	public void TW_9694() throws Exception {
+		final File configFile = new File(ourRootFolder + File.separator + "java" + File.separator + "resources", TCWorkspace.TCC_ADMIN_FILE);
+		FileUtil.writeFile(configFile, ".=//depo/test/resources\n");
+		final File patchFile = new File("./test.patch");
+		patchFile.createNewFile();
+		
+		try{
+			//file under TC
+			File patch = ourCommand.createPatch(patchFile, new TCWorkspace(new File(".")), Collections.singletonList(new File("java" + File.separator + "resources", "java.resources")));
+			assertTrue(patch.length() > 10);
+			//file is not under TC: disable default config
+			patch = ourCommand.createPatch(patchFile, new TCWorkspace(new File(".")){
+				@Override
+				protected File getGlobalAdminFile() {
+					return null;
+				}
+			}, Collections.singletonList(new File("java", "1.java")));
+			assertTrue(patch.length() < 10);
+		} finally {
+			FileUtil.delete(patchFile);
+			FileUtil.delete(configFile);
+		}
 	}
 	
 	@Test

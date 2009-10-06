@@ -318,7 +318,8 @@ public class RemoteRun implements ICommand {
 		try{
 			os = new DataOutputStream(new BufferedOutputStream(new FileOutputStream(patchFile)));
 			patcher = new LowLevelPatchBuilderImpl(os);
-			for(final File file : files){
+			for(File file : files){
+				file = file.getAbsoluteFile().getCanonicalFile();//make absolute
 				LowLevelPatchBuilder.WriteFileContent content = new PatchBuilderImpl.StreamWriteFileContent(new BufferedInputStream(new FileInputStream(file)), file.length());
 				final ITCResource resource = workspace.getTCResource(file);
 				if(resource != null && resource.getRepositoryPath() != null){
@@ -329,7 +330,10 @@ public class RemoteRun implements ICommand {
 						patcher.delete(resource.getRepositoryPath(), true, false);
 					}
 				} else {
-					LOGGER.debug(MessageFormat.format("? {0}", resource.getRepositoryPath())); //$NON-NLS-1$
+					LOGGER.debug(String.format("? \"%s\" has not accosiated ITCResource(%s) or empty RepositoryPath(%s)", //$NON-NLS-1$ 
+							file, 
+							resource, 
+							resource != null ? resource.getRepositoryPath() : (String)null));
 				}
 			}
 			//
@@ -360,100 +364,6 @@ public class RemoteRun implements ICommand {
 		file.getParentFile().mkdirs();
 		return file;
 	}
-
-//	@Deprecated
-//	private Map<IShare, ArrayList<File>> getRootMap(final Server server, final String cfgId, 
-//			final Collection<File> files, final boolean doNotUseShares, IProgressMonitor monitor) throws IllegalArgumentException, ECommunicationException  {
-//		
-//		//if switch is set do not use any sharing info
-//		if(doNotUseShares && cfgId != null){//can not provide service without any info vcsroots about(can be obtained from cfg)
-//			LOGGER.debug(MessageFormat.format("\"{0}\" detected. Will not use any persisted Sahre's Info for VcsRoot binding", NO_USE_SHARES_SWITCH_LONG)); //$NON-NLS-1$
-//			return Collections.singletonMap(createInplaceShare(server, cfgId), new ArrayList<File>(files));
-//		}
-//		//use stored sharing info for associate resources to vcsroots
-//		try{
-//			final HashMap<IShare, ArrayList<File>> result = new HashMap<IShare, ArrayList<File>>();
-//			final TCAccess access = TCAccess.getInstance();
-//			if(access.roots().isEmpty()){
-//				throw new IllegalArgumentException(Messages.getString("RemoteRun.no.shares.for.remoterun.error.message")); //$NON-NLS-1$
-//			}
-//			for(final File file : files){
-//				final IShare root = access.getRoot(file.getAbsolutePath());
-//				if(root == null){
-//					throw new IllegalArgumentException(MessageFormat.format(Messages.getString("RemoteRun.passed.path.is.not.shared.error.message"), file.getAbsolutePath())); //$NON-NLS-1$
-//				}
-//				LOGGER.debug(MessageFormat.format("Share \"{0}\" found for Remote Run", root)); //$NON-NLS-1$
-//				ArrayList<File> rootFiles = result.get(root);
-//				if(rootFiles == null){
-//					rootFiles = new ArrayList<File>();
-//					result.put(root, rootFiles);
-//				}
-//				rootFiles.add(file);
-//			}
-//			return result;
-//			
-//		} catch (IllegalArgumentException e){
-//			//perhaps there is no shares. discard collected and create virtual share by passed configuration
-//			LOGGER.debug("Error got during Share association. Will not use any persisted Sahre's Info for VcsRoot binding", e); //$NON-NLS-1$
-//			return Collections.singletonMap(createInplaceShare(server, cfgId), new ArrayList<File>(files));
-//		}
-//		
-//	}
-//
-//	@Deprecated
-//	private IShare createInplaceShare(final Server server, final String cfgId) throws IllegalArgumentException, ECommunicationException {
-//		//check Configuration is defined
-//		if(cfgId == null){
-//			throw new IllegalArgumentException(MessageFormat.format(Messages.getString("RemoteRun.configuration.omitted.with.unshared.folder.error.pattern"), "?"));			 //$NON-NLS-1$
-//		}
-//		//seek Configuration
-//		final BuildTypeData configuration = server.getConfiguration(cfgId);
-//		if(configuration == null){
-//			throw new IllegalArgumentException(MessageFormat.format(Messages.getString("RemoteRun.wrong.configuration.id.error.pattern"), cfgId)); //$NON-NLS-1$
-//		}
-//		//get single VcsRoot
-//		final List<? extends VcsRoot> roots = configuration.getVcsRoots();
-//		if(roots.isEmpty()){
-//			throw new IllegalArgumentException(MessageFormat.format("Could not get Default VcsRoot in Configuration \"{0}\": no one VcsRoot attached.", cfgId)); //$NON-NLS-1$
-//			
-//		} else if(roots.size() > 1){
-//			throw new IllegalArgumentException(MessageFormat.format(Messages.getString("RemoteRun.no.default.vcsroot.error.pattern"), cfgId, roots.size())); //$NON-NLS-1$
-//			
-//		}
-//		//construct virtual
-//		final VcsRoot singleRoot = roots.get(0);
-//		final IShare inplaceShare = new IShare(){
-//			
-//			@Override
-//			public String toString() {
-//				return MessageFormat.format("local={0}, remote={1}, vcs={2}, properties={3}",  //$NON-NLS-1$
-//						getLocal(), getRemote(), getVcs(), getProperties());
-//			}
-//
-//			public String getId() {
-//				return String.valueOf(System.currentTimeMillis());
-//			}
-//
-//			public String getLocal() {
-//				//let's use current directory
-//				return System.getProperty("user.dir"); //$NON-NLS-1$
-//			}
-//
-//			public Map<String, String> getProperties() {
-//				return singleRoot.getProperties();
-//			}
-//
-//			public Long getRemote() {
-//				return singleRoot.getId();
-//			}
-//
-//			public String getVcs() {
-//				return singleRoot.getVcsName();
-//			}
-//		};
-//		LOGGER.debug(MessageFormat.format("Virtual Share was created: {0}", inplaceShare)); //$NON-NLS-1$
-//		return inplaceShare;
-//	}
 
 	Collection<File> getFiles(Args args, IProgressMonitor monitor) throws IllegalArgumentException {
 		monitor.beginTask(Messages.getString("RemoteRun.collect.changes.step.name")); //$NON-NLS-1$
