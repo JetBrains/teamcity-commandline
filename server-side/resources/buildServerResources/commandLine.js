@@ -1,9 +1,11 @@
 BS.CommandLine = {
 
-  ROW_TEMPLATE: new Template("<tr><td class='fromInput'><input type='text' name='from' value='#{from}'/></td>" +
-                            "<td class='toInput'><input type='text' name='to' value='#{to}'/></td>" +
-                            "<td class='comment'>#{comment}</td>" +
-                            "<td class='remove'><a title='Remove this mapping' onclick='BS.CommandLine.removeRow(this.parentNode.parentNode); BS.CommandLine.updatePreview(); return false;' href='#' class='actionLink red'>Remove</a></td></tr>"),
+  ROWS: [
+    {css: "fromInput", template: new Template("<input type='text' name='from' value='#{from}'/>")},
+    {css: "toInput", template: new Template("<input type='text' name='to' value='#{to}'/>")},
+    {css: "comment", template: new Template("#{comment}")},
+    {css: "remove", template: new Template("<a title='Remove this mapping' onclick='BS.CommandLine.removeRow(this.parentNode.parentNode); BS.CommandLine.updatePreview(); return false;' href='#' class='actionLink red'>Remove</a>")}
+  ],
 
   selectElement: function() {
     return $('buildConfigurationSelector');
@@ -107,7 +109,16 @@ BS.CommandLine = {
   },
 
   addMappingRow: function(from, to, comment) {
-    $('mappingTable').innerHTML += this.ROW_TEMPLATE.evaluate({from: from, to: to, comment: comment});
+    var tbody = $('mappingTable').getElementsByTagName('TBODY')[0];
+    var tr = document.createElement("TR");
+    this.ROWS.each(function(row) {
+      var td = document.createElement("TD");
+      td.innerHTML = row.template.evaluate({from: from, to: to, comment: comment});
+      td.className = row.css;
+      tr.appendChild(td);
+    });
+    tbody.appendChild(tr);
+
     $('mappingTable').select("input").each(function(input_element){
       input_element.onblur = BS.CommandLine.updatePreview;
       input_element.onkeypress = BS.CommandLine.updatePreviewDelayed;
