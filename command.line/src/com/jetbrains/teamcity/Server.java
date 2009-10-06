@@ -1,10 +1,8 @@
 package com.jetbrains.teamcity;
 
-import java.io.File;
 import java.io.IOException;
 import java.net.Proxy;
 import java.net.URL;
-import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
@@ -31,13 +29,11 @@ import jetbrains.buildServer.xmlrpc.XmlRpcTarget.Cancelable;
 import jetbrains.buildServer.xstream.ServerXStreamFormat;
 import jetbrains.buildServer.xstream.XStreamWrapper;
 
-import org.apache.log4j.Logger;
-
 import com.thoughtworks.xstream.XStream;
 
 public class Server {
 
-	private static Logger LOGGER = Logger.getLogger(Server.class) ;
+//	private static Logger LOGGER = Logger.getLogger(Server.class) ;
 	
 	private URL myUrl;
 	private SessionXmlRpcTargetImpl mySession;
@@ -52,14 +48,14 @@ public class Server {
 		this(url);
 //		myProxy = proxy;
 	}
-
+	
 	public void connect() throws ECommunicationException {
 		try {
 			final int timeout = getTimeout();
 			mySession = new SessionXmlRpcTargetImpl(myUrl.toExternalForm(), timeout);
-			LOGGER.debug(MessageFormat.format("XmlRpc session {0} created. Timeout set to {1}", mySession.describeMe(), timeout));
+			Debug.getInstance().debug(Server.class, String.format("XmlRpc session %s created. Timeout set to %s", mySession.describeMe(), timeout));
 		} catch (Throwable e) {
-			throw new ECommunicationException(MessageFormat.format("Could not connect to server {0}", myUrl), Util.getRootCause(e));
+			throw new ECommunicationException(String.format("Could not connect to server %s", myUrl), Util.getRootCause(e));
 		}
 	}
 
@@ -72,7 +68,7 @@ public class Server {
 					return timeout;
 				}
 			} catch (Throwable t) {
-				LOGGER.error("Could not parse timeout", t);
+				Debug.getInstance().error(Server.class, "Could not parse timeout", t);
 			}
 		}
 		return Constants.DEFAULT_XMLRPC_TIMEOUT;

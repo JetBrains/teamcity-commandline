@@ -11,13 +11,10 @@ import java.util.Map;
 
 import jetbrains.buildServer.serverSide.crypt.EncryptUtil;
 
-import org.apache.log4j.Logger;
-
+import com.jetbrains.teamcity.Debug;
 import com.jetbrains.teamcity.Storage;
 
 public class TCAccess {
-	
-	private static Logger LOGGER = Logger.getLogger(TCAccess.class) ;
 	
 	static Storage.IKey<ArrayList<ICredential>> CREDENTIAL_KEY = new Storage.IKey<ArrayList<ICredential>>(){
 		
@@ -64,7 +61,7 @@ public class TCAccess {
 	@Override
 	protected void finalize() throws Throwable {
 		Storage.getInstance().flush();
-		LOGGER.debug("Flush enforced");
+		Debug.getInstance().debug(TCAccess.class, "Flush enforced");
 		super.finalize();
 	}
 
@@ -118,7 +115,7 @@ public class TCAccess {
 					return credential;
 				}
 			} catch (MalformedURLException e) {
-				LOGGER.error(e.getMessage(), e);
+				Debug.getInstance().error(TCAccess.class, e.getMessage(), e);
 			}
 		}
 		return null;

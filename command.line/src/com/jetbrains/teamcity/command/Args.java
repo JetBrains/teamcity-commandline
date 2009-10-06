@@ -1,21 +1,34 @@
 package com.jetbrains.teamcity.command;
 
+import java.util.Arrays;
+import java.util.LinkedList;
+
 import com.jetbrains.teamcity.Util;
 
 public class Args {
 	
+	public static final String DEBUG_ARG = "-debug";
+	
 	private String[] myArgs;
 	private String myCommandId;
+
+	private boolean isDebugOn;
 
 	public Args(final String[] args) {
 		if (args == null || args.length == 0) {
 			myArgs = new String[] { Help.ID };
 			return;
 		}
-		//extract command from line
-		myCommandId = args[0];
-		myArgs = new String[args.length -1];
-		System.arraycopy(args, 1, myArgs, 0, myArgs.length);
+		final LinkedList<String> list = new LinkedList<String>(Arrays.asList(args));
+		//extract CommandId
+		myCommandId = list.get(0);
+		list.remove(0);
+		//remove -debug argument
+		if(list.contains(DEBUG_ARG)){
+			list.remove(DEBUG_ARG);
+			isDebugOn = true;
+		}
+		myArgs = list.toArray(new String[list.size()]);
 	}
 	
 	public String getCommandId(){
@@ -39,6 +52,15 @@ public class Args {
 			return myArgs[myArgs.length - 1];
 		}
 		return null;
+	}
+	
+	@Override
+	public String toString(){
+		return String.format("", myCommandId, Arrays.toString(myArgs));
+	}
+	
+	public boolean isDebugOn (){
+		return isDebugOn;
 	}
 	
 }

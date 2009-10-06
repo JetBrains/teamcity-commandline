@@ -14,6 +14,7 @@ import jetbrains.buildServer.serverSide.crypt.EncryptUtil;
 
 import org.apache.log4j.Logger;
 
+import com.jetbrains.teamcity.Debug;
 import com.jetbrains.teamcity.EAuthorizationException;
 import com.jetbrains.teamcity.ECommunicationException;
 import com.jetbrains.teamcity.ERemoteError;
@@ -25,7 +26,7 @@ import com.jetbrains.teamcity.runtime.IProgressMonitor;
 
 public class CommandRunner {
 	
-	private static Logger LOGGER = Logger.getLogger(CommandRunner.class) ;
+//	private static Logger LOGGER = Logger.getLogger(CommandRunner.class) ;
 	
 	static final String USER_ARG = Messages.getString("CommandRunner.global.runtime.param.user"); //$NON-NLS-1$
 	static final String PASSWORD_ARG = Messages.getString("CommandRunner.global.runtime.param.password"); //$NON-NLS-1$
@@ -45,6 +46,11 @@ public class CommandRunner {
 	public static void main(final String[] args) throws Exception {
 		
 		final Args arguments = new Args(args);
+		/**
+		 * instantiate Debug and set mode according to command line 
+		 */
+		final Debug debug = Debug.getInstance();
+		debug.setDebug(arguments.isDebugOn());
 		
 		final IProgressMonitor monitor = new ConsoleProgressMonitor(System.out);
 		
@@ -75,7 +81,7 @@ public class CommandRunner {
 	}
 	
 	private static void reportError(ICommand command, Throwable e, IProgressMonitor monitor) {
-		LOGGER.error(e.getMessage(), e);
+		Debug.getInstance().error(CommandRunner.class, e.getMessage(), e);
 		if(e instanceof UnknownHostException){
 			System.err.println(MessageFormat.format(Messages.getString("CommandRunner.unknown.host.error.pattern"), e.getMessage())); //$NON-NLS-1$
 			
@@ -159,10 +165,10 @@ public class CommandRunner {
 			final ArrayList<ICredential> ordered = new ArrayList<ICredential>(credentials);
 			Collections.sort(ordered, ourCredentialComaparator);
 			final ICredential defaultCredential = ordered.iterator().next();
-			LOGGER.debug(MessageFormat.format("Using \"{0}\" as Default TeamCity Server", defaultCredential.getServer())); //$NON-NLS-1$
+			Debug.getInstance().debug(CommandRunner.class, MessageFormat.format("Using \"{0}\" as Default TeamCity Server", defaultCredential.getServer())); //$NON-NLS-1$
 			return defaultCredential.getServer();
 		}
-		LOGGER.debug("No Default TeamCity Server found"); //$NON-NLS-1$
+		Debug.getInstance().debug(CommandRunner.class, "No Default TeamCity Server found"); //$NON-NLS-1$
 		return null;
 	}
 	

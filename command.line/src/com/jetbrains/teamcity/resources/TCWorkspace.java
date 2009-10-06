@@ -5,13 +5,10 @@ import java.io.IOException;
 import java.text.MessageFormat;
 import java.util.HashMap;
 
-import org.apache.log4j.Logger;
-
+import com.jetbrains.teamcity.Debug;
 import com.jetbrains.teamcity.Storage;
 
 public class TCWorkspace {
-	
-	private static Logger LOGGER = Logger.getLogger(TCWorkspace.class) ;
 	
 	public static final String TCC_ADMIN_FILE = Messages.getString("TCWorkspace.per.folder.admin.file"); //$NON-NLS-1$
 	
@@ -41,7 +38,7 @@ public class TCWorkspace {
 			if(defaultConfig != null && defaultConfig.exists()){
 				myGlobalMatcher = new FileBasedMatcher(defaultConfig);
 			} else {
-				LOGGER.debug(MessageFormat.format("Default Admin file \"{0}\" is not found", defaultConfig));			
+				Debug.getInstance().debug(TCWorkspace.class, MessageFormat.format("Default Admin file \"{0}\" is not found", defaultConfig));			
 			}
 		} catch (IOException e) {
 			throw new RuntimeException(e);
@@ -51,18 +48,18 @@ public class TCWorkspace {
 	protected File getGlobalAdminFile() {
 		final String globalConfigEnv = System.getenv("TC_DEFAULT_CONFIG");
 		if(globalConfigEnv != null && globalConfigEnv.length()>0){
-			LOGGER.debug(String.format("Default Admin file \"%s\" got from Environment variable", globalConfigEnv));
+			Debug.getInstance().debug(TCWorkspace.class, String.format("Default Admin file \"%s\" got from Environment variable", globalConfigEnv));
 			return new File(globalConfigEnv);
 		}
 		final String myDefaultConfigFile = TCC_GLOBAL_ADMIN_FILE;
-		LOGGER.debug(String.format("Default Admin file \"%s\" got from default location", myDefaultConfigFile));
+		Debug.getInstance().debug(TCWorkspace.class, String.format("Default Admin file \"%s\" got from default location", myDefaultConfigFile));
 		return new File(myDefaultConfigFile);
 	}
 	
 	public TCWorkspace(final File rootFolder, final ITCResourceMatcher externMatcher){
 		this(rootFolder);
 		myOverridingMatcher = externMatcher;
-		LOGGER.debug(String.format("Overriding Matcher set to \"%s\"", externMatcher)); //$NON-NLS-1$
+		Debug.getInstance().debug(TCWorkspace.class, String.format("Overriding Matcher set to \"%s\"", externMatcher)); //$NON-NLS-1$
 	}
 	
 	public File getRoot() {
@@ -114,7 +111,7 @@ public class TCWorkspace {
 					//look into Global
 					matcher = myGlobalMatcher;
 					if(myGlobalMatcher == null){
-						LOGGER.debug(MessageFormat.format("Neither Local nor Global admin files found for \"{0}\"", local));
+						Debug.getInstance().debug(TCWorkspace.class, MessageFormat.format("Neither Local nor Global admin files found for \"{0}\"", local));
 						return null;
 					}
 				}
@@ -125,7 +122,7 @@ public class TCWorkspace {
 			myCache.put(local.getParentFile(), matcher);
 			final ITCResourceMatcher.Matching matching = matcher.getMatching(local);
 			if(matching == null){
-				LOGGER.debug(MessageFormat.format("No Matching found for \"{0}\"", local));
+				Debug.getInstance().debug(TCWorkspace.class, MessageFormat.format("No Matching found for \"{0}\"", local));
 				return null;
 			}
 			//All found

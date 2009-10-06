@@ -38,8 +38,8 @@ import org.apache.commons.httpclient.SimpleHttpConnectionManager;
 import org.apache.commons.httpclient.URI;
 import org.apache.commons.httpclient.methods.InputStreamRequestEntity;
 import org.apache.commons.httpclient.methods.PostMethod;
-import org.apache.log4j.Logger;
 
+import com.jetbrains.teamcity.Debug;
 import com.jetbrains.teamcity.EAuthorizationException;
 import com.jetbrains.teamcity.ECommunicationException;
 import com.jetbrains.teamcity.ERemoteError;
@@ -52,10 +52,7 @@ import com.jetbrains.teamcity.resources.ITCResourceMatcher;
 import com.jetbrains.teamcity.resources.TCWorkspace;
 import com.jetbrains.teamcity.runtime.IProgressMonitor;
 
-
 public class RemoteRun implements ICommand {
-	
-	private static Logger LOGGER = Logger.getLogger(RemoteRun.class) ;	
 	
 	private static final IFileFilter TCC_FILTER = new  IFileFilter() {
 		
@@ -239,32 +236,22 @@ public class RemoteRun implements ICommand {
 	}
 
 	long scheduleRemoteRun(final Collection<String> configurations, final long changeId, final IProgressMonitor monitor) throws ECommunicationException, ERemoteError {
-//			final TCWorkspace workspace, final Collection<File> files, final IProgressMonitor monitor) throws ECommunicationException, ERemoteError {
-//		final int currentUser = myServer.getCurrentUser();
-//		try {
-//			//prepare change list & patch for remote run
-//			final long changeId = createChangeList(myServer.getURL(), currentUser, workspace, files, monitor);
-			//schedule for execution and process status
-			final ArrayList<AddToQueueRequest> batch = new ArrayList<AddToQueueRequest>();
+		final ArrayList<AddToQueueRequest> batch = new ArrayList<AddToQueueRequest>();
+		for(final String cfgId : configurations){
+			final AddToQueueRequest request = new AddToQueueRequest(cfgId, changeId);
+			batch.add(request);
+		}
+		monitor.beginTask(Messages.getString("RemoteRun.scheduling.build.step.name")); //$NON-NLS-1$
+		final AddToQueueResult result = myServer.addRemoteRunToQueue(batch, myComments);//TODO: process Result here
+		if(result.hasFailures()){
+			final StringBuffer errors = new StringBuffer();
 			for(final String cfgId : configurations){
-				final AddToQueueRequest request = new AddToQueueRequest(cfgId, changeId);
-				batch.add(request);
+				errors.append(result.getFailureReason(cfgId)).append("\n"); //$NON-NLS-1$
 			}
-			monitor.beginTask(Messages.getString("RemoteRun.scheduling.build.step.name")); //$NON-NLS-1$
-			final AddToQueueResult result = myServer.addRemoteRunToQueue(batch, myComments);//TODO: process Result here
-			if(result.hasFailures()){
-				final StringBuffer errors = new StringBuffer();
-				for(final String cfgId : configurations){
-					errors.append(result.getFailureReason(cfgId)).append("\n"); //$NON-NLS-1$
-				}
-				throw new ERemoteError(errors.toString());
-			}
-			monitor.done();
-			return changeId;
-//		} catch (IOException e) {
-//			throw new ECommunicationException(e);
-//		}
-		
+			throw new ERemoteError(errors.toString());
+		}
+		monitor.done();
+		return changeId;
 	}
 	
 	
@@ -323,14 +310,14 @@ public class RemoteRun implements ICommand {
 				LowLevelPatchBuilder.WriteFileContent content = new PatchBuilderImpl.StreamWriteFileContent(new BufferedInputStream(new FileInputStream(file)), file.length());
 				final ITCResource resource = workspace.getTCResource(file);
 				if(resource != null && resource.getRepositoryPath() != null){
-					LOGGER.debug(MessageFormat.format("+ {0}", resource.getRepositoryPath())); //$NON-NLS-1$
+					Debug.getInstance().debug(RemoteRun.class, MessageFormat.format("+ {0}", resource.getRepositoryPath())); //$NON-NLS-1$
 					if(file.exists()){
 						patcher.changeBinary(resource.getRepositoryPath(), (int) file.length(), content, false);
 					} else {
 						patcher.delete(resource.getRepositoryPath(), true, false);
 					}
 				} else {
-					LOGGER.debug(String.format("? \"%s\" has not accosiated ITCResource(%s) or empty RepositoryPath(%s)", //$NON-NLS-1$ 
+					Debug.getInstance().debug(RemoteRun.class, String.format("? \"%s\" has not accosiated ITCResource(%s) or empty RepositoryPath(%s)", //$NON-NLS-1$ 
 							file, 
 							resource, 
 							resource != null ? resource.getRepositoryPath() : (String)null));

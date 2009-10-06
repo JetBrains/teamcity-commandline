@@ -16,11 +16,7 @@ import java.util.regex.Pattern;
 import jetbrains.buildServer.util.FileUtil;
 import jetbrains.buildServer.util.StringUtil;
 
-import org.apache.log4j.Logger;
-
 public class Util {
-	
-	private static Logger LOGGER = Logger.getLogger(Util.class) ;
 	
 	public static IFileFilter CVS_FILES_FILTER = new CVSFilter(); 
 	
@@ -65,7 +61,7 @@ public class Util {
 			}
 		} catch (IOException e) {
 			l = null;
-			LOGGER.error(e.getMessage(), e);
+			Debug.getInstance().error(Util.class, e.getMessage(), e);
 		}
 		return l;
 	}
