@@ -13,7 +13,7 @@
 
 <c:set var="title" value="Command Line Tool Settings" scope="request"/>
 <c:set var="loginLine" >java -jar c:\tcc.jar login --host <%= WebUtil.getRootUrl(request)%> --user <%= SessionUser.getUser(request).getUsername()%></c:set>
-<c:set var="remoteRunLine" >java -jar c:\tcc.jar run --host <%= WebUtil.getRootUrl(request)%> -m "remote run message" --config-file tcc.config -c <span id="btId">btXXX</span> &lt;list of modified files&gt;</c:set>
+<c:set var="remoteRunLine" >java -jar c:\tcc.jar run --host <%= WebUtil.getRootUrl(request)%> -m "remote run message" -c <span id="btId">btXXX</span> &lt;list of modified files&gt;</c:set>
 <bs:page>
 
 <jsp:attribute name="head_include">
@@ -43,7 +43,7 @@
     <jsp:useBean id="buildTypes" type="java.util.List<jetbrains.buildServer.serverSide.SBuildType>" scope="request"/>
     BS.BuildTypes = [
       <c:forEach items="${buildTypes}" var="buildType">
-      {"id": "${buildType.id}", fullName: '<bs:escapeForJs text="${buildType.fullName}"/>'},</c:forEach>
+      {id: "${buildType.id}", fullName: '<bs:escapeForJs text="${buildType.fullName}"/>'},</c:forEach>
       {}
     ];
     //-->
@@ -98,12 +98,12 @@
         It usually comprises identifier of the VCS repository and a path within this repository.</li>
     </ol>
       
-
+    <c:set var="mappingsFile" value=".teamcity-mappings.properties"/>
     <h3 style="clear: both;">Steps to run personal build from command line:</h3>
     <ol>
       <li>Install <a href="http://java.com">Java JRE 1.5.+</a> on your machine, make sure <code>java</code> is available in the command line</li>
       <li><a href="${cmdPathPrefix}tcc.jar">Download the tool (tcc.jar)</a> to your hard drive, for instance to <code>c:\tcc.jar</code></li>
-      <li>Copy contents of the configuration file (above) to <code>tcc.config</code> in your root project directory</li>
+      <li>Copy contents of the configuration file (above) to <code>${mappingsFile}</code> in your root project directory (you may decide to add this file under the version control)</li>
       <li>Login to TeamCity with command line runner tool:<pre>${loginLine}</pre> </li>
       <li>Run remote build for contents of a directory with selected build configuration: <pre>${remoteRunLine}</pre>
       <br/>To learn more about the tool options, please see <a href="http://svn.jetbrains.org/teamcity/plugins/commandline/trunk/command.line/HOWTO">documentation</a></li>

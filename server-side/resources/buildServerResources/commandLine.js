@@ -16,7 +16,7 @@ BS.CommandLine = {
 
   removeAllButFirst: function() {
     var selectElement = this.selectElement();
-    while (selectElement.length > 1) {
+    while (selectElement.options.length > 1) {
       selectElement.remove(1);
     }
   },
