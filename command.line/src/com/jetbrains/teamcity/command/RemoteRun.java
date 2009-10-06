@@ -97,6 +97,9 @@ public class RemoteRun implements ICommand {
 	private long myTimeout;
 	private String myResultDescription;
 
+
+	private boolean myCleanoff;
+
 	public void execute(final Server server, Args args, final IProgressMonitor monitor) throws EAuthorizationException, ECommunicationException, ERemoteError, InvalidAttributesException {
 		myServer = server;
 		//configuration
@@ -113,6 +116,9 @@ public class RemoteRun implements ICommand {
 		} else {
 			myTimeout = DEFAULT_TIMEOUT;
 		}
+		//do not clean after run
+		myCleanoff = args.isCleanOff();
+		
 		final TCWorkspace workspace = new TCWorkspace(Util.getCurrentDirectory(), getOverridingMatcher(args));
 		//collect files
 		final Collection<File> files = getFiles(args, monitor);
@@ -259,7 +265,9 @@ public class RemoteRun implements ICommand {
 		try{
 			monitor.beginTask(Messages.getString("RemoteRun.preparing.patch..step.name")); //$NON-NLS-1$
 			final File patch = createPatch(createPatchFile(serverURL), workspace, files);
-			patch.deleteOnExit();
+			if(!myCleanoff){
+				patch.deleteOnExit();
+			}
 			monitor.done();
 
 			monitor.beginTask(Messages.getString("RemoteRun.send.patch.step.name")); //$NON-NLS-1$
@@ -305,6 +313,7 @@ public class RemoteRun implements ICommand {
 		try{
 			os = new DataOutputStream(new BufferedOutputStream(new FileOutputStream(patchFile)));
 			patcher = new LowLevelPatchBuilderImpl(os);
+			final HashSet<File> uncontrolled = new HashSet<File>();//let's collect files is not under teamcity
 			for(File file : files){
 				file = file.getAbsoluteFile().getCanonicalFile();//make absolute
 				LowLevelPatchBuilder.WriteFileContent content = new PatchBuilderImpl.StreamWriteFileContent(new BufferedInputStream(new FileInputStream(file)), file.length());
@@ -317,14 +326,19 @@ public class RemoteRun implements ICommand {
 						patcher.delete(resource.getRepositoryPath(), true, false);
 					}
 				} else {
+					uncontrolled.add(file);
 					Debug.getInstance().debug(RemoteRun.class, String.format("? \"%s\" has not accosiated ITCResource(%s) or empty RepositoryPath(%s)", //$NON-NLS-1$ 
 							file, 
 							resource, 
 							resource != null ? resource.getRepositoryPath() : (String)null));
 				}
 			}
-			//
-		} finally{
+			//check something patched and throw error otherwise
+			if(uncontrolled.size() == files.size()){
+				throw new IllegalArgumentException(String.format(Messages.getString("RemoteRun.no.one.file.added.to.patch.error.message"), files.size())); //$NON-NLS-1$
+			}
+			
+		} finally {//finalize patching
 			patcher.exit(""); //$NON-NLS-1$
 			if (patcher != null) {
 				patcher.close();

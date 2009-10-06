@@ -7,12 +7,16 @@ import com.jetbrains.teamcity.Util;
 
 public class Args {
 	
-	public static final String DEBUG_ARG = "-debug";
+	public static final String DEBUG_ARG = Messages.getString("Args.debug.switch.name"); //$NON-NLS-1$
+	
+	public static final String DEBUG_CLEAN_OFF = Messages.getString("Args.do.not.delete.file.after.run.switch.name"); //$NON-NLS-1$
 	
 	private String[] myArgs;
 	private String myCommandId;
 
 	private boolean isDebugOn;
+
+	private boolean isCleanOff;
 
 	public Args(final String[] args) {
 		if (args == null || args.length == 0) {
@@ -27,6 +31,11 @@ public class Args {
 		if(list.contains(DEBUG_ARG)){
 			list.remove(DEBUG_ARG);
 			isDebugOn = true;
+		}
+		//remove -debug-clean-off argument
+		if(list.contains(DEBUG_CLEAN_OFF)){
+			list.remove(DEBUG_CLEAN_OFF);
+			isCleanOff = true;
 		}
 		myArgs = list.toArray(new String[list.size()]);
 	}
@@ -56,11 +65,15 @@ public class Args {
 	
 	@Override
 	public String toString(){
-		return String.format("", myCommandId, Arrays.toString(myArgs));
+		return String.format("", myCommandId, Arrays.toString(myArgs)); //$NON-NLS-1$
 	}
 	
 	public boolean isDebugOn (){
 		return isDebugOn;
+	}
+	
+	public boolean isCleanOff() {
+		return isCleanOff;
 	}
 	
 }

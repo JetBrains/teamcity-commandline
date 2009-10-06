@@ -6,6 +6,7 @@ import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 
 import java.io.File;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 
@@ -73,16 +74,18 @@ public class RemoteRunTest {
 		
 		try{
 			//file under TC
-			File patch = ourCommand.createPatch(patchFile, new TCWorkspace(new File(".")), Collections.singletonList(new File("java" + File.separator + "resources", "java.resources")));
+			final File controlledFile = new File("java" + File.separator + "resources", "java.resources");
+			File patch = ourCommand.createPatch(patchFile, new TCWorkspace(new File(".")), Collections.singletonList(controlledFile));
 			assertTrue(patch.length() > 10);
 			//file is not under TC: disable default config
+			File uncontrolledFile = new File("java", "1.java");
 			patch = ourCommand.createPatch(patchFile, new TCWorkspace(new File(".")){
 				@Override
 				protected File getGlobalAdminFile() {
 					return null;
 				}
-			}, Collections.singletonList(new File("java", "1.java")));
-			assertTrue(patch.length() < 10);
+			}, Arrays.asList(new File[] {controlledFile, uncontrolledFile}));
+			assertTrue(patch.length() > 10);
 		} finally {
 			FileUtil.delete(patchFile);
 			FileUtil.delete(configFile);
