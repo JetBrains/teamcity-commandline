@@ -18,7 +18,7 @@ BS.CommandLine = {
 
   removeAllButFirst: function() {
     var selectElement = this.selectElement();
-    while (selectElement.options.length > 1) {
+    while (selectElement.length > 1) {
       selectElement.remove(1);
     }
   },
@@ -40,7 +40,7 @@ BS.CommandLine = {
   installControlHandlers: function() {
     var select = this.selectElement();
     select.observe("change", function() {
-      $('addMapping').disabled = select.selectedIndex == 0;
+      $('addMapping').disabled = this.selectedIndex == 0;
     });
 
     $('addMapping').observe("click", function() {
@@ -155,7 +155,7 @@ BS.CommandLine = {
 };
 
 
-document.observe("dom:loaded", function() {
+Behaviour.addLoadEvent(function() {
   BS.CommandLine.fillBuildTypesList();
   BS.CommandLine.installControlHandlers();
 });
