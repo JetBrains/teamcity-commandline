@@ -52,7 +52,7 @@ public class Build {
 
   </target>
 
-  <target name="build-inner" depends="compile">
+  <target name="build" depends="compile">
   	
     <mkdir dir="${tmp}"/>
   	
@@ -74,7 +74,7 @@ public class Build {
 
   </target>
 
-  <target name="build" depends="clean,build-inner,clean-dist">
+  <target name="deploy" depends="clean,build,clean-dist">
     <mkdir dir="${dist-commandline}"/>
 
     <!--condition property="plugin.version" else="${major.version}.${build.number}" value="${major.version}.0">
@@ -90,7 +90,7 @@ public class Build {
     <antcall target="clean"/>
   </target>
 
-  <target name="dist" depends="build"/>
+  <target name="dist" depends="deploy"/>
 	
   <target name="test">
     <ant dir="${tests.project.path}" inheritall="yes" inheritrefs="yes" target="test"/>
