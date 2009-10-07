@@ -65,7 +65,12 @@ class Help implements ICommand {
 
 	private String printGlobalOptions() {
 		final String globalOptions = Messages.getString("Help.global.options.header"); //$NON-NLS-1$
-		return MessageFormat.format(globalOptions, CommandRunner.HOST_ARG, CommandRunner.USER_ARG, CommandRunner.PASSWORD_ARG);
+		return MessageFormat.format(globalOptions, 
+				CommandRunner.HOST_ARG, 
+				CommandRunner.USER_ARG, 
+				CommandRunner.PASSWORD_ARG, 
+				Args.DEBUG_ARG, 
+				Args.DEBUG_CLEAN_OFF);
 	}
 
 	private String printDescription(final String commandId) {
