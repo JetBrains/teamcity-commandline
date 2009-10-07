@@ -6,7 +6,7 @@
 
   <target name="package-plugin-for-teamcity" depends="build-tcc.jar">
 
-    <move file="${basedir}/dist/tcc.jar" todir="${basedir}/server-side/classes/buildServerResources"/>
+    <copy file="${basedir}/dist/tcc.jar" todir="${basedir}/server-side/classes/buildServerResources"/>
     
     <package.teamcity.plugin name="${plugin.name}"
                              server.output="${basedir}/server-side/classes"
