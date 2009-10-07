@@ -32,7 +32,12 @@ BS.CommandLine = {
         var option = document.createElement("option");
         option.value = buildType.id;
         option.text = "[" + buildType.id + "] " + buildType.fullName;
-        selectElement.add(option, null);
+        try {
+          selectElement.add(option, null);
+        }
+        catch(e) {
+          selectElement.add(option);
+        }
       }
     }
   },

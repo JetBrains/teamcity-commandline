@@ -66,7 +66,7 @@
     <select name="buildConfigurationSelector" id="buildConfigurationSelector">
       <option>-- Select a build configuration --</option>
     </select>
-
+    &nbsp;&nbsp;
     <button id="addMapping" disabled="true" title="Add VCS mapping for selected build configuration">Add</button>
     <forms:saving id="updateIndicator" style="float: none;" savingTitle="Adding VCS mapping for selected configuration, please wait"/>
   </div>
