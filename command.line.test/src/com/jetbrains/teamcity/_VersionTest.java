@@ -2,7 +2,7 @@ package com.jetbrains.teamcity;
 
 import org.junit.Test;
 
-public class VersionTest {
+public class _VersionTest {
 	
 	@Test
 	public void showVersion() {
