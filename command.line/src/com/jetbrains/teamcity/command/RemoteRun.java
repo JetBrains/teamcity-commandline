@@ -73,7 +73,7 @@ public class RemoteRun implements ICommand {
 
 	static final String ID = Messages.getString("RemoteRun.command.id"); //$NON-NLS-1$
 	
-	static final String MAPPING_FILE_PARAM = Messages.getString("RemoteRun.overriding.config.file.argument"); //$NON-NLS-1$
+	static final String OVERRIDING_MAPPING_FILE_PARAM = Messages.getString("RemoteRun.overriding.config.file.argument"); //$NON-NLS-1$
 	
 	static final String CONFIGURATION_PARAM = Messages.getString("RemoteRun.config.runtime.param"); //$NON-NLS-1$
 	static final String CONFIGURATION_PARAM_LONG = Messages.getString("RemoteRun.config.runtime.param.long"); //$NON-NLS-1$
@@ -86,8 +86,6 @@ public class RemoteRun implements ICommand {
 	
 	static final String NO_WAIT_SWITCH = Messages.getString("RemoteRun.nowait.runtime.param"); //$NON-NLS-1$
 	static final String NO_WAIT_SWITCH_LONG = Messages.getString("RemoteRun.nowait.runtime.param.long"); //$NON-NLS-1$
-	
-	static final String NO_USE_SHARES_SWITCH_LONG = Messages.getString("RemoteRun.noshares.runtime.param.long"); //$NON-NLS-1$
 	
 	static final String PATCHES_FOLDER = System.getProperty("java.io.tmpdir"); //$NON-NLS-1$
 	
@@ -144,8 +142,8 @@ public class RemoteRun implements ICommand {
 	}
 	
 	ITCResourceMatcher getOverridingMatcher(final Args args) {
-		if(args.hasArgument(MAPPING_FILE_PARAM)){
-			return new FileBasedMatcher(new File(args.getArgument(MAPPING_FILE_PARAM)));
+		if(args.hasArgument(OVERRIDING_MAPPING_FILE_PARAM)){
+			return new FileBasedMatcher(new File(args.getArgument(OVERRIDING_MAPPING_FILE_PARAM)));
 			
 		}
 		return null;
@@ -374,8 +372,7 @@ public class RemoteRun implements ICommand {
 			final String currentToken = elements[i].toLowerCase();
 			if(elements[i].startsWith("-")){ //$NON-NLS-1$
 				if(elements[i].toLowerCase().equals(NO_WAIT_SWITCH) 
-						|| currentToken.equals(NO_WAIT_SWITCH_LONG) 
-						|| currentToken.equals(NO_USE_SHARES_SWITCH_LONG)){
+						|| currentToken.equals(NO_WAIT_SWITCH_LONG)){
 					i++; //single token
 				} else {
 					i++; //arg
@@ -430,7 +427,8 @@ public class RemoteRun implements ICommand {
 				CONFIGURATION_PARAM, CONFIGURATION_PARAM_LONG,
 				MESSAGE_PARAM, MESSAGE_PARAM_LONG,
 				TIMEOUT_PARAM, TIMEOUT_PARAM_LONG,
-				NO_WAIT_SWITCH, NO_WAIT_SWITCH_LONG
+				NO_WAIT_SWITCH, NO_WAIT_SWITCH_LONG,
+				OVERRIDING_MAPPING_FILE_PARAM
 				);
 	}
 	

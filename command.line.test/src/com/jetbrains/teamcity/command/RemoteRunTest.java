@@ -152,7 +152,7 @@ public class RemoteRunTest {
 		
 		//error on virtual file 
 		try{
-			config = ourCommand.getOverridingMatcher(new Args(new String[] {RemoteRun.ID, RemoteRun.MAPPING_FILE_PARAM, "global_config"}));
+			config = ourCommand.getOverridingMatcher(new Args(new String[] {RemoteRun.ID, RemoteRun.OVERRIDING_MAPPING_FILE_PARAM, "global_config"}));
 			assertTrue(false); //should not be here
 		} catch (IllegalArgumentException e){
 			//OK: file is not exist
@@ -162,7 +162,7 @@ public class RemoteRunTest {
 		File configFile = new File(ourCurrentDirectory, "global_config");
 		configFile.createNewFile();
 		try{
-			config = ourCommand.getOverridingMatcher(new Args(new String[] {RemoteRun.ID, RemoteRun.MAPPING_FILE_PARAM, configFile.getAbsolutePath()}));
+			config = ourCommand.getOverridingMatcher(new Args(new String[] {RemoteRun.ID, RemoteRun.OVERRIDING_MAPPING_FILE_PARAM, configFile.getAbsolutePath()}));
 			assertTrue(false); //should not be here
 		} catch (IllegalArgumentException e){
 			//OK: file format is wrong
@@ -174,7 +174,7 @@ public class RemoteRunTest {
 		configFile = new File(ourCurrentDirectory, "global_config");
 		try{
 			FileUtil.writeFile(configFile, ".=//depo/test/\n");
-			config = ourCommand.getOverridingMatcher(new Args(new String[] {RemoteRun.ID, RemoteRun.MAPPING_FILE_PARAM, configFile.getAbsolutePath()}));
+			config = ourCommand.getOverridingMatcher(new Args(new String[] {RemoteRun.ID, RemoteRun.OVERRIDING_MAPPING_FILE_PARAM, configFile.getAbsolutePath()}));
 			assertNotNull(config);
 		} finally {
 			FileUtil.delete(configFile);

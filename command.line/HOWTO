@@ -35,10 +35,23 @@ Quick start
 
         All examples below were ran after the "login" was executed.
 	
-	Discover TeamCity Server structure: 
-	First of all you have to create mapping(share) between local folder containing files for Remote Run 
-        with existing TeamCity VCS root.
-	Sharing requires knowledge of TeamCity VCS root id. "info" command can provide you with short 
+	Mappings:
+	First of all you have to prepare TeamCity mapping which helps TeamCity Server exactly associate local resources
+	to resources the Server can operate to. The mapping's supported with special files calling ".teamcity-mappings.properties".
+	A ".teamcity-mappings.properties" must contain pairs of local paths and remote VCS Root's prefixes. A local path can be absolute
+	or relative. In this case the relative path will be treated as path against mapping file's folder location and expanded to absolute
+	in runtime.  
+	There are several places you can place these files. The first of all it's a folder contains changes you will pass Remote Run to.
+	It's a first place the tool will seek for mapping file in runtime. The tool scans whole parent folder hierarchy a mappings files for.   
+	A Default Teamcity Mapping supported also and expected in the "%HOME%/.TeamCity-CommandLine" folder. File name is same.  
+	You can override these Per-folder and Default mappings with "--config-file <overriding_file>" option of "run" command.
+	
+	NOTE: Especial TeamCity server's plugin'll help you to prepare content of mapping files. 
+		  Look at "My Settings & Tools/CommandLineRemoteRun/Configure".
+         
+        
+    Discover TeamCity Server structure:
+	The "info" command can provide you with short 
         information about TeamCity Server's Projects, Configurations and VCS roots:      
 		
 		java -jar tcc.jar info --host http://rusps-app:80 -p
@@ -54,36 +67,10 @@ Quick start
 	
 	the tool prints configurations that belong to the project "tc_test":
 		id	name				status	description
-		bt9	tc-test-perforce	NORMAL	null
-		bt5	tc-test-svn			NORMAL	null
-		bt7	tc-test-svn-2		NORMAL	null
-		bt8	test-CVS			NORMAL	null	
-	
-	and gather VCS roots of "tc-test-svn-2":  
-   
-		java -jar tcc.jar info --host http://rusps-app:80 -v -c bt7   
-
-		id	name	vcsname	properties
-		9	null	svn		{labelingPatterns=trunk=>tags, svn-config-directory=C:\Application Data\Subversion, svn-use-default-config-directory=true, externals-mode=externals-none, user=kdonskov, url=http://rusps-app.swiftteams.local:8080/svn/test/trunk/tc-test-rusps-app-svn/}
-		
-        ID of the VCS root is what is required by share command.
-	
-	Sharing:
-	Perform "share" command for mapping local folder "C:\work\tc-test\tc-test-rusps-app-svn" to VcsRoot "9":
-	
-		java -jar tcc.jar share --host http://rusps-app:80 -l C:\work\tc-test\tc-test-rusps-app-svn -v 9
-		
-	All existing shares can be printed out by
-	
-	 	java -jar tcc.jar share --info
-
-		id	local										vcsrootid	properties
-		2	C:\work\tc-test\test-perforce-in-workspace	11			{port=rusps-app:1666, client-mapping=//depot/... //team-city-agent/..., p4-exe=p4, user=kdonskov, use-client=false}
-		3	C:\work\tc-test\tc-test-CVS					10			{cvs-tag-mode=HEAD, cvs-quiet-period=3, cvs-root=:pserver:kdonskov@rusps-app.SwiftTeams.local:/CVS-ROOT, local-server-command=server, ssh-use-ppk=false, ssh-port=22, module-name=tc-test-CVS}
-		28	C:\work\tc-test\tc-test-rusps-app-svn		9			{labelingPatterns=trunk=>tags, svn-config-directory=C:\Application Data\Subversion, svn-use-default-config-directory=true, user=kdonskov, externals-mode=externals-none, url=http://rusps-app.swiftteams.local:8080/svn/test/trunk/tc-test-rusps-app-svn/}
-	
-	
-	See also: "unshare" command
+		bt9	tc-test-perforce	NORMAL	<empty>
+		bt5	tc-test-svn			NORMAL	<empty>
+		bt7	tc-test-svn-2		NORMAL	<empty>
+		bt8	test-CVS			NORMAL	<empty>	
 	
 	Remote Run:
 	So we have all required information and prepared Share to perform Remote Run. Let's start a Remote Run for changed files 
