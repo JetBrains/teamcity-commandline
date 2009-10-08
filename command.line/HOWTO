@@ -25,7 +25,7 @@ Quick start
 	
 	
 	Authorization:
-	To perform the most of TeamCity operations you must point specify the TeamCity Server 
+		To perform the most of TeamCity operations you must point specify the TeamCity Server 
         to operate with as well as username and password. This can be done with help of "--host", 
         "--user" and "--password" options. 
 
@@ -34,17 +34,20 @@ Quick start
         subsequent starts. See help for "login" for more details. 
 
         All examples below were ran after the "login" was executed.
+        
+        NOTE: last logged in <url> is treated as Default and will be used if "--host" key is omitted.
+        
 	
 	Mappings:
-	First of all you have to prepare TeamCity mapping which helps TeamCity Server exactly associate local resources
-	to resources the Server can operate to. The mapping's supported with special files calling ".teamcity-mappings.properties".
-	A ".teamcity-mappings.properties" must contain pairs of local paths and remote VCS Root's prefixes. A local path can be absolute
-	or relative. In this case the relative path will be treated as path against mapping file's folder location and expanded to absolute
-	in runtime.  
-	There are several places you can place these files. The first of all it's a folder contains changes you will pass Remote Run to.
-	It's a first place the tool will seek for mapping file in runtime. The tool scans whole parent folder hierarchy a mappings files for.   
-	A Default Teamcity Mapping supported also and expected in the "%HOME%/.TeamCity-CommandLine" folder. File name is same.  
-	You can override these Per-folder and Default mappings with "--config-file <overriding_file>" option of "run" command.
+		First of all you have to prepare TeamCity mapping which helps TeamCity Server exactly associate local resources
+		to resources the Server can operate to. The mapping's supported with special files calling ".teamcity-mappings.properties".
+		A ".teamcity-mappings.properties" must contain pairs of local paths and remote VCS Root's prefixes. A local path can be absolute
+		or relative. In this case the relative path will be treated as path against mapping file's folder location and expanded to absolute
+		in runtime.  
+		There are several places you can place these files. The first of all it's a folder contains changes you will pass Remote Run to.
+		It's a first place the tool will seek for mapping file in runtime. The tool scans whole parent folder hierarchy a mappings files for.   
+		A Default Teamcity Mapping supported also and expected in the "%HOME%/.TeamCity-CommandLine" folder. File name is same.  
+		You can override these Per-folder and Default mappings with "--config-file <overriding_file>" option of "run" command.
 	
 	NOTE: Especial TeamCity server's plugin'll help you to prepare content of mapping files. 
 		  Look at "My Settings & Tools/CommandLineRemoteRun/Configure".
