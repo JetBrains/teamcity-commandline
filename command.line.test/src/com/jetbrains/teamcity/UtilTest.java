@@ -31,6 +31,11 @@ public class UtilTest {
 	}
 	
 	@Test
+	public void showVersion() {
+		System.out.println(String.format("Testing %s build...", Build.build));
+	}
+	
+	@Test
 	public void hasArgument() throws Exception {
 		assertTrue(Util.hasArgument(new String[] {"-one", "-two"}, "-one"));
 		assertTrue(Util.hasArgument(new String[] {" -one ", "-two"}, " -one "));
