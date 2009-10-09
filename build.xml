@@ -75,7 +75,7 @@ public class Build {
 
 		<copy todir="${dist-commandline}">
 			<fileset dir="${tmp}">
-				<include name="*.jar"/>
+				<!--include name="*.jar"/-->
 				<include name="*.zip"/>
 			</fileset>
 		</copy>
