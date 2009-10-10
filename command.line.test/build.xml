@@ -1,65 +1,83 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
 <project basedir="." default="test" name="jetbrains.teamcity.test">
-	
-    <property file="tests.build.properties"/>
 
-    <property environment="env"/>
-    <property name="junit.output.dir" value="junit"/>
-    <property name="debuglevel" value="source,lines,vars"/>
-    <property name="target" value="1.5"/>
-    <property name="source" value="1.5"/>
-	
-    <path id="jetbrains.teamcity.test.classpath">
-        <pathelement location="bin"/>
-        <fileset dir="${commandline.jar.location}">
-        		<include name="**/*.jar"/>
-        </fileset>
-        <fileset dir="${junit.jar.location}">
-          		<include name="**/*.jar"/>
-        </fileset>
-    </path>
-	
-    <target name="init">
-        <mkdir dir="bin"/>
-        <copy includeemptydirs="false" todir="bin">
-            <fileset dir="src" excludes="**/*.launch, **/*.java"/>
-        </copy>
-    </target>
-	
-    <target name="clean">
-        <delete dir="bin"/>
-    </target>
-	
-    <target depends="clean, init" name="build">
-        <echo message="${ant.project.name}: ${ant.file}"/>
-        <javac debug="true" debuglevel="${debuglevel}" destdir="bin" source="${source}" target="${target}">
-            <src path="src"/>
-            <classpath refid="jetbrains.teamcity.test.classpath"/>
-        </javac>
-    </target>
-	
-    <target name="test" depends="build">
-        <mkdir dir="${junit.output.dir}"/>
-        <junit fork="yes" printsummary="withOutAndErr">
-        	<!--jvmarg line="-Djava.library.path=${basedir}/lib_eclipse_3_2_2"/-->
-            <formatter type="xml"/>
-        	<batchtest todir="${junit.output.dir}">
-        	    <fileset dir="bin">
-        	      <include name="**/*.class"/>
-        	      <exclude name="**/*$*.class"/>
-        	    </fileset>
-	     	  </batchtest>
-            <classpath refid="jetbrains.teamcity.test.classpath"/>
-        </junit>
-    </target>
-	
-    <target name="junitreport" depends="test">
-        <junitreport todir="${junit.output.dir}">
-            <fileset dir="${junit.output.dir}">
-                <include name="TEST-*.xml"/>
-            </fileset>
-            <report format="frames" todir="${junit.output.dir}"/>
-        </junitreport>
-    </target>
+	<property file="tests.build.properties"/>
+
+	<property environment="env"/>
+	<property name="junit.output.dir" value="junit"/>
+	<property name="debuglevel" value="source,lines,vars"/>
+	<property name="target" value="1.5"/>
+	<property name="source" value="1.5"/>
+
+	<path id="jetbrains.teamcity.test.classpath">
+		<pathelement location="bin"/>
+		<fileset dir="tmp">
+			<include name="**/*.jar"/>
+		</fileset>
+		<fileset dir="${junit.jar.location}">
+			<include name="**/*.jar"/>
+		</fileset>
+	</path>
+
+	<target name="init">
+		<mkdir dir="bin"/>
+		<copy includeemptydirs="false" todir="bin">
+			<fileset dir="src" excludes="**/*.launch, **/*.java"/>
+		</copy>
+	</target>
+
+	<target name="clean">
+		<delete dir="bin"/>
+	</target>
+
+	<target depends="clean, init" name="build">
+		<echo message="${ant.project.name}: ${ant.file}"/>
+		<javac debug="true" debuglevel="${debuglevel}" destdir="bin" source="${source}" target="${target}">
+			<src path="src"/>
+			<classpath refid="jetbrains.teamcity.test.classpath"/>
+		</javac>
+	</target>
+
+	<target name="extract-jar">
+		<mkdir dir="tmp"/>
+		<unzip dest="tmp">
+			<!--patternset>
+				<include name="**/*.jar"/>
+			</patternset-->
+			<fileset dir="${dist-commandline}">
+				<include name="**/*.zip" />
+			</fileset>
+		</unzip>
+		<unjar dest="tmp">
+			<fileset dir="${tmp}">
+				<include name="**/*.jar" />
+			</fileset>
+		</unjar>
+
+	</target>
+
+	<target name="test" depends="extract-jar, build">
+		<mkdir dir="${junit.output.dir}" />
+		<junit fork="yes" printsummary="withOutAndErr">
+			<formatter type="xml"/>
+			<batchtest todir="${junit.output.dir}">
+				<fileset dir="bin">
+					<include name="**/*.class"/>
+					<exclude name="**/*$*.class"/>
+				</fileset>
+			</batchtest>
+			<classpath refid="jetbrains.teamcity.test.classpath"/>
+		</junit>
+		<delete dir="tmp" quiet="true"/>
+	</target>
+
+	<target name="junitreport" depends="test">
+		<junitreport todir="${junit.output.dir}">
+			<fileset dir="${junit.output.dir}">
+				<include name="TEST-*.xml"/>
+			</fileset>
+			<report format="frames" todir="${junit.output.dir}"/>
+		</junitreport>
+	</target>
 
 </project>

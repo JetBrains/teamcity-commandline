@@ -75,7 +75,7 @@ public class Build {
 
 		<copy todir="${dist-commandline}">
 			<fileset dir="${tmp}">
-				<include name="*.jar"/>
+				<!--include name="*.jar"/-->
 				<include name="*.zip"/>
 			</fileset>
 		</copy>
@@ -148,9 +148,14 @@ public class Build {
 
 	<target name="dist" depends="deploy" />
 
-	<target name="test">
+	<target name="test" depends="test-plugin">
 		<ant dir="${tests.project.path}" inheritall="yes" inheritrefs="yes" target="test" />
 	</target>
+	
+	<target name="test-plugin">
+		
+	</target>
+	
 
 	<target name="prepare-bundle-lib" description="Prepares libraries used by the plugin">
 
