@@ -6,7 +6,7 @@ import jetbrains.buildServer.BaseWebTestCase;
 import jetbrains.buildServer.controllers.MockRequest;
 import jetbrains.buildServer.controllers.MockResponse;
 import jetbrains.buildServer.util.XmlUtil;
-import jetbrains.buildServer.vcs.VcsUrlInfo2TargetPath;
+import jetbrains.buildServer.vcs.VcsClientMapping;
 import org.jdom.Element;
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
@@ -14,7 +14,7 @@ import org.testng.annotations.Test;
 
 @Test
 public class GetBuildTypeMappingActionTest extends BaseWebTestCase {
-  private List<VcsUrlInfo2TargetPath> myPathPrefixes;
+  private List<VcsClientMapping> myPathPrefixes;
   private GetBuildTypeMappingAction myAction;
 
 
@@ -36,7 +36,7 @@ public class GetBuildTypeMappingActionTest extends BaseWebTestCase {
 
   public void should_process_request_with_data() throws Exception {
     myFixture.addVcsRoot("mock", "");
-    myPathPrefixes.add(new VcsUrlInfo2TargetPath("rusps-app01:1666:////depot/src/", ""));
+    myPathPrefixes.add(new VcsClientMapping("rusps-app01:1666:////depot/src/", ""));
 
     final Element response = runActionForBuildType();
 
@@ -54,7 +54,7 @@ public class GetBuildTypeMappingActionTest extends BaseWebTestCase {
   protected void setUp() throws Exception {
     super.setUp();
     myAction = new GetBuildTypeMappingAction(myServer.getProjectManager(), myServer.getVcsManager(), null);
-    myPathPrefixes = new ArrayList<VcsUrlInfo2TargetPath>();
+    myPathPrefixes = new ArrayList<VcsClientMapping>();
     PathPrefixesSupport.register(myPathPrefixes, myServer.getVcsManager());
   }
 }

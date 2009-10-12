@@ -10,7 +10,7 @@ import org.testng.annotations.BeforeMethod;
 
 @Test
 public class MappingGeneratorTest extends BaseServerTestCase {
-  private List<VcsUrlInfo2TargetPath> myPathPrefixes;
+  private List<VcsClientMapping> myPathPrefixes;
 
   public void should_generate_empty_mapping() throws Exception {
 
@@ -27,7 +27,7 @@ public class MappingGeneratorTest extends BaseServerTestCase {
   public void generate_simple_mapping() throws Exception {
 
     final SVcsRootImpl vcsRoot = vcsRoot();
-    myPathPrefixes.add(new VcsUrlInfo2TargetPath("UID|some/path", ""));
+    myPathPrefixes.add(new VcsClientMapping("UID|some/path", ""));
 
     final List<MappingElement> mapping = generateMappingForBuildType();
     assertEquals(mapping.toString(), 1, mapping.size());
@@ -52,7 +52,7 @@ public class MappingGeneratorTest extends BaseServerTestCase {
     final SVcsRootImpl vcsRoot2 = vcsRoot();
     vcsRoot1.addProperty("url", "url path 1");
     vcsRoot2.addProperty("url", "url path 2");
-    myPathPrefixes.add(new VcsUrlInfo2TargetPath("UID|some/path", ""));
+    myPathPrefixes.add(new VcsClientMapping("UID|some/path", ""));
 
     final List<MappingElement> mapping = generateMappingForBuildType();
     assertEquals(mapping.toString(), 2, mapping.size());
@@ -65,8 +65,8 @@ public class MappingGeneratorTest extends BaseServerTestCase {
 
     final SVcsRootImpl vcsRoot = vcsRoot();
 
-    myPathPrefixes.add(new VcsUrlInfo2TargetPath("UID|some/path", ""));
-    myPathPrefixes.add(new VcsUrlInfo2TargetPath("UID|some/path/subpath", "path3"));
+    myPathPrefixes.add(new VcsClientMapping("UID|some/path", ""));
+    myPathPrefixes.add(new VcsClientMapping("UID|some/path/subpath", "path3"));
 
     final List<MappingElement> mapping = generateMappingForBuildType();
     assertEquals(mapping.toString(), 2, mapping.size());
@@ -80,7 +80,7 @@ public class MappingGeneratorTest extends BaseServerTestCase {
     final SVcsRootImpl vcsRoot = vcsRoot();
     myBuildType.setCheckoutRules(vcsRoot, CheckoutRules.createOn("+:.=>svnrepo"));
 
-    myPathPrefixes.add(new VcsUrlInfo2TargetPath("UID|some/path", ""));
+    myPathPrefixes.add(new VcsClientMapping("UID|some/path", ""));
 
     final List<MappingElement> mapping = generateMappingForBuildType();
     assertEquals(mapping.toString(), 1, mapping.size());
@@ -93,8 +93,8 @@ public class MappingGeneratorTest extends BaseServerTestCase {
     final SVcsRootImpl vcsRoot = vcsRoot();
     myBuildType.setCheckoutRules(vcsRoot, CheckoutRules.createOn("+:.=>svnrepo\ndddPath"));
 
-    myPathPrefixes.add(new VcsUrlInfo2TargetPath("UID|some/path", ""));
-    myPathPrefixes.add(new VcsUrlInfo2TargetPath("UID|some/path/subpath", "subpathMapping"));
+    myPathPrefixes.add(new VcsClientMapping("UID|some/path", ""));
+    myPathPrefixes.add(new VcsClientMapping("UID|some/path/subpath", "subpathMapping"));
 
     final List<MappingElement> mapping = generateMappingForBuildType();
     assertEquals(mapping.toString(), 4, mapping.size());
@@ -116,7 +116,7 @@ public class MappingGeneratorTest extends BaseServerTestCase {
   @Override
   protected void setUp() throws Exception {
     super.setUp();    //To change body of overridden methods use File | Settings | File Templates.
-    myPathPrefixes = new ArrayList<VcsUrlInfo2TargetPath>();
+    myPathPrefixes = new ArrayList<VcsClientMapping>();
     PathPrefixesSupport.register(myPathPrefixes, myServer.getVcsManager());
   }
 

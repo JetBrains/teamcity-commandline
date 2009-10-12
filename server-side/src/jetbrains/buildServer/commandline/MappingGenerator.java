@@ -53,16 +53,24 @@ public class MappingGenerator {
   }
 
   private void obtainMappingUsing(final VcsPersonalSupport personalSupport) throws VcsException {
+    if (personalSupport instanceof VcsClientMappingProvider) {
+      VcsClientMappingProvider mappingProvider = (VcsClientMappingProvider)personalSupport;
+
+      buildMappingForIncludeRules(mappingProvider);
+    }
+  }
+
+  private void buildMappingForIncludeRules(final VcsClientMappingProvider mappingProvider) throws VcsException {
     final SVcsRoot vcsRoot = (SVcsRoot)myCurrentEntry.getVcsRoot();
 
     for (IncludeRule includeRule : myCurrentEntry.getCheckoutRules().getIncludeRules()) {
 
-      final Collection<VcsUrlInfo2TargetPath> pathPrefixes = personalSupport.getPossiblePathPrefixes(vcsRoot, includeRule);
+      final Collection<VcsClientMapping> pathPrefixes = mappingProvider.getClientMapping(vcsRoot, includeRule);
 
-      for (VcsUrlInfo2TargetPath info2TargetPath : pathPrefixes) {
+      for (VcsClientMapping info2TargetPath : pathPrefixes) {
 
         final String leftPart = createLeftPart(info2TargetPath);
-        final String rightPart = vcsRoot.getVcsName() + PersonalPatchUtil.SEPARATOR + 
+        final String rightPart = vcsRoot.getVcsName() + PersonalPatchUtil.SEPARATOR +
                                  StringUtil.removeTailingSlash(info2TargetPath.getVcsUrlInfo());
         myLines.add(new MappingElement(leftPart, rightPart, makeDescription(vcsRoot, includeRule)));
       }
@@ -70,7 +78,7 @@ public class MappingGenerator {
     }
   }
 
-  private String createLeftPart(final VcsUrlInfo2TargetPath info2TargetPath) {
+  private String createLeftPart(final VcsClientMapping info2TargetPath) {
     String result = StringUtil.removeTailingSlash(info2TargetPath.getTargetPath());
     return "".equals(result) ? "." : result;
   }
@@ -80,13 +88,6 @@ public class MappingGenerator {
       return vcsRoot.getDescription();
     }
     return vcsRoot.getDescription() + "; " + includeRule.toDescriptiveString();
-  }
-
-  private static String nullIfEmpty(String result) {
-    if (result.length() == 0) {
-      result = null;
-    }
-    return result;
   }
 
 }

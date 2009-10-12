@@ -16,13 +16,12 @@ import org.jetbrains.annotations.NotNull;
 */
 class PathPrefixesSupport {
 
-  public static void register(final List<VcsUrlInfo2TargetPath> prefixes, VcsManagerEx vcsManager) {
+  public static void register(final List<VcsClientMapping> prefixes, VcsManagerEx vcsManager) {
     vcsManager.registerVcsSupport(new MockVcsSupport("mock") {
       @Override
       public VcsPersonalSupport getPersonalSupport() {
         return new MockPersonalSupport() {
-          @Override
-          public Collection<VcsUrlInfo2TargetPath> getPossiblePathPrefixes(@NotNull final VcsRoot vcsRoot,
+          public Collection<VcsClientMapping> getClientMapping(@NotNull final VcsRoot vcsRoot,
                                                                            @NotNull final IncludeRule includeRule)
             throws VcsException {
             return prefixes;
