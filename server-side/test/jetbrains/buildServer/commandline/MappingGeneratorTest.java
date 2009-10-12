@@ -36,22 +36,20 @@ public class MappingGeneratorTest extends BaseServerTestCase {
     verifySimpleMapping(theOnlyMappingElement, vcsRoot);
   }
 
-  private void verifySimpleMapping(final MappingElement mapping, final SVcsRootImpl vcsRoot) {
-    verifyMapping(mapping, ".", "mock://UID|some/path", vcsRoot.getDescription());
+  private void verifySimpleMapping(final MappingElement actual, final SVcsRootImpl vcsRoot) {
+    verifyMapping(actual, ".", "mock://UID|some/path", vcsRoot.getDescription());
   }
 
-  private void verifyMapping(final MappingElement mapping,
+  private void verifyMapping(final MappingElement actual,
                              final String localPath, final String targetLocation, final String description) {
     final MappingElement expected = new MappingElement(localPath, targetLocation, description);
-    assertEquals(expected,  mapping);
+    assertEquals(expected,  actual);
   }
 
   public void generate_simple_mapping_2_roots() throws Exception {
 
     final SVcsRootImpl vcsRoot1 = vcsRoot();
     final SVcsRootImpl vcsRoot2 = vcsRoot();
-    vcsRoot1.addProperty("url", "url path 1");
-    vcsRoot2.addProperty("url", "url path 2");
     myPathPrefixes.add(new VcsClientMapping("UID|some/path", ""));
 
     final List<MappingElement> mapping = generateMappingForBuildType();
