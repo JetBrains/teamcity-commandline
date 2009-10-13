@@ -53,14 +53,14 @@ public class MappingGenerator {
   }
 
   private void obtainMappingUsing(final VcsPersonalSupport personalSupport) throws VcsException {
-    if (personalSupport instanceof VcsClientMappingProvider) {
-      VcsClientMappingProvider mappingProvider = (VcsClientMappingProvider)personalSupport;
+    if (personalSupport instanceof IncludeRuleBasedMappingProvider) {
+      IncludeRuleBasedMappingProvider mappingProvider = (IncludeRuleBasedMappingProvider)personalSupport;
 
       buildMappingForIncludeRules(mappingProvider);
     }
   }
 
-  private void buildMappingForIncludeRules(final VcsClientMappingProvider mappingProvider) throws VcsException {
+  private void buildMappingForIncludeRules(final IncludeRuleBasedMappingProvider mappingProvider) throws VcsException {
     final SVcsRoot vcsRoot = (SVcsRoot)myCurrentEntry.getVcsRoot();
 
     for (IncludeRule includeRule : myCurrentEntry.getCheckoutRules().getIncludeRules()) {

@@ -20,15 +20,24 @@ class PathPrefixesSupport {
     vcsManager.registerVcsSupport(new MockVcsSupport("mock") {
       @Override
       public VcsPersonalSupport getPersonalSupport() {
-        return new MockPersonalSupport() {
-          public Collection<VcsClientMapping> getClientMapping(@NotNull final VcsRoot vcsRoot,
-                                                                           @NotNull final IncludeRule includeRule)
-            throws VcsException {
-            return prefixes;
-          }
-        };
+        return new IncludeRuleBasedMock(prefixes);
       }
     });
+  }
+
+  private static class IncludeRuleBasedMock extends MockPersonalSupport implements IncludeRuleBasedMappingProvider {
+    private Collection<VcsClientMapping> prefixes;
+
+    private IncludeRuleBasedMock(final Collection<VcsClientMapping> prefixes) {
+      this.prefixes = prefixes;
+    }
+
+    public Collection<VcsClientMapping> getClientMapping(@NotNull final VcsRoot vcsRoot,
+                                                                     @NotNull final IncludeRule includeRule)
+      throws VcsException {
+      return prefixes;
+    }
+
   }
 
 }
