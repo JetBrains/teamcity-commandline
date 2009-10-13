@@ -5,7 +5,9 @@ import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 
+import java.io.ByteArrayInputStream;
 import java.io.File;
+import java.io.InputStream;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
@@ -117,6 +119,13 @@ public class RemoteRunTest {
 		final Collection<File> files = ourCommand.getFiles(new Args(new String[] {RemoteRun.NO_WAIT_SWITCH_LONG, RemoteRun.CONFIGURATION_PARAM_LONG, "bt2"}), new NullProgressMonitor());
 		assertNotNull("null file's collection got", files);
 		assertEquals("wrong files count collected", 5, files.size());
+	}
+	
+	@Test
+	public void readFromStream() {
+		final String stdin = "a.java\n\rb.cpp";
+		final String out = ourCommand.readFromStream(new ByteArrayInputStream(stdin.getBytes()));
+		assertEquals("wrong stream content read", stdin, out);
 	}
 	
 	@Test

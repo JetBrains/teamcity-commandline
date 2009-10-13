@@ -7,10 +7,13 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.text.MessageFormat;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
@@ -39,6 +42,7 @@ import org.apache.commons.httpclient.URI;
 import org.apache.commons.httpclient.methods.InputStreamRequestEntity;
 import org.apache.commons.httpclient.methods.PostMethod;
 
+import com.intellij.util.text.LineReader;
 import com.jetbrains.teamcity.Debug;
 import com.jetbrains.teamcity.EAuthorizationException;
 import com.jetbrains.teamcity.ECommunicationException;
@@ -51,6 +55,7 @@ import com.jetbrains.teamcity.resources.ITCResource;
 import com.jetbrains.teamcity.resources.ITCResourceMatcher;
 import com.jetbrains.teamcity.resources.TCWorkspace;
 import com.jetbrains.teamcity.runtime.IProgressMonitor;
+import com.sun.corba.se.impl.orbutil.closure.Constant;
 
 public class RemoteRun implements ICommand {
 	
@@ -386,28 +391,68 @@ public class RemoteRun implements ICommand {
 		
 		final HashSet<File> result = new HashSet<File>();
 		if (elements.length > i) {//file's part existing
-			for (; i < elements.length; i++) {
-				final String path = elements[i];
-				final Collection<File> files;
-				if (!path.startsWith("@")) { //$NON-NLS-1$
-					files = Util.getFiles(path);
-				} else {
-					files = Util.getFiles(new File(path.substring(1, path.length())));
-				}
-				// filter out system files
-				result.addAll(TCC_FILTER.accept(Util.SVN_FILES_FILTER.accept(Util.CVS_FILES_FILTER.accept(files))));
+			final String[] buffer = new String[elements.length - i]; 
+			System.arraycopy(elements, i, buffer, 0, buffer.length);
+			Debug.getInstance().debug(RemoteRun.class, String.format("Read from arguments: %s", Arrays.toString(buffer)));			
+			final Collection<File> files = collectFiles(buffer);
+			result.addAll(files);
+			
+		} else {
+			//try read from stdin
+			Debug.getInstance().debug(RemoteRun.class, "Trying stdin...");
+			final String input = readFromStream(System.in);
+			if (input != null && input.trim().length() > 0) {
+				final String[] buffer = input.split("[\n\r]");
+				Debug.getInstance().debug(RemoteRun.class, String.format("Read from stdin: %s", Arrays.toString(buffer)));
+				final Collection<File> files = collectFiles(buffer);
+				result.addAll(files);
+				
+			} else { //let's use current directory as root if nothing passed
+				Debug.getInstance().debug(RemoteRun.class, String.format("Stdin is empty. Will use current (%s) folder as root", new File("."))); //$NON-NLS-1$
+				result.addAll(TCC_FILTER.accept(Util.SVN_FILES_FILTER.accept(Util.CVS_FILES_FILTER.accept(Util.getFiles("."))))); //$NON-NLS-1$
+				
 			}
-		} else {//let's use current directory as root if nothing passed
-			result.addAll(TCC_FILTER.accept(Util.SVN_FILES_FILTER.accept(Util.CVS_FILES_FILTER.accept(Util.getFiles("."))))); //$NON-NLS-1$
 		}
-
 		if (result.size() == 0) {
 			throw new IllegalArgumentException(Messages.getString("RemoteRun.no.files.collected.for.remoterun.eror.message")); //$NON-NLS-1$
 		}
+		
 		monitor.done(MessageFormat.format(Messages.getString("RemoteRun.collect.changes.step.result.pattern"), result.size())); //$NON-NLS-1$
 		return result;
 	}
+	
+	private Collection<File> collectFiles(final String[] elements){
+		final HashSet<File> out = new HashSet<File>();
+		for (int i = 0; i < elements.length; i++) {
+			final String path = elements[i];
+			final Collection<File> files;
+			if (!path.startsWith("@")) { //$NON-NLS-1$
+				files = Util.getFiles(path);
+			} else {
+				files = Util.getFiles(new File(path.substring(1, path.length())));
+			}
+			// filter out system files
+			out.addAll(TCC_FILTER.accept(Util.SVN_FILES_FILTER.accept(Util.CVS_FILES_FILTER.accept(files))));
+		}
+		return out;
+	}
 
+
+	String readFromStream(final InputStream stream) {
+		final StringBuffer buffer = new StringBuffer();
+		final InputStreamReader in = new InputStreamReader(new BufferedInputStream(stream));
+		try {
+			if(stream.available()!=0){
+				int n;
+				while((n = in.read()) != -1){
+					buffer.append((char) n);
+				}
+			}
+		} catch (IOException e) {
+			Debug.getInstance().error(RemoteRun.class, e.getMessage(), e);
+		}
+		return buffer.toString();
+	}
 
 	public String getId() {
 		return ID;

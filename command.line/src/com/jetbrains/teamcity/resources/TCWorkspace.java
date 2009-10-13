@@ -48,11 +48,11 @@ public class TCWorkspace {
 	protected File getGlobalAdminFile() {
 		final String globalConfigEnv = System.getenv("TC_DEFAULT_CONFIG");
 		if(globalConfigEnv != null && globalConfigEnv.length()>0){
-			Debug.getInstance().debug(TCWorkspace.class, String.format("Default Admin file \"%s\" got from Environment variable", globalConfigEnv));
+			Debug.getInstance().debug(TCWorkspace.class, String.format("Check Environment variable \"%s\" for Admin file ", globalConfigEnv));
 			return new File(globalConfigEnv);
 		}
 		final String myDefaultConfigFile = TCC_GLOBAL_ADMIN_FILE;
-		Debug.getInstance().debug(TCWorkspace.class, String.format("Default Admin file \"%s\" got from default location", myDefaultConfigFile));
+		Debug.getInstance().debug(TCWorkspace.class, String.format("Check Default location \"%s\" for Admin file ", myDefaultConfigFile));
 		return new File(myDefaultConfigFile);
 	}
 	
