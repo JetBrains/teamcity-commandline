@@ -87,7 +87,7 @@
     <div class="resultsPreview">
       <%--<a href="#" onclick="BS.CommandLine.updatePreview(); return false;" style="float: right;">Update from table</a>--%>
       <h3>Resulting configuration file contents:</h3>
-      <textarea rows="7" cols="80" id="resultsConfig"></textarea>
+      <textarea rows="7" cols="80" id="resultsConfig" readonly="true" onclick="$(this).activate(); return false;"></textarea>
     </div>
 
 
