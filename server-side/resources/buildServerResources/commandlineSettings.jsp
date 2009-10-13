@@ -79,7 +79,7 @@
       <tr>
         <th class="fromInput">Local Path</th>
         <th class="toInput">VCS Path</th>
-        <th>VCS description</th>
+        <th>VCS Source Details</th>
         <th class="remove">Remove</th>
       </tr>
     </table>

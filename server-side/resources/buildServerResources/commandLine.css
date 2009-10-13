@@ -7,6 +7,10 @@
   clear: both;
 }
 
+#mappingTable td {
+  vertical-align: top;  
+}
+
 #mappingTable .fromInput {
   width: 15em;
 }
@@ -43,4 +47,17 @@ pre, code {
   font-family: Courier, monospace;
   padding: 0;
   margin: 0;
+}
+
+div.errorDup {
+  font-size: 80%;
+  color: #ED2C10;
+}
+
+input.duplicated {
+  background-color: #ffffcc; 
+}
+
+input.duplicate {
+  background-color: #ffdddd; 
 }

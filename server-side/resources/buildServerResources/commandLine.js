@@ -1,7 +1,8 @@
 BS.CommandLine = {
 
   ROWS: [
-    {css: "fromInput", template: new Template("<input type='text' name='from' value='#{from}'/>")},
+    {css: "fromInput", template: new Template("<input type='text' name='from' value='#{from}'/>" +
+                                              "<div class='errorDup' style='display:none;'>Non-unique path, ignored</div>")},
     {css: "toInput", template: new Template("<input type='text' name='to' value='#{to}'/>")},
     {css: "comment", template: new Template("#{comment}")},
     {css: "remove", template: new Template("<a title='Remove this mapping' onclick='BS.CommandLine.removeRow(this.parentNode.parentNode); BS.CommandLine.updatePreview(); return false;' href='#' class='actionLink red'>Remove</a>")}
@@ -131,13 +132,32 @@ BS.CommandLine = {
   },
 
   updatePreview: function() {
+    var left2Tr = {}
     $('resultsConfig').value = '';
     $$('#mappingTable tr').each(function(trElement) {
       var inputs = trElement.getElementsByTagName('input');
       if (!inputs || inputs.length != 2) return;
       var from = inputs[0].value; 
       var to = inputs[1].value;
-      $('resultsConfig').value += from + "=" + to + "\r\n";
+
+      if (left2Tr[from]) {
+        trElement.down("div.errorDup").show();
+        var dublicated = $(left2Tr[from].getElementsByTagName('input')[0]);
+        dublicated.addClassName("duplicated");
+        dublicated.title = "This path is dublicated below";
+
+        $(inputs[0]).addClassName("duplicate");
+      }
+      else {
+        left2Tr[from] = trElement;
+        $(inputs[0]).removeClassName("duplicated");
+        $(inputs[0]).removeClassName("duplicate");
+        $(inputs[0]).title = "";
+        trElement.down("div.errorDup").hide();
+
+        $('resultsConfig').value += from + "=" + to + "\r\n";
+      }
+
     }, this);
 
     if ($$('#mappingTable tr').size() == 1) {
