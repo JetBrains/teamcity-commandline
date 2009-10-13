@@ -1,8 +1,6 @@
 package jetbrains.buildServer.commandline;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.List;
+import java.util.*;
 import jetbrains.buildServer.log.Loggers;
 import jetbrains.buildServer.serverSide.SBuildType;
 import jetbrains.buildServer.serverSide.impl.personal.PersonalPatchUtil;
@@ -12,7 +10,7 @@ import jetbrains.buildServer.vcs.*;
 public class MappingGenerator {
   private final VcsManager myVcsManager;
   private final SBuildType myBuildType;
-  private List<MappingElement> myLines;
+  private final List<MappingElement> myMappings = new ArrayList<MappingElement>();
 
   private VcsRootEntry myCurrentEntry;
 
@@ -21,12 +19,11 @@ public class MappingGenerator {
     myBuildType = buildType;
   }
 
-  public List<MappingElement> getLines() {
-    return myLines;
+  public List<MappingElement> getMappings() {
+    return myMappings;
   }
 
   public void generateVcsMapping() {
-    myLines = new ArrayList<MappingElement>();
 
     for (VcsRootEntry entry : myBuildType.getVcsRootEntries()) {
       myCurrentEntry = entry;
@@ -38,8 +35,8 @@ public class MappingGenerator {
     try {
       final VcsPersonalSupport personalSupport = getPersonalSupport();
 
-      if (personalSupport != null) {
-        obtainMappingUsing(personalSupport);
+      if (personalSupport instanceof VcsClientMappingProvider) {
+        obtainMappingUsing((VcsClientMappingProvider)personalSupport);
       }
     } catch (VcsException e) {
       Loggers.SERVER.warn(e);
@@ -52,38 +49,50 @@ public class MappingGenerator {
     return myVcsManager.findVcsPersonalSupportByName(vcsName);
   }
 
-  private void obtainMappingUsing(final VcsPersonalSupport personalSupport) throws VcsException {
+  private void obtainMappingUsing(final VcsClientMappingProvider personalSupport) throws VcsException {
     if (personalSupport instanceof IncludeRuleBasedMappingProvider) {
-      IncludeRuleBasedMappingProvider mappingProvider = (IncludeRuleBasedMappingProvider)personalSupport;
 
-      buildMappingForIncludeRules(mappingProvider);
+      buildMappingForIncludeRules((IncludeRuleBasedMappingProvider)personalSupport);
+    }
+    else if (personalSupport instanceof VcsRootBasedMappingProvider) {
+
+      buildMappingForVcsRoot((VcsRootBasedMappingProvider) personalSupport);
     }
   }
+
+  private void buildMappingForVcsRoot(final VcsRootBasedMappingProvider mappingProvider) throws VcsException {
+    VcsRootMappingGenerator generator = new VcsRootMappingGenerator(mappingProvider, myCurrentEntry);
+    myMappings.addAll(generator.generateMappings());
+  }
+
 
   private void buildMappingForIncludeRules(final IncludeRuleBasedMappingProvider mappingProvider) throws VcsException {
     final SVcsRoot vcsRoot = (SVcsRoot)myCurrentEntry.getVcsRoot();
 
     for (IncludeRule includeRule : myCurrentEntry.getCheckoutRules().getIncludeRules()) {
 
-      final Collection<VcsClientMapping> pathPrefixes = mappingProvider.getClientMapping(vcsRoot, includeRule);
+      final Collection<VcsClientMapping> vcsClientMappings = mappingProvider.getClientMapping(vcsRoot, includeRule);
 
-      for (VcsClientMapping info2TargetPath : pathPrefixes) {
+      for (VcsClientMapping info2TargetPath : vcsClientMappings) {
 
-        final String leftPart = createLeftPart(info2TargetPath);
+        final String leftPart = normalizePath(info2TargetPath.getTargetPath());
         final String rightPart = vcsRoot.getVcsName() + PersonalPatchUtil.SEPARATOR +
                                  StringUtil.removeTailingSlash(info2TargetPath.getVcsUrlInfo());
-        myLines.add(new MappingElement(leftPart, rightPart, makeDescription(vcsRoot, includeRule)));
+        myMappings.add(new MappingElement(leftPart, rightPart, makeDescription(vcsRoot, includeRule)));
       }
 
     }
   }
 
-  private String createLeftPart(final VcsClientMapping info2TargetPath) {
-    String result = StringUtil.removeTailingSlash(info2TargetPath.getTargetPath());
+  static String normalizePath(final String path) {
+    return replaceEmptyWithDot(StringUtil.removeTailingSlash(path));
+  }
+
+  private static String replaceEmptyWithDot(final String result) {
     return "".equals(result) ? "." : result;
   }
 
-  private static String makeDescription(final SVcsRoot vcsRoot, final IncludeRule includeRule) {
+  static String makeDescription(final SVcsRoot vcsRoot, final IncludeRule includeRule) {
     if ("".equals(includeRule.getFrom()) && "".equals(includeRule.getTo())) {
       return vcsRoot.getDescription();
     }

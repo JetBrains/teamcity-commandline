@@ -55,6 +55,6 @@ public class GetBuildTypeMappingActionTest extends BaseWebTestCase {
     super.setUp();
     myAction = new GetBuildTypeMappingAction(myServer.getProjectManager(), myServer.getVcsManager(), null);
     myPathPrefixes = new ArrayList<VcsClientMapping>();
-    PathPrefixesSupport.register(myPathPrefixes, myServer.getVcsManager());
+    PathPrefixesSupport.registerIncludeRuleVcsMappingSupport(myPathPrefixes, myServer.getVcsManager());
   }
 }

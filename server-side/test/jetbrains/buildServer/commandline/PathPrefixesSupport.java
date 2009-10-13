@@ -16,13 +16,26 @@ import org.jetbrains.annotations.NotNull;
 */
 class PathPrefixesSupport {
 
-  public static void register(final List<VcsClientMapping> prefixes, VcsManagerEx vcsManager) {
-    vcsManager.registerVcsSupport(new MockVcsSupport("mock") {
+  public static MockVcsSupport registerIncludeRuleVcsMappingSupport(final List<VcsClientMapping> prefixes, VcsManagerEx vcsManager) {
+    final MockVcsSupport support = new MockVcsSupport("mock") {
       @Override
       public VcsPersonalSupport getPersonalSupport() {
         return new IncludeRuleBasedMock(prefixes);
       }
-    });
+    };
+    vcsManager.registerVcsSupport(support);
+    return support;
+  }
+
+  public static MockVcsSupport registerVcsRootMappingSupport(final List<VcsClientMapping> prefixes, VcsManagerEx vcsManager) {
+    final MockVcsSupport support = new MockVcsSupport("mock") {
+      @Override
+      public VcsPersonalSupport getPersonalSupport() {
+        return new VcsRootBasedMock(prefixes);
+      }
+    };
+    vcsManager.registerVcsSupport(support);
+    return support;
   }
 
   private static class IncludeRuleBasedMock extends MockPersonalSupport implements IncludeRuleBasedMappingProvider {
@@ -35,6 +48,19 @@ class PathPrefixesSupport {
     public Collection<VcsClientMapping> getClientMapping(@NotNull final VcsRoot vcsRoot,
                                                                      @NotNull final IncludeRule includeRule)
       throws VcsException {
+      return prefixes;
+    }
+
+  }
+
+  private static class VcsRootBasedMock extends MockPersonalSupport implements VcsRootBasedMappingProvider {
+    private Collection<VcsClientMapping> prefixes;
+
+    private VcsRootBasedMock(final Collection<VcsClientMapping> prefixes) {
+      this.prefixes = prefixes;
+    }
+
+    public Collection<VcsClientMapping> getClientMapping(@NotNull final VcsRoot vcsRoot) throws VcsException {
       return prefixes;
     }
 

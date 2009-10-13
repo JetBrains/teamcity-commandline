@@ -2,7 +2,8 @@
 <suite name="Commandline Tool plugin suite">
   <test name="Commandline Tool plugin tests">
     <classes>
-      <class name="jetbrains.buildServer.commandline.MappingGeneratorTest"  />
+      <class name="jetbrains.buildServer.commandline.MappingGeneratorIncludeRuleTest"  />
+      <class name="jetbrains.buildServer.commandline.MappingGeneratorVcsRootTest"  />
       <class name="jetbrains.buildServer.commandline.GetBuildTypeMappingActionTest"/>
       <class name="jetbrains.buildServer.commandline.CommandLineControllerTest"/>
     </classes>
