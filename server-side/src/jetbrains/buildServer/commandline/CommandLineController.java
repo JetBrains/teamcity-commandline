@@ -7,9 +7,16 @@ import javax.servlet.http.HttpServletResponse;
 import jetbrains.buildServer.controllers.BaseController;
 import jetbrains.buildServer.serverSide.ProjectManager;
 import jetbrains.buildServer.serverSide.SBuildType;
+import jetbrains.buildServer.util.CollectionsUtil;
+import jetbrains.buildServer.util.filters.Filter;
+import jetbrains.buildServer.vcs.SVcsRoot;
+import jetbrains.buildServer.vcs.VcsClientMappingProvider;
+import jetbrains.buildServer.vcs.VcsManager;
+import jetbrains.buildServer.vcs.VcsPersonalSupport;
 import jetbrains.buildServer.web.openapi.PluginDescriptor;
 import jetbrains.buildServer.web.openapi.WebControllerManager;
 import org.jetbrains.annotations.NonNls;
+import org.jetbrains.annotations.NotNull;
 import org.springframework.web.servlet.ModelAndView;
 
 /**
@@ -22,15 +29,17 @@ public class CommandLineController extends BaseController {
   @NonNls private static final String MY_JSP = "commandlineSettings.jsp";
 
   private final PluginDescriptor myPluginDescriptor;
+  private final VcsManager myVcsManager;
   private final WebControllerManager myWebControllerManager;
   private final ProjectManager myProjectManager;
 
   public CommandLineController(final PluginDescriptor pluginDescriptor,
                                final WebControllerManager webControllerManager,
-                               final ProjectManager projectManager) {
+                               final ProjectManager projectManager, final VcsManager vcsManager) {
     myPluginDescriptor = pluginDescriptor;
     myWebControllerManager = webControllerManager;
     myProjectManager = projectManager;
+    myVcsManager = vcsManager;
   }
 
   public void register() {
@@ -48,7 +57,29 @@ public class CommandLineController extends BaseController {
 
   private void addBuildTypes(final HashMap model) {
     final List<SBuildType> buildTypes = myProjectManager.getActiveBuildTypes();
-    model.put("buildTypes", buildTypes);
+    model.put("buildTypes", collectBuildTypesWithPersonalVcsSupport(buildTypes));
+  }
+
+  private List<SBuildType> collectBuildTypesWithPersonalVcsSupport(final List<SBuildType> buildTypes) {
+    return CollectionsUtil.filterCollection(buildTypes, new Filter<SBuildType>() {
+      public boolean accept(@NotNull final SBuildType data) {
+
+        return hasRootWithVcsClientMappingProvider(data);
+
+      }
+    });
+  }
+
+  private boolean hasRootWithVcsClientMappingProvider(final SBuildType data) {
+    final List<SVcsRoot> roots = data.getVcsRoots();
+
+    for (SVcsRoot root : roots) {
+      final VcsPersonalSupport personalSupport = myVcsManager.findVcsPersonalSupportByName(root.getVcsName());
+      if (personalSupport instanceof VcsClientMappingProvider) {
+        return true;
+      }
+    }
+    return false;
   }
 
 }

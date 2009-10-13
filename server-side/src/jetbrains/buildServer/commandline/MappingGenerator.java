@@ -71,7 +71,10 @@ public class MappingGenerator {
 
     for (IncludeRule includeRule : myCurrentEntry.getCheckoutRules().getIncludeRules()) {
 
-      final Collection<VcsClientMapping> vcsClientMappings = mappingProvider.getClientMapping(vcsRoot, includeRule);
+      final List<VcsClientMapping> vcsClientMappings =
+        new ArrayList<VcsClientMapping>(mappingProvider.getClientMapping(vcsRoot, includeRule));
+      Collections.sort(vcsClientMappings);
+      Collections.reverse(vcsClientMappings);
 
       for (VcsClientMapping info2TargetPath : vcsClientMappings) {
 

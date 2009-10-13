@@ -10,6 +10,7 @@
   </bean>
 
   <bean id="commandLineSettingsController" class="jetbrains.buildServer.commandline.CommandLineController" init-method="register">
+    <constructor-arg index="2" ref="projectManager"/>
   </bean>
 
   <bean id="mappingProviderAction" class="jetbrains.buildServer.commandline.GetBuildTypeMappingAction" init-method="register">

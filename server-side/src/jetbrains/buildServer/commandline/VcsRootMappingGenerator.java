@@ -44,6 +44,7 @@ class VcsRootMappingGenerator {
       }
 
     }
+    Collections.reverse(myMappings);
     return myMappings;
   }
 
