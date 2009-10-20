@@ -45,17 +45,25 @@ public class CommandLineControllerTest extends BaseControllerTestCase {
   }
 
 
+  //TODO: Consider using jmock 2.5.x
   private class MockPluginDescriptor implements PluginDescriptor {
+    @NotNull
     public String getPluginName() {
       return "cmdline";
     }
 
+    @NotNull
     public String getPluginResourcesPath() {
       return "/plugins/cmdline/";
     }
 
+    @NotNull
     public String getPluginResourcesPath(@NotNull final String relativePath) {
       return getPluginResourcesPath() + "/" + relativePath;
+    }
+
+    public String getParameterValue(@NotNull final String key) {
+      return null;
     }
   }
 }
