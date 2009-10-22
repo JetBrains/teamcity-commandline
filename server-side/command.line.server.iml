@@ -15,23 +15,7 @@
           <root url="file://$MODULE_DIR$/src" />
           <root url="file://$MODULE_DIR$/resources" />
         </sourceRoots>
-        <building>
-          <setting name="EXPLODED_URL" value="file://" />
-          <setting name="EXPLODED_ENABLED" value="false" />
-          <setting name="JAR_URL" value="file://" />
-          <setting name="JAR_ENABLED" value="false" />
-          <setting name="EXCLUDE_EXPLODED_DIRECTORY" value="true" />
-        </building>
-        <packaging>
-          <containerElement type="module" name="command.line.server">
-            <attribute name="method" value="5" />
-            <attribute name="URI" value="/WEB-INF/plugins/command.line/server/command.line.server.jar" />
-          </containerElement>
-          <containerElement type="facet" facetId="web-openapi/web/web-openapi">
-            <attribute name="method" value="4" />
-            <attribute name="URI" value="&lt;N/A&gt;" />
-          </containerElement>
-        </packaging>
+        <context-artifact name="web-deployment:web-deployment exploded" />
       </configuration>
     </facet>
     <facet type="Spring" name="Spring">
@@ -40,7 +24,7 @@
           <file>file://$MODULE_DIR$/src/META-INF/build-server-plugin-commandline.xml</file>
           <file>jar://$MODULE_DIR$/../../../lib/spring.jar!/org/springframework/jdbc/support/sql-error-codes.xml</file>
           <file>file://$MODULE_DIR$/../../../server/src/META-INF/build-server-plugin-agents-statistics.xml</file>
-          <file>file://$MODULE_DIR$/../../../server/src/META-INF/build-server-plugin-declarative-extensibility.xml</file>
+          <file>file://$MODULE_DIR$/../../../server/src/META-INF/build-server-declarative-extensibility.xml</file>
           <file>file://$MODULE_DIR$/../../../server/src/META-INF/buildServerCompatMode.xml</file>
           <file>file://$MODULE_DIR$/../../../server/src/META-INF/buildServerPermissions.xml</file>
           <file>file://$MODULE_DIR$/../../../server/src/META-INF/buildServerPluginsSupport.xml</file>
