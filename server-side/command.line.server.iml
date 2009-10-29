@@ -3,11 +3,6 @@
   <component name="FacetManager">
     <facet type="web" name="command.line">
       <configuration>
-        <descriptors>
-          <deploymentDescriptor url="file://$MODULE_DIR$/teamcity-plugin.xml">
-            <option name="DEFAULT_DIR" value="WEB-INF/plugins/command.line" />
-          </deploymentDescriptor>
-        </descriptors>
         <webroots>
           <root url="file://$MODULE_DIR$/resources/buildServerResources" relative="/plugins/command.line" />
         </webroots>
