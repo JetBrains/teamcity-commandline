@@ -105,13 +105,13 @@ public class RemoteRun implements ICommand {
 		Args.registerArgument(MESSAGE_PARAM, String.format(".*%s\\s+[^\\s].*", MESSAGE_PARAM));
 		Args.registerArgument(MESSAGE_PARAM_LONG, String.format(".*%s\\s+[^\\s].*", MESSAGE_PARAM_LONG));
 		
-		Args.registerArgument(CONFIGURATION_PARAM, String.format(".*%s\\s+[0-9a-zA-Z]+.*", CONFIGURATION_PARAM));
-		Args.registerArgument(CONFIGURATION_PARAM_LONG, String.format(".*%s\\s+[0-9a-zA-Z]+.*", CONFIGURATION_PARAM_LONG));
+		Args.registerArgument(CONFIGURATION_PARAM, String.format(".*%s\\s+[^\\s].*", CONFIGURATION_PARAM));
+		Args.registerArgument(CONFIGURATION_PARAM_LONG, String.format(".*%s\\s+[^\\s].*", CONFIGURATION_PARAM_LONG));
 		
 		Args.registerArgument(TIMEOUT_PARAM, String.format(".*%s\\s+[0-9]+.*", TIMEOUT_PARAM));
 		Args.registerArgument(TIMEOUT_PARAM_LONG, String.format(".*%s\\s+[0-9]+.*", TIMEOUT_PARAM_LONG));
 
-		Args.registerArgument(OVERRIDING_MAPPING_FILE_PARAM, String.format(".*%s\\s+[0-9a-zA-Z.]+.*", OVERRIDING_MAPPING_FILE_PARAM));
+		Args.registerArgument(OVERRIDING_MAPPING_FILE_PARAM, String.format(".*%s\\s+[^\\s].*", OVERRIDING_MAPPING_FILE_PARAM));
 		
 	}
 
@@ -135,14 +135,18 @@ public class RemoteRun implements ICommand {
 		myCleanoff = args.isCleanOff();
 		
 		final TCWorkspace workspace = new TCWorkspace(Util.getCurrentDirectory(), getOverridingMatcher(args));
+		
 		//collect files
 		final Collection<File> files = getFiles(args, monitor);
+		
+		//prepare patch
+		final File patchFile = createPatch(myServer.getURL(), workspace, files, monitor);
 		
 		//collect configurations for running
 		final Collection<String> configurations = getApplicableConfigurations(cfgId, workspace, files, monitor);
 		
 		//prepare changes list
-		final long chaneListId = createChangeList(myServer.getURL(), myServer.getCurrentUser(), workspace, files, monitor);
+		final long chaneListId = createChangeList(myServer.getURL(), myServer.getCurrentUser(), workspace, patchFile, monitor);
 		
 		//fire RR
 		scheduleRemoteRun(configurations, chaneListId, monitor);
@@ -158,6 +162,21 @@ public class RemoteRun implements ICommand {
 		return;
 	}
 	
+	private File createPatch(String url, TCWorkspace workspace, Collection<File> files, IProgressMonitor monitor) throws ECommunicationException {
+		try{
+			monitor.beginTask(Messages.getString("RemoteRun.preparing.patch.step.name")); //$NON-NLS-1$
+			final File patch = createPatch(createPatchFile(url), workspace, files);
+			if(!myCleanoff){
+				patch.deleteOnExit();
+			}
+			monitor.done();
+			return patch;
+
+		} catch (IOException e){
+			throw new ECommunicationException(e);
+		}
+	}
+
 	ITCResourceMatcher getOverridingMatcher(final Args args) {
 		if(args.hasArgument(OVERRIDING_MAPPING_FILE_PARAM)){
 			return new FileBasedMatcher(new File(args.getArgument(OVERRIDING_MAPPING_FILE_PARAM)));
@@ -279,14 +298,14 @@ public class RemoteRun implements ICommand {
 	}
 	
 	
-	long createChangeList(String serverURL, int userId, final TCWorkspace workspace, final Collection<File> files, final IProgressMonitor monitor) throws ECommunicationException {
+	long createChangeList(String serverURL, int userId, final TCWorkspace workspace, final File patchFile, /*final Collection<File> files, */final IProgressMonitor monitor) throws ECommunicationException {
 		try{
-			monitor.beginTask(Messages.getString("RemoteRun.preparing.patch..step.name")); //$NON-NLS-1$
-			final File patch = createPatch(createPatchFile(serverURL), workspace, files);
-			if(!myCleanoff){
-				patch.deleteOnExit();
-			}
-			monitor.done();
+//			monitor.beginTask(Messages.getString("RemoteRun.preparing.patch..step.name")); //$NON-NLS-1$
+//			final File patch = createPatch(createPatchFile(serverURL), workspace, files);
+//			if(!myCleanoff){
+//				patch.deleteOnExit();
+//			}
+//			monitor.done();
 
 			monitor.beginTask(Messages.getString("RemoteRun.send.patch.step.name")); //$NON-NLS-1$
 			final SimpleHttpConnectionManager manager = new SimpleHttpConnectionManager();
@@ -303,9 +322,9 @@ public class RemoteRun implements ICommand {
 			}
 			_uri += "uploadChanges.html"; //$NON-NLS-1$
 			final PostMethod postMethod = new PostMethod(_uri);
-			final BufferedInputStream content = new BufferedInputStream(new FileInputStream(patch));
+			final BufferedInputStream content = new BufferedInputStream(new FileInputStream(patchFile));
 			try {
-				postMethod.setRequestEntity(new InputStreamRequestEntity(content, patch.length()));
+				postMethod.setRequestEntity(new InputStreamRequestEntity(content, patchFile.length()));
 				postMethod.setQueryString(new NameValuePair[] {
 						new NameValuePair("userId", String.valueOf(userId)), //$NON-NLS-1$
 						new NameValuePair("description", myComments), //$NON-NLS-1$
@@ -334,13 +353,16 @@ public class RemoteRun implements ICommand {
 			final HashSet<File> uncontrolled = new HashSet<File>();//let's collect files is not under teamcity
 			for(File file : files){
 				file = file.getAbsoluteFile().getCanonicalFile();//make absolute
-				LowLevelPatchBuilder.WriteFileContent content = new PatchBuilderImpl.StreamWriteFileContent(new BufferedInputStream(new FileInputStream(file)), file.length());
 				final ITCResource resource = workspace.getTCResource(file);
 				if(resource != null && resource.getRepositoryPath() != null){
-					Debug.getInstance().debug(RemoteRun.class, MessageFormat.format("+ {0}", resource.getRepositoryPath())); //$NON-NLS-1$
 					if(file.exists()){
+						Debug.getInstance().debug(RemoteRun.class, String.format("+ %s", resource.getRepositoryPath())); //$NON-NLS-1$
+						final LowLevelPatchBuilder.WriteFileContent content = new PatchBuilderImpl.StreamWriteFileContent(
+								new BufferedInputStream(new FileInputStream(
+										file)), file.length());
 						patcher.changeBinary(resource.getRepositoryPath(), (int) file.length(), content, false);
 					} else {
+						Debug.getInstance().debug(RemoteRun.class, String.format("- %s", resource.getRepositoryPath())); //$NON-NLS-1$
 						patcher.delete(resource.getRepositoryPath(), true, false);
 					}
 				} else {
