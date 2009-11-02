@@ -12,8 +12,6 @@ import java.util.Comparator;
 
 import jetbrains.buildServer.serverSide.crypt.EncryptUtil;
 
-import org.apache.log4j.Logger;
-
 import com.jetbrains.teamcity.Debug;
 import com.jetbrains.teamcity.EAuthorizationException;
 import com.jetbrains.teamcity.ECommunicationException;
@@ -42,9 +40,14 @@ public class CommandRunner {
 			return 0;
 		}
 	};
-
-	public static void main(final String[] args) throws Exception {
-		
+	
+	CommandRunner(){
+		Args.registerArgument(USER_ARG, String.format(".*%s\\s+[-0-9a-zA-Z.].*", USER_ARG));
+		Args.registerArgument(PASSWORD_ARG, String.format(".*%s\\s+[-0-9a-zA-Z.].*", PASSWORD_ARG));
+		Args.registerArgument(HOST_ARG, String.format(".*%s\\s+https*://.+", HOST_ARG));
+	}
+	
+	void run(final String[] args) throws Exception{
 		final Args arguments = new Args(args);
 		/**
 		 * instantiate Debug and set mode according to command line 
@@ -74,10 +77,13 @@ public class CommandRunner {
 			}
 		} else {
 			final ICommand helpCommand = CommandRegistry.getInstance().getCommand(Help.ID);
-//			newArgs = new String[args.length + 1];
 			helpCommand.execute(null, arguments, monitor);
 			reportResult(helpCommand, monitor);
 		}
+	}
+
+	public static void main(final String[] args) throws Exception {
+		new CommandRunner().run(args);
 	}
 	
 	private static void reportError(ICommand command, Throwable e, IProgressMonitor monitor) {
@@ -116,12 +122,8 @@ public class CommandRunner {
 		}
 	}
 
-	private static Server openConnection(final Args args, final IProgressMonitor monitor) throws MalformedURLException, ECommunicationException, EAuthorizationException {
-		String host = args.getArgument(HOST_ARG);
-		//load default(any) if omitted
-		if(host == null){
-			host = getDefaultHost();
-		}
+	static Server openConnection(final Args args, final IProgressMonitor monitor) throws MalformedURLException, ECommunicationException, EAuthorizationException {
+		final String host = getHost(args);
 		if(host != null){
 			String user;
 			String password;
@@ -157,8 +159,17 @@ public class CommandRunner {
 			throw new IllegalArgumentException(MessageFormat.format(Messages.getString("CommandRunner.no.default.host.error.pattern"), HOST_ARG)); //$NON-NLS-1$
 		}
 	}
+	
+	static String getHost(final Args args){
+		//load default(any) if omitted
+		if(!args.hasArgument(HOST_ARG)){
+			return getDefaultHost();
+		} else {
+			return args.getArgument(HOST_ARG);
+		}
+	}
 
-	private static String getDefaultHost() {
+	static String getDefaultHost() {
 		final Collection<ICredential> credentials = TCAccess.getInstance().credentials();
 		if(!credentials.isEmpty()){
 			//sort by creation TS. the newest will be used as default 

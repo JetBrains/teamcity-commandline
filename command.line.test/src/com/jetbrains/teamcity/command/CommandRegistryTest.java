@@ -23,5 +23,7 @@ public class CommandRegistryTest {
 		assertFalse(CommandRegistry.getInstance().isCommandExtensionJar("test.tc.command.12345.jar"));
 	}
 	
+	
+	
 
 }

@@ -162,7 +162,10 @@ public class RemoteRun implements ICommand {
 		monitor.beginTask("Collecting configurations for running"); //$NON-NLS-1$
 		final HashSet<String> resources = new HashSet<String>();
 		for(File file : files){
-			resources.add(workspace.getTCResource(file).getRepositoryPath());
+			final ITCResource tcResource = workspace.getTCResource(file);
+			if(tcResource != null){
+				resources.add(tcResource.getRepositoryPath());
+			}
 		}
 		buffer.addAll(myServer.getApplicableConfigurations(resources));
 		monitor.done(MessageFormat.format(Messages.getString("RemoteRun.collected.configuration.done.pattern"), buffer.size(), buffer)); //$NON-NLS-1$
