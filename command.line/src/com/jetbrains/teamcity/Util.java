@@ -28,7 +28,8 @@ public class Util {
 		for(int i = 0; i< args.length; i++){
 			for(String argument : arguments){
 				if(argument != null){
-					if(args[i].toLowerCase().trim().equals(argument.toLowerCase().trim())){
+					if(args[i].toLowerCase().trim().equals(argument.toLowerCase().trim()) 
+							&& args.length > (i + 1)){
 						return args[i + 1].trim();
 					}
 				}
