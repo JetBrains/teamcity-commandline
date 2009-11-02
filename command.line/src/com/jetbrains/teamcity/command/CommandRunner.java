@@ -41,9 +41,9 @@ public class CommandRunner {
 		}
 	};
 	
-	CommandRunner(){
-		Args.registerArgument(USER_ARG, String.format(".*%s\\s+[-0-9a-zA-Z.].*", USER_ARG));
-		Args.registerArgument(PASSWORD_ARG, String.format(".*%s\\s+[-0-9a-zA-Z.].*", PASSWORD_ARG));
+	static {
+		Args.registerArgument(USER_ARG, String.format(".*%s\\s+[^\\s].*", USER_ARG));
+		Args.registerArgument(PASSWORD_ARG, String.format(".*%s\\s+[^\\s].*", PASSWORD_ARG));
 		Args.registerArgument(HOST_ARG, String.format(".*%s\\s+https*://.+", HOST_ARG));
 	}
 	

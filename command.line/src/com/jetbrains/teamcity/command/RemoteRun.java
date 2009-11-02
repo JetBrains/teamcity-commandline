@@ -42,7 +42,6 @@ import org.apache.commons.httpclient.URI;
 import org.apache.commons.httpclient.methods.InputStreamRequestEntity;
 import org.apache.commons.httpclient.methods.PostMethod;
 
-import com.intellij.util.text.LineReader;
 import com.jetbrains.teamcity.Debug;
 import com.jetbrains.teamcity.EAuthorizationException;
 import com.jetbrains.teamcity.ECommunicationException;
@@ -55,7 +54,6 @@ import com.jetbrains.teamcity.resources.ITCResource;
 import com.jetbrains.teamcity.resources.ITCResourceMatcher;
 import com.jetbrains.teamcity.resources.TCWorkspace;
 import com.jetbrains.teamcity.runtime.IProgressMonitor;
-import com.sun.corba.se.impl.orbutil.closure.Constant;
 
 public class RemoteRun implements ICommand {
 	
@@ -102,6 +100,20 @@ public class RemoteRun implements ICommand {
 
 
 	private boolean myCleanoff;
+	
+	static {
+		Args.registerArgument(MESSAGE_PARAM, String.format(".*%s\\s+[^\\s].*", MESSAGE_PARAM));
+		Args.registerArgument(MESSAGE_PARAM_LONG, String.format(".*%s\\s+[^\\s].*", MESSAGE_PARAM_LONG));
+		
+		Args.registerArgument(CONFIGURATION_PARAM, String.format(".*%s\\s+[0-9a-zA-Z]+.*", CONFIGURATION_PARAM));
+		Args.registerArgument(CONFIGURATION_PARAM_LONG, String.format(".*%s\\s+[0-9a-zA-Z]+.*", CONFIGURATION_PARAM_LONG));
+		
+		Args.registerArgument(TIMEOUT_PARAM, String.format(".*%s\\s+[0-9]+.*", TIMEOUT_PARAM));
+		Args.registerArgument(TIMEOUT_PARAM_LONG, String.format(".*%s\\s+[0-9]+.*", TIMEOUT_PARAM_LONG));
+
+		Args.registerArgument(OVERRIDING_MAPPING_FILE_PARAM, String.format(".*%s\\s+[0-9a-zA-Z.]+.*", OVERRIDING_MAPPING_FILE_PARAM));
+		
+	}
 
 	public void execute(final Server server, Args args, final IProgressMonitor monitor) throws EAuthorizationException, ECommunicationException, ERemoteError, InvalidAttributesException {
 		myServer = server;

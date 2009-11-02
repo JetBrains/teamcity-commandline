@@ -13,7 +13,7 @@ public class Args {
 	
 	public static final String DEBUG_CLEAN_OFF = Messages.getString("Args.do.not.delete.file.after.run.switch.name"); //$NON-NLS-1$
 	
-	private static HashMap<String, Pattern> ourRegisteredArgs = new HashMap<String, Pattern>();
+	static HashMap<String, Pattern> ourRegisteredArgs = new HashMap<String, Pattern>();
 	
 	private String[] myArgs;
 	
