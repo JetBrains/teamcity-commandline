@@ -7,6 +7,8 @@ import javax.servlet.http.HttpServletResponse;
 import jetbrains.buildServer.controllers.BaseController;
 import jetbrains.buildServer.serverSide.ProjectManager;
 import jetbrains.buildServer.serverSide.SBuildType;
+import jetbrains.buildServer.serverSide.auth.Permission;
+import jetbrains.buildServer.serverSide.auth.SecurityContext;
 import jetbrains.buildServer.util.CollectionsUtil;
 import jetbrains.buildServer.util.filters.Filter;
 import jetbrains.buildServer.vcs.SVcsRoot;
@@ -32,14 +34,17 @@ public class CommandLineController extends BaseController {
   private final VcsManager myVcsManager;
   private final WebControllerManager myWebControllerManager;
   private final ProjectManager myProjectManager;
+  private final SecurityContext mySecurityContext;
 
   public CommandLineController(final PluginDescriptor pluginDescriptor,
                                final WebControllerManager webControllerManager,
-                               final ProjectManager projectManager, final VcsManager vcsManager) {
+                               final ProjectManager projectManager, final VcsManager vcsManager,
+                               final SecurityContext securityContext) {
     myPluginDescriptor = pluginDescriptor;
     myWebControllerManager = webControllerManager;
     myProjectManager = projectManager;
     myVcsManager = vcsManager;
+    mySecurityContext = securityContext;
   }
 
   public void register() {
@@ -64,10 +69,14 @@ public class CommandLineController extends BaseController {
     return CollectionsUtil.filterCollection(buildTypes, new Filter<SBuildType>() {
       public boolean accept(@NotNull final SBuildType data) {
 
-        return hasRootWithVcsClientMappingProvider(data);
+        return hasRootWithVcsClientMappingProvider(data) && hasRightToViewBuildTypeDetails(data);
 
       }
     });
+  }
+
+  private boolean hasRightToViewBuildTypeDetails(final SBuildType buildType) {
+    return mySecurityContext.getAuthorityHolder().isPermissionGrantedForProject(buildType.getProjectId(), Permission.VIEW_BUILD_CONFIGURATION_SETTINGS);
   }
 
   private boolean hasRootWithVcsClientMappingProvider(final SBuildType data) {
