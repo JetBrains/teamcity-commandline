@@ -7,7 +7,6 @@ import static org.junit.Assert.assertTrue;
 
 import java.io.ByteArrayInputStream;
 import java.io.File;
-import java.io.InputStream;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
@@ -20,6 +19,7 @@ import org.junit.Test;
 
 import com.jetbrains.teamcity.TestServer;
 import com.jetbrains.teamcity.TestingUtil;
+import com.jetbrains.teamcity.resources.ITCResource;
 import com.jetbrains.teamcity.resources.ITCResourceMatcher;
 import com.jetbrains.teamcity.resources.TCWorkspace;
 import com.jetbrains.teamcity.runtime.NullProgressMonitor;
@@ -75,19 +75,26 @@ public class RemoteRunTest {
 		patchFile.createNewFile();
 		
 		try{
-			//file under TC
 			final File controlledFile = new File("java" + File.separator + "resources", "java.resources");
-			File patch = ourCommand.createPatch(patchFile, new TCWorkspace(new File(".")), Collections.singletonList(controlledFile));
-			assertTrue(patch.length() > 10);
-			//file is not under TC: disable default config
-			File uncontrolledFile = new File("java", "1.java");
-			patch = ourCommand.createPatch(patchFile, new TCWorkspace(new File(".")){
-				@Override
-				protected File getGlobalAdminFile() {
-					return null;
-				}
-			}, Arrays.asList(new File[] {controlledFile, uncontrolledFile}));
-			assertTrue(patch.length() > 10);
+			{//file under TC
+				final Collection<ITCResource> resources = ourCommand.getTCResources(new TCWorkspace(new File(".")), Collections.singletonList(controlledFile), new NullProgressMonitor());
+				File patch = ourCommand.createPatch("http://any.com", resources, new NullProgressMonitor());
+				assertTrue(patch.length() > 10);
+			}
+			
+			{//file is not under TC: disable default config
+				File uncontrolledFile = new File("java", "1.java");
+				final Collection<ITCResource> resources = ourCommand.getTCResources(new TCWorkspace(new File(".")) {
+					@Override
+					protected File getGlobalAdminFile() {
+						return null;
+					}
+				},
+				Arrays.asList(new File[] {controlledFile, uncontrolledFile}),
+				new NullProgressMonitor());
+				File patch = ourCommand.createPatch("http://any.com", resources, new NullProgressMonitor());
+				assertTrue(patch.length() > 10);
+			}
 		} finally {
 			FileUtil.delete(patchFile);
 			FileUtil.delete(configFile);

@@ -102,16 +102,16 @@ public class RemoteRun implements ICommand {
 	private boolean myCleanoff;
 	
 	static {
-		Args.registerArgument(MESSAGE_PARAM, String.format(".*%s\\s+[^\\s].*", MESSAGE_PARAM));
-		Args.registerArgument(MESSAGE_PARAM_LONG, String.format(".*%s\\s+[^\\s].*", MESSAGE_PARAM_LONG));
+		Args.registerArgument(MESSAGE_PARAM, String.format(".*%s\\s+[^\\s].*", MESSAGE_PARAM)); //$NON-NLS-1$
+		Args.registerArgument(MESSAGE_PARAM_LONG, String.format(".*%s\\s+[^\\s].*", MESSAGE_PARAM_LONG)); //$NON-NLS-1$
 		
-		Args.registerArgument(CONFIGURATION_PARAM, String.format(".*%s\\s+[^\\s].*", CONFIGURATION_PARAM));
-		Args.registerArgument(CONFIGURATION_PARAM_LONG, String.format(".*%s\\s+[^\\s].*", CONFIGURATION_PARAM_LONG));
+		Args.registerArgument(CONFIGURATION_PARAM, String.format(".*%s\\s+[^\\s].*", CONFIGURATION_PARAM)); //$NON-NLS-1$
+		Args.registerArgument(CONFIGURATION_PARAM_LONG, String.format(".*%s\\s+[^\\s].*", CONFIGURATION_PARAM_LONG)); //$NON-NLS-1$
 		
-		Args.registerArgument(TIMEOUT_PARAM, String.format(".*%s\\s+[0-9]+.*", TIMEOUT_PARAM));
-		Args.registerArgument(TIMEOUT_PARAM_LONG, String.format(".*%s\\s+[0-9]+.*", TIMEOUT_PARAM_LONG));
+		Args.registerArgument(TIMEOUT_PARAM, String.format(".*%s\\s+[0-9]+.*", TIMEOUT_PARAM)); //$NON-NLS-1$
+		Args.registerArgument(TIMEOUT_PARAM_LONG, String.format(".*%s\\s+[0-9]+.*", TIMEOUT_PARAM_LONG)); //$NON-NLS-1$
 
-		Args.registerArgument(OVERRIDING_MAPPING_FILE_PARAM, String.format(".*%s\\s+[^\\s].*", OVERRIDING_MAPPING_FILE_PARAM));
+		Args.registerArgument(OVERRIDING_MAPPING_FILE_PARAM, String.format(".*%s\\s+[^\\s].*", OVERRIDING_MAPPING_FILE_PARAM)); //$NON-NLS-1$
 		
 	}
 
@@ -139,14 +139,17 @@ public class RemoteRun implements ICommand {
 		//collect files
 		final Collection<File> files = getFiles(args, monitor);
 		
+		//collect TC files
+		final Collection<ITCResource> tcResources = getTCResources(workspace, files, monitor);
+		
 		//prepare patch
-		final File patchFile = createPatch(myServer.getURL(), workspace, files, monitor);
+		final File patchFile = createPatch(myServer.getURL(), tcResources, monitor);
 		
 		//collect configurations for running
-		final Collection<String> configurations = getApplicableConfigurations(cfgId, workspace, files, monitor);
+		final Collection<String> configurations = getApplicableConfigurations(cfgId, tcResources, monitor);
 		
 		//prepare changes list
-		final long chaneListId = createChangeList(myServer.getURL(), myServer.getCurrentUser(), workspace, patchFile, monitor);
+		final long chaneListId = createChangeList(myServer.getURL(), myServer.getCurrentUser(), patchFile, monitor);
 		
 		//fire RR
 		scheduleRemoteRun(configurations, chaneListId, monitor);
@@ -158,18 +161,43 @@ public class RemoteRun implements ICommand {
 		} else { 
 			final PersonalChangeDescriptor result = waitForSuccessResult(chaneListId, myTimeout, monitor);
 			myResultDescription = MessageFormat.format(Messages.getString("RemoteRun.build.result.ok.pattern"), String.valueOf(chaneListId), result.getPersonalChangeStatus()); //$NON-NLS-1$
+			
 		}
 		return;
 	}
 	
-	private File createPatch(String url, TCWorkspace workspace, Collection<File> files, IProgressMonitor monitor) throws ECommunicationException {
+	Collection<ITCResource> getTCResources(final TCWorkspace workspace, final Collection<File> files, final IProgressMonitor monitor) throws IllegalArgumentException {
+		monitor.beginTask(Messages.getString("RemoteRun.mapping.step.name")); //$NON-NLS-1$
+		final HashSet<ITCResource> out = new HashSet<ITCResource>(files.size());
+		for(final File file : files){
+			final ITCResource resource = workspace.getTCResource(file);
+			if(resource != null && resource.getRepositoryPath() != null){
+				out.add(resource);
+			} else {
+				Debug.getInstance().debug(RemoteRun.class, String.format("? \"%s\" has not accosiated ITCResource(%s) or empty RepositoryPath(%s)", //$NON-NLS-1$ 
+				file, 
+				resource, 
+				resource != null ? resource.getRepositoryPath() : (String)null));
+			}
+		}
+		//fire exception if nothing found  
+		if(out.isEmpty()){
+			throw new IllegalArgumentException(String.format(Messages.getString("RemoteRun.no.one.mappins.found.error.message"), files.size())); //$NON-NLS-1$
+		}
+		monitor.done(String.format(Messages.getString("RemoteRun.mapping.step.done.message"), out.size(), files.size()));		 //$NON-NLS-1$
+		return out;
+	}
+
+	File createPatch(String url, Collection<ITCResource> resources, IProgressMonitor monitor) throws ECommunicationException {
 		try{
 			monitor.beginTask(Messages.getString("RemoteRun.preparing.patch.step.name")); //$NON-NLS-1$
-			final File patch = createPatch(createPatchFile(url), workspace, files);
+			final File emptyPatchFile = createPatchFile(url);
+			final File patch = fillPatch(emptyPatchFile, resources);
 			if(!myCleanoff){
 				patch.deleteOnExit();
 			}
 			monitor.done();
+			Debug.getInstance().debug(this.getClass(), String.format("Patch %s filled with %d bytes", patch.getAbsolutePath(), patch.length())); //$NON-NLS-1$
 			return patch;
 
 		} catch (IOException e){
@@ -185,20 +213,17 @@ public class RemoteRun implements ICommand {
 		return null;
 	}
 
-	Collection<String> getApplicableConfigurations(final String cfgId, final TCWorkspace workspace, final Collection<File> files, final IProgressMonitor monitor) throws ECommunicationException {
+	Collection<String> getApplicableConfigurations(final String cfgId, final Collection<ITCResource> files, final IProgressMonitor monitor) throws ECommunicationException {
 		if(cfgId != null){
 			return Collections.singletonList(cfgId);
 		}
 		final HashSet<String> buffer = new HashSet<String>();
 		monitor.beginTask("Collecting configurations for running"); //$NON-NLS-1$
-		final HashSet<String> resources = new HashSet<String>();
-		for(File file : files){
-			final ITCResource tcResource = workspace.getTCResource(file);
-			if(tcResource != null){
-				resources.add(tcResource.getRepositoryPath());
-			}
+		final HashSet<String> urls = new HashSet<String>();
+		for(ITCResource file : files){
+			urls.add(file.getRepositoryPath());
 		}
-		buffer.addAll(myServer.getApplicableConfigurations(resources));
+		buffer.addAll(myServer.getApplicableConfigurations(urls));
 		monitor.done(MessageFormat.format(Messages.getString("RemoteRun.collected.configuration.done.pattern"), buffer.size(), buffer)); //$NON-NLS-1$
 		return buffer;
 	}
@@ -298,15 +323,8 @@ public class RemoteRun implements ICommand {
 	}
 	
 	
-	long createChangeList(String serverURL, int userId, final TCWorkspace workspace, final File patchFile, /*final Collection<File> files, */final IProgressMonitor monitor) throws ECommunicationException {
+	long createChangeList(String serverURL, int userId, final File patchFile, final IProgressMonitor monitor) throws ECommunicationException {
 		try{
-//			monitor.beginTask(Messages.getString("RemoteRun.preparing.patch..step.name")); //$NON-NLS-1$
-//			final File patch = createPatch(createPatchFile(serverURL), workspace, files);
-//			if(!myCleanoff){
-//				patch.deleteOnExit();
-//			}
-//			monitor.done();
-
 			monitor.beginTask(Messages.getString("RemoteRun.send.patch.step.name")); //$NON-NLS-1$
 			final SimpleHttpConnectionManager manager = new SimpleHttpConnectionManager();
 			HostConfiguration hostConfiguration = new HostConfiguration();
@@ -344,38 +362,26 @@ public class RemoteRun implements ICommand {
 		}
 	}
 
-	File createPatch(final File patchFile, final TCWorkspace workspace, final Collection<File> files) throws IOException, ECommunicationException {
+	File fillPatch(final File patchFile, final Collection<ITCResource> resources) throws IOException, ECommunicationException {
 		DataOutputStream os = null;
 		LowLevelPatchBuilderImpl patcher = null;
 		try{
 			os = new DataOutputStream(new BufferedOutputStream(new FileOutputStream(patchFile)));
 			patcher = new LowLevelPatchBuilderImpl(os);
-			final HashSet<File> uncontrolled = new HashSet<File>();//let's collect files is not under teamcity
-			for(File file : files){
-				file = file.getAbsoluteFile().getCanonicalFile();//make absolute
-				final ITCResource resource = workspace.getTCResource(file);
-				if(resource != null && resource.getRepositoryPath() != null){
-					if(file.exists()){
-						Debug.getInstance().debug(RemoteRun.class, String.format("+ %s", resource.getRepositoryPath())); //$NON-NLS-1$
-						final LowLevelPatchBuilder.WriteFileContent content = new PatchBuilderImpl.StreamWriteFileContent(
-								new BufferedInputStream(new FileInputStream(
-										file)), file.length());
-						patcher.changeBinary(resource.getRepositoryPath(), (int) file.length(), content, false);
-					} else {
-						Debug.getInstance().debug(RemoteRun.class, String.format("- %s", resource.getRepositoryPath())); //$NON-NLS-1$
-						patcher.delete(resource.getRepositoryPath(), true, false);
-					}
+			for(final ITCResource resource : resources){
+				//threat file which is not exist as deleted
+				if(resource.getLocal().exists()){
+					Debug.getInstance().debug(RemoteRun.class, String.format("+ %s", resource.getRepositoryPath())); //$NON-NLS-1$
+					final LowLevelPatchBuilder.WriteFileContent content = new PatchBuilderImpl.StreamWriteFileContent(
+							new BufferedInputStream(new FileInputStream(
+									resource.getLocal())), resource.getLocal().length());
+					patcher.changeBinary(resource.getRepositoryPath(), (int) resource.getLocal().length(), content, false);
+					
 				} else {
-					uncontrolled.add(file);
-					Debug.getInstance().debug(RemoteRun.class, String.format("? \"%s\" has not accosiated ITCResource(%s) or empty RepositoryPath(%s)", //$NON-NLS-1$ 
-							file, 
-							resource, 
-							resource != null ? resource.getRepositoryPath() : (String)null));
+					Debug.getInstance().debug(RemoteRun.class, String.format("- %s", resource.getRepositoryPath())); //$NON-NLS-1$
+					patcher.delete(resource.getRepositoryPath(), true, false);
+					
 				}
-			}
-			//check something patched and throw error otherwise
-			if(uncontrolled.size() == files.size()){
-				throw new IllegalArgumentException(String.format(Messages.getString("RemoteRun.no.one.file.added.to.patch.error.message"), files.size())); //$NON-NLS-1$
 			}
 			
 		} finally {//finalize patching
@@ -430,22 +436,22 @@ public class RemoteRun implements ICommand {
 		if (elements.length > i) {//file's part existing
 			final String[] buffer = new String[elements.length - i]; 
 			System.arraycopy(elements, i, buffer, 0, buffer.length);
-			Debug.getInstance().debug(RemoteRun.class, String.format("Read from arguments: %s", Arrays.toString(buffer)));			
+			Debug.getInstance().debug(RemoteRun.class, String.format("Read from arguments: %s", Arrays.toString(buffer)));			 //$NON-NLS-1$
 			final Collection<File> files = collectFiles(buffer);
 			result.addAll(files);
 			
 		} else {
 			//try read from stdin
-			Debug.getInstance().debug(RemoteRun.class, "Trying stdin...");
+			Debug.getInstance().debug(RemoteRun.class, "Trying stdin..."); //$NON-NLS-1$
 			final String input = readFromStream(System.in);
 			if (input != null && input.trim().length() > 0) {
-				final String[] buffer = input.split("[\n\r]");
-				Debug.getInstance().debug(RemoteRun.class, String.format("Read from stdin: %s", Arrays.toString(buffer)));
+				final String[] buffer = input.split("[\n\r]"); //$NON-NLS-1$
+				Debug.getInstance().debug(RemoteRun.class, String.format("Read from stdin: %s", Arrays.toString(buffer))); //$NON-NLS-1$
 				final Collection<File> files = collectFiles(buffer);
 				result.addAll(files);
 				
 			} else { //let's use current directory as root if nothing passed
-				Debug.getInstance().debug(RemoteRun.class, String.format("Stdin is empty. Will use current (%s) folder as root", new File("."))); //$NON-NLS-1$
+				Debug.getInstance().debug(RemoteRun.class, String.format("Stdin is empty. Will use current (%s) folder as root", new File("."))); //$NON-NLS-1$ //$NON-NLS-2$
 				result.addAll(TCC_FILTER.accept(Util.SVN_FILES_FILTER.accept(Util.CVS_FILES_FILTER.accept(Util.getFiles("."))))); //$NON-NLS-1$
 				
 			}
