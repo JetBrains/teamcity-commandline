@@ -52,7 +52,7 @@ public class Login implements ICommand {
 		if (args.hasArgument(CommandRunner.PASSWORD_ARG)) {
 			return args.getArgument(CommandRunner.PASSWORD_ARG);
 		} else {
-			return Util.readConsoleInput(Messages.getString("Login.password.prompt")); //$NON-NLS-1$
+			return Util.readConsoleInput(Messages.getString("Login.password.prompt"), true); //$NON-NLS-1$
 		}
 	}
 
@@ -60,7 +60,7 @@ public class Login implements ICommand {
 		if (args.hasArgument(CommandRunner.USER_ARG)) {
 			return args.getArgument(CommandRunner.USER_ARG);
 		} else {
-			return Util.readConsoleInput(Messages.getString("Login.username.prompt")); //$NON-NLS-1$
+			return Util.readConsoleInput(Messages.getString("Login.username.prompt"), false); //$NON-NLS-1$
 		}
 	}
 

@@ -16,7 +16,9 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.HashSet;
+import java.util.TreeSet;
 
 import javax.naming.directory.InvalidAttributesException;
 
@@ -190,13 +192,11 @@ public class RemoteRun implements ICommand {
 
 	File createPatch(String url, Collection<ITCResource> resources, IProgressMonitor monitor) throws ECommunicationException {
 		try{
-			monitor.beginTask(Messages.getString("RemoteRun.preparing.patch.step.name")); //$NON-NLS-1$
 			final File emptyPatchFile = createPatchFile(url);
-			final File patch = fillPatch(emptyPatchFile, resources);
+			final File patch = fillPatch(emptyPatchFile, resources, monitor);
 			if(!myCleanoff){
 				patch.deleteOnExit();
 			}
-			monitor.done();
 			Debug.getInstance().debug(this.getClass(), String.format("Patch %s filled with %d bytes", patch.getAbsolutePath(), patch.length())); //$NON-NLS-1$
 			return patch;
 
@@ -354,7 +354,7 @@ public class RemoteRun implements ICommand {
 			}
 			//post requests to queue
 			final String response = postMethod.getResponseBodyAsString();
-			monitor.done();
+			monitor.done(String.format("sent %d bytes", patchFile.length()));
 			return Long.parseLong(response);
 			
 		} catch (IOException e){
@@ -362,10 +362,13 @@ public class RemoteRun implements ICommand {
 		}
 	}
 
-	File fillPatch(final File patchFile, final Collection<ITCResource> resources) throws IOException, ECommunicationException {
+	File fillPatch(final File patchFile, final Collection<ITCResource> resources, final IProgressMonitor monitor) throws IOException, ECommunicationException {
 		DataOutputStream os = null;
 		LowLevelPatchBuilderImpl patcher = null;
+		final HashSet<String> modifiedResources = new HashSet<String>();
+		final HashSet<String> deletedResources = new HashSet<String>();
 		try{
+			monitor.beginTask(Messages.getString("RemoteRun.preparing.patch.step.name")); //$NON-NLS-1$
 			os = new DataOutputStream(new BufferedOutputStream(new FileOutputStream(patchFile)));
 			patcher = new LowLevelPatchBuilderImpl(os);
 			for(final ITCResource resource : resources){
@@ -376,10 +379,12 @@ public class RemoteRun implements ICommand {
 							new BufferedInputStream(new FileInputStream(
 									resource.getLocal())), resource.getLocal().length());
 					patcher.changeBinary(resource.getRepositoryPath(), (int) resource.getLocal().length(), content, false);
+					modifiedResources.add(resource.getLocal().getPath());
 					
 				} else {
 					Debug.getInstance().debug(RemoteRun.class, String.format("- %s", resource.getRepositoryPath())); //$NON-NLS-1$
 					patcher.delete(resource.getRepositoryPath(), true, false);
+					deletedResources.add(resource.getLocal().getPath());
 					
 				}
 			}
@@ -395,6 +400,17 @@ public class RemoteRun implements ICommand {
 				} catch (IOException e) {
 				}
 			}
+			final StringBuffer patchingResult = new StringBuffer();
+			if(!modifiedResources.isEmpty()){
+				patchingResult.append(String.format("%d new/modified file(s)", modifiedResources.size()));
+				if(!deletedResources.isEmpty()){
+					patchingResult.append(", ");
+				}
+			}
+			if(!deletedResources.isEmpty()){
+				patchingResult.append(String.format("%d deleted file(s): %s", deletedResources.size(), deletedResources));
+			}
+			monitor.done(patchingResult.toString());
 		}
 		return patchFile;
 
@@ -432,13 +448,18 @@ public class RemoteRun implements ICommand {
 			}
 		}
 		
-		final HashSet<File> result = new HashSet<File>();
+		final TreeSet<File> result = new TreeSet<File>(new Comparator<File>() {
+			public int compare(File o1, File o2) {
+				return o1.compareTo(o2);
+			}
+		});
+		
 		if (elements.length > i) {//file's part existing
 			final String[] buffer = new String[elements.length - i]; 
 			System.arraycopy(elements, i, buffer, 0, buffer.length);
 			Debug.getInstance().debug(RemoteRun.class, String.format("Read from arguments: %s", Arrays.toString(buffer)));			 //$NON-NLS-1$
 			final Collection<File> files = collectFiles(buffer);
-			result.addAll(files);
+			result.addAll(traverse(files));
 			
 		} else {
 			//try read from stdin
@@ -448,11 +469,11 @@ public class RemoteRun implements ICommand {
 				final String[] buffer = input.split("[\n\r]"); //$NON-NLS-1$
 				Debug.getInstance().debug(RemoteRun.class, String.format("Read from stdin: %s", Arrays.toString(buffer))); //$NON-NLS-1$
 				final Collection<File> files = collectFiles(buffer);
-				result.addAll(files);
+				result.addAll(traverse(files));
 				
 			} else { //let's use current directory as root if nothing passed
 				Debug.getInstance().debug(RemoteRun.class, String.format("Stdin is empty. Will use current (%s) folder as root", new File("."))); //$NON-NLS-1$ //$NON-NLS-2$
-				result.addAll(TCC_FILTER.accept(Util.SVN_FILES_FILTER.accept(Util.CVS_FILES_FILTER.accept(Util.getFiles("."))))); //$NON-NLS-1$
+				result.addAll(traverse(TCC_FILTER.accept(Util.SVN_FILES_FILTER.accept(Util.CVS_FILES_FILTER.accept(Util.getFiles(".")))))); //$NON-NLS-1$
 				
 			}
 		}
@@ -461,7 +482,23 @@ public class RemoteRun implements ICommand {
 		}
 		
 		monitor.done(MessageFormat.format(Messages.getString("RemoteRun.collect.changes.step.result.pattern"), result.size())); //$NON-NLS-1$
+		for(final File collected: result){
+			Debug.getInstance().debug(RemoteRun.class, String.format("%s", collected)); //$NON-NLS-1$ //$NON-NLS-2$
+		}
 		return result;
+	}
+	
+	Collection<File> traverse(final Collection<File> files){
+		TreeSet<File> out = new TreeSet<File>(new Comparator<File>() {
+			public int compare(File o1, File o2) {
+				return o1.compareTo(o2);
+			}
+		});
+		for(final File file:  files){
+			final String trimPath = Util.trim(file.getAbsolutePath(), "\"", "\\", "/");
+			out.add(new File(trimPath));
+		}
+		return out;
 	}
 	
 	private Collection<File> collectFiles(final String[] elements){

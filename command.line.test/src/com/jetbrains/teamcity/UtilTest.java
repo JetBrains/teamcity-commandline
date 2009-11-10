@@ -3,6 +3,7 @@ package com.jetbrains.teamcity;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
@@ -157,6 +158,54 @@ public class UtilTest {
 			FileUtil.delete(contentFile);
 		}
 	}
+	
+	@Test
+	public void trim() throws Exception {
+		{
+			final String out = Util.trim(null);
+			assertNull(out);
+		}
+		{
+			final String out = Util.trim(null, (String)null);
+			assertNull(out);
+		}
+		{
+			final String out = Util.trim("string");
+			assertEquals("string", out);
+		}
+		{
+			final String out = Util.trim(" string ");
+			assertEquals("string", out);
+		}
+		{
+			final String out = Util.trim("", "long token");
+			assertEquals("", out);
+		}
+		{
+			final String out = Util.trim("string", "not a token");
+			assertEquals("string", out);
+		}
+		{
+			final String out = Util.trim("string\\", "\\");
+			assertEquals("string", out);
+		}
+		{
+			final String out = Util.trim("string\\/", "/", "\\");
+			assertEquals("string", out);
+		}
+		{
+			final String out = Util.trim("string\\/\"", "\"", "/", "\\");
+			assertEquals("string", out);
+		}
+		{
+			final String out = Util.trim("string   \\'/\"", "'", "\"", "/", "\\");
+			assertEquals("string", out);
+		}
+		
+		
+
+	}
+
 
 //	@Test
 //	public void getFiles_file_pattern() throws Exception {

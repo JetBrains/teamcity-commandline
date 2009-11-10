@@ -1,7 +1,9 @@
 package com.jetbrains.teamcity;
 
+import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
+import java.io.UnsupportedEncodingException;
 import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -320,17 +322,13 @@ public class Util {
 		}
 	}
 	
-	public static String readConsoleInput(String prompth) {
+	public static String readConsoleInput(String prompth, boolean secure) {
 		if(prompth != null){
 			System.out.print(prompth);
 		}
 		final Scanner scanner = new Scanner(System.in);
 		String line = scanner.nextLine();
 		return line;
-	}
-	
-	public static String readConsoleInput() {
-		return readConsoleInput(null);
 	}
 	
 	public static String toPortableString(final String path){
@@ -342,6 +340,60 @@ public class Util {
 	
 	public static File getCurrentDirectory(){
 		return new File(System.getProperty("user.dir"));
+	}
+
+	public static String encode(String src) {
+		boolean decoded = false;
+		int length = src.length();
+		ByteArrayOutputStream bos = new ByteArrayOutputStream(length);
+		for (int i = 0; i < length; i++) {
+			byte ch = (byte) src.charAt(i);
+			if (ch == '%' && i + 2 < length && isHexDigit(src.charAt(i + 1))
+					&& isHexDigit(src.charAt(i + 2))) {
+				ch = (byte) (hexValue(src.charAt(i + 1)) * 0x10 + hexValue(src
+						.charAt(i + 2)));
+				decoded = true;
+				i += 2;
+			}
+			bos.write(ch);
+		}
+		if (!decoded) {
+			return src;
+		}
+		try {
+			return new String(bos.toByteArray(), "UTF-8"); //$NON-NLS-1$
+		} catch (UnsupportedEncodingException e) {
+		}
+		return src;
+	}
+
+	private static boolean isHexDigit(char ch) {
+		return Character.isDigit(ch)
+				|| (Character.toUpperCase(ch) >= 'A' && Character
+						.toUpperCase(ch) <= 'F');
+	}
+
+	private static int hexValue(char ch) {
+		if (Character.isDigit(ch)) {
+			return ch - '0';
+		}
+		ch = Character.toUpperCase(ch);
+		return (ch - 'A') + 0x0A;
+	}
+
+	public static String trim(String string, final String ...tokens) {
+		if(string != null){
+			string = string.trim();
+			if(tokens.length>0){
+				for(String token : tokens){
+					if(string.endsWith(token)){
+						string = string.substring(0, string.length() - token.length());
+						string = trim(string, tokens);
+					}
+				}
+			}
+		}
+		return string;
 	}
 	
 	
