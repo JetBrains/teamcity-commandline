@@ -18,6 +18,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashSet;
+import java.util.List;
 import java.util.TreeSet;
 
 import javax.naming.directory.InvalidAttributesException;
@@ -215,7 +216,7 @@ public class RemoteRun implements ICommand {
 
 	Collection<String> getApplicableConfigurations(final String cfgId, final Collection<ITCResource> files, final IProgressMonitor monitor) throws ECommunicationException {
 		if(cfgId != null){
-			return Collections.singletonList(cfgId);
+			return parseConficurations(cfgId);
 		}
 		final HashSet<String> buffer = new HashSet<String>();
 		monitor.beginTask("Collecting configurations for running"); //$NON-NLS-1$
@@ -226,6 +227,21 @@ public class RemoteRun implements ICommand {
 		buffer.addAll(myServer.getApplicableConfigurations(urls));
 		monitor.done(MessageFormat.format(Messages.getString("RemoteRun.collected.configuration.done.pattern"), buffer.size(), buffer)); //$NON-NLS-1$
 		return buffer;
+	}
+
+	static Collection<String> parseConficurations(final String cfgId) {
+		if(cfgId == null){
+			return Collections.<String>emptyList();
+		}
+		final String[] configs = cfgId.trim().split(",");
+		final HashSet<String> out = new HashSet<String>(configs.length);
+		for(final String config : configs){
+			final String trimed = config.trim();
+			if(trimed.length()>0){
+				out.add(trimed);
+			}
+		}
+		return Collections.<String>unmodifiableSet(out);
 	}
 
 	PersonalChangeDescriptor waitForSuccessResult(final long changeListId, final long timeOut, IProgressMonitor monitor) throws ECommunicationException, ERemoteError {

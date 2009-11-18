@@ -10,6 +10,8 @@ import java.io.File;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.Iterator;
+import java.util.TreeSet;
 
 import jetbrains.buildServer.util.FileUtil;
 
@@ -198,7 +200,32 @@ public class RemoteRunTest {
 		
 	}
 	
-	
+	@Test
+	public void parseConfigurations() throws Exception {
+		final Collection<String> nullConfig = RemoteRun.parseConficurations(null);
+		assertTrue(nullConfig.isEmpty());
+		final Collection<String> emptyConfig = RemoteRun.parseConficurations("  ");
+		assertTrue(emptyConfig.isEmpty());
+		final Collection<String> emptyConfigDevided = RemoteRun.parseConficurations(" , , , ");
+		assertTrue(emptyConfigDevided.isEmpty());
+		final Collection<String> singleConfig = RemoteRun.parseConficurations(" aaa ");
+		assertEquals("aaa", singleConfig.iterator().next());
+		{
+			final Collection<String> doubleConfig = new TreeSet<String>(RemoteRun.parseConficurations(" aaa , bbb "));
+			assertEquals(2, doubleConfig.size());
+			Iterator<String> iterator = doubleConfig.iterator();
+			assertEquals("aaa", iterator.next());
+			assertEquals("bbb", iterator.next());
+		}
+		{
+			final Collection<String> doubleConfigBadFormatted = new TreeSet<String>(RemoteRun.parseConficurations(" ,     ,aaa, \t,  , bbb,   , \t,    "));
+			assertEquals(2, doubleConfigBadFormatted.size());
+			Iterator<String> iterator = doubleConfigBadFormatted.iterator();
+			assertEquals("aaa", iterator.next());
+			assertEquals("bbb", iterator.next());
+		}
+
+	}
 	
 	
 }
