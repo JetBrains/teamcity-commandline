@@ -209,6 +209,7 @@ public class RemoteRunTest {
 		final Collection<String> emptyConfigDevided = RemoteRun.parseConficurations(" , , , ");
 		assertTrue(emptyConfigDevided.isEmpty());
 		final Collection<String> singleConfig = RemoteRun.parseConficurations(" aaa ");
+		assertEquals(1, singleConfig.size());
 		assertEquals("aaa", singleConfig.iterator().next());
 		{
 			final Collection<String> doubleConfig = new TreeSet<String>(RemoteRun.parseConficurations(" aaa , bbb "));
