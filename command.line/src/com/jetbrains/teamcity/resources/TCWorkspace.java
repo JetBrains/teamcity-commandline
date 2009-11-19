@@ -77,6 +77,7 @@ public class TCWorkspace {
 				folder = folder.getCanonicalFile().getAbsoluteFile();
 				final File adminFile = new File(folder, TCC_ADMIN_FILE);
 				if(adminFile != null && adminFile.exists()){
+					Debug.getInstance().debug(TCWorkspace.class, String.format("found mapping for %s in %s", local, adminFile));
 					return new FileBasedMatcher(adminFile);
 				} else {
 					return getMatcherFor(folder);

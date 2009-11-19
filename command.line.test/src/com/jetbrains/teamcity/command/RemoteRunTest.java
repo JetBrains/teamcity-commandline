@@ -202,24 +202,24 @@ public class RemoteRunTest {
 	
 	@Test
 	public void parseConfigurations() throws Exception {
-		final Collection<String> nullConfig = RemoteRun.parseConficurations(null);
+		final Collection<String> nullConfig = RemoteRun.parseConfigurations(null);
 		assertTrue(nullConfig.isEmpty());
-		final Collection<String> emptyConfig = RemoteRun.parseConficurations("  ");
+		final Collection<String> emptyConfig = RemoteRun.parseConfigurations("  ");
 		assertTrue(emptyConfig.isEmpty());
-		final Collection<String> emptyConfigDevided = RemoteRun.parseConficurations(" , , , ");
+		final Collection<String> emptyConfigDevided = RemoteRun.parseConfigurations(" , , , ");
 		assertTrue(emptyConfigDevided.isEmpty());
-		final Collection<String> singleConfig = RemoteRun.parseConficurations(" aaa ");
+		final Collection<String> singleConfig = RemoteRun.parseConfigurations(" aaa ");
 		assertEquals(1, singleConfig.size());
 		assertEquals("aaa", singleConfig.iterator().next());
 		{
-			final Collection<String> doubleConfig = new TreeSet<String>(RemoteRun.parseConficurations(" aaa , bbb "));
+			final Collection<String> doubleConfig = new TreeSet<String>(RemoteRun.parseConfigurations(" aaa , bbb "));
 			assertEquals(2, doubleConfig.size());
 			Iterator<String> iterator = doubleConfig.iterator();
 			assertEquals("aaa", iterator.next());
 			assertEquals("bbb", iterator.next());
 		}
 		{
-			final Collection<String> doubleConfigBadFormatted = new TreeSet<String>(RemoteRun.parseConficurations(" ,     ,aaa, \t,  , bbb,   , \t,    "));
+			final Collection<String> doubleConfigBadFormatted = new TreeSet<String>(RemoteRun.parseConfigurations(" ,     ,aaa, \t,  , bbb,   , \t,    "));
 			assertEquals(2, doubleConfigBadFormatted.size());
 			Iterator<String> iterator = doubleConfigBadFormatted.iterator();
 			assertEquals("aaa", iterator.next());

@@ -77,7 +77,16 @@ public class Server {
 	public void logon(final String username, final String password) throws ECommunicationException, EAuthorizationException {
 		mySession.setCredentials(username, password);
 		try {
-			mySession.authenticate();
+			mySession.authenticate(new Cancelable() {
+				
+				public long sleepingPeriod() {
+					return 0;
+				}
+				
+				public boolean isCanceled() {
+					return false;
+				}
+			});
 		} catch (AuthenticationFailedException e) {
 			throw new EAuthorizationException(Util.getRootCause(e));
 		} catch (RemoteCallException e) {

@@ -18,7 +18,6 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashSet;
-import java.util.List;
 import java.util.TreeSet;
 
 import javax.naming.directory.InvalidAttributesException;
@@ -150,7 +149,9 @@ public class RemoteRun implements ICommand {
 		
 		//collect configurations for running
 		final Collection<String> configurations = getApplicableConfigurations(cfgId, tcResources, monitor);
-		
+		if(configurations.isEmpty()){
+			throw new IllegalArgumentException(String.format("No one of [%s] configurations affected by collected changes", cfgId));
+		}
 		//prepare changes list
 		final long chaneListId = createChangeList(myServer.getURL(), myServer.getCurrentUser(), patchFile, monitor);
 		
@@ -215,21 +216,34 @@ public class RemoteRun implements ICommand {
 	}
 
 	Collection<String> getApplicableConfigurations(final String cfgId, final Collection<ITCResource> files, final IProgressMonitor monitor) throws ECommunicationException {
-		if(cfgId != null){
-			return parseConficurations(cfgId);
-		}
+		//get all configurations affected by URLs
 		final HashSet<String> buffer = new HashSet<String>();
 		monitor.beginTask("Collecting configurations for running"); //$NON-NLS-1$
 		final HashSet<String> urls = new HashSet<String>();
 		for(ITCResource file : files){
 			urls.add(file.getRepositoryPath());
 		}
-		buffer.addAll(myServer.getApplicableConfigurations(urls));
+		final Collection<String> applicableConfigurations = myServer.getApplicableConfigurations(urls);
+		Debug.getInstance().debug(this.getClass(), String.format("All applicable configurations: %s", applicableConfigurations));
+		//make intersection of passed and applicable
+		if(cfgId != null){
+			final Collection<String> requstedConfigurations = parseConfigurations(cfgId);
+			Debug.getInstance().debug(this.getClass(), String.format("Requested configurations for runing: %s", requstedConfigurations));
+			if (!requstedConfigurations.isEmpty()) {
+				final Collection<String> intersecion = Util.intersect(applicableConfigurations, requstedConfigurations);
+				Debug.getInstance().debug(this.getClass(), String.format("Usable configurations for runing: %s", intersecion));
+				return intersecion;
+			}
+			return requstedConfigurations;
+		}
+		//if nothing passed run on all applicable
+		Debug.getInstance().debug(this.getClass(), String.format("Using all applicable configurations for runing", ""));
+		buffer.addAll(applicableConfigurations);
 		monitor.done(MessageFormat.format(Messages.getString("RemoteRun.collected.configuration.done.pattern"), buffer.size(), buffer)); //$NON-NLS-1$
 		return buffer;
 	}
 
-	static Collection<String> parseConficurations(final String cfgId) {
+	static Collection<String> parseConfigurations(final String cfgId) {
 		if(cfgId == null){
 			return Collections.<String>emptyList();
 		}
