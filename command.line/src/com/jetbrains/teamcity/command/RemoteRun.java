@@ -231,7 +231,7 @@ public class RemoteRun implements ICommand {
 			Debug.getInstance().debug(this.getClass(), String.format("Requested configurations for runing: %s", requstedConfigurations));
 			if (!requstedConfigurations.isEmpty()) {
 				final Collection<String> intersecion = Util.intersect(applicableConfigurations, requstedConfigurations);
-				Debug.getInstance().debug(this.getClass(), String.format("Usable configurations for runing: %s", intersecion));
+				Debug.getInstance().debug(this.getClass(), String.format("Use configurations for runing: %s", intersecion));
 				return intersecion;
 			}
 			return requstedConfigurations;
