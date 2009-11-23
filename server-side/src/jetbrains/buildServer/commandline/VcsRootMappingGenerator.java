@@ -61,7 +61,7 @@ class VcsRootMappingGenerator {
     else {
       rightPart = mapping.getVcsUrlInfo() + "/" + includeRule.getFrom();
     }
-    return vcsRoot.getVcsName() + PersonalPatchUtil.SEPARATOR + FileUtil.normalizeRelativePath(rightPart);
+    return vcsRoot.getVcsName() + PersonalPatchUtil.SEPARATOR + rightPart;
   }
 
   private boolean filteredByRule(final VcsClientMapping info2TargetPath, final IncludeRule includeRule) {

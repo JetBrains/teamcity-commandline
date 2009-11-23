@@ -43,6 +43,15 @@ public abstract class BaseMappingGeneratorTest extends BaseServerTestCase {
     verifySimpleMapping(theOnlyMappingElement, vcsRoot);
   }
 
+  public void generate_mapping_with_many_slashes_p4() throws Exception {
+
+    final SVcsRootImpl vcsRoot = vcsRoot();
+    myPathPrefixes.add(new VcsClientMapping("UID////some/path", ""));
+
+    final MappingElement mappingElement = generateMappingForBuildType().get(0);
+    verifyMapping(mappingElement, ".", "mock://UID////some/path", vcsRoot.getDescription());
+  }
+
   public void generate_simple_mapping_2_roots() throws Exception {
 
     final SVcsRootImpl vcsRoot1 = vcsRoot();
