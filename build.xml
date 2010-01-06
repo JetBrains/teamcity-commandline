@@ -3,20 +3,25 @@
 	<property file="build.properties"/>
 
 	<target name="clean">
-		<delete includeemptydirs="true" failonerror="false">
+		<delete includeemptydirs="true" quiet="true" failonerror="false">
 			<fileset dir="${tool.home}/bin">
 				<include name="**/**"/>
 			</fileset>
 		</delete>
-		<delete includeemptydirs="true" failonerror="false">
+		<delete includeemptydirs="true" quiet="true" failonerror="false">
 			<fileset dir="${tmp}">
 				<include name="**/**"/>
+			</fileset>
+		</delete>
+		<delete includeemptydirs="true" quiet="true" failonerror="false">
+			<fileset dir="${plugin.build.libs}">
+				<include name="**/**" />
 			</fileset>
 		</delete>
 	</target>
 
 	<target name="clean-dist">
-		<delete includeemptydirs="true" failonerror="false">
+		<delete includeemptydirs="true" quiet="true" failonerror="false">
 			<fileset dir="${dist-commandline}">
 				<include name="**/**"/>
 			</fileset>
@@ -29,6 +34,8 @@
 	</path>
 
 	<target name="compile" depends="prepare-bundle-lib">
+
+
 		<echo file="${tool.home}/src/com/jetbrains/teamcity/Build.java">package com.jetbrains.teamcity;
 
 public class Build {
@@ -88,7 +95,7 @@ public class Build {
 	</target>
 
 	<target name="clean-plugin">
-		<delete includeemptydirs="true" failonerror="false">
+		<delete includeemptydirs="true" quiet="true" failonerror="false">
 			<fileset dir="${basedir}/server-side/tmp">
 				<include name="**/**"/>
 			</fileset>
@@ -96,7 +103,7 @@ public class Build {
 	</target>
 
 	<path id="command.line.libs">
-		<fileset dir="${teamcity-openapi-libs}">
+		<fileset dir="${plugin.build.libs}">
 			<include name="**/*.jar" />
 		</fileset>
 	</path>
@@ -151,35 +158,78 @@ public class Build {
 	<target name="test" depends="test-plugin">
 		<ant dir="${tests.project.path}" inheritall="yes" inheritrefs="yes" target="test" />
 	</target>
-	
-	<target name="test-plugin">
-		
-	</target>
-	
 
-	<target name="prepare-bundle-lib" description="Prepares libraries used by the plugin">
+	<target name="test-plugin">
+
+	</target>
+
+	<target name="prepare-artifacts" 
+		description="Extract libraries from TeamCity distributive">
+
+		<!-- unpack existing destributive-->
+		<untar compression="gzip" dest="${distribution.dir}">
+			<fileset dir="${distribution.dir}">
+				<include name="*.tar.gz" />
+			</fileset>
+		</untar>
+
+		<mkdir dir="${plugin.build.libs}"/>
+
+		<!-- copy all required libraries from the unpacked distr -->
+		<copy todir="${plugin.build.libs}">
+			<fileset dir="${distribution.dir}/TeamCity/webapps/ROOT/WEB-INF/lib">
+				<include name="*.jar" />
+			</fileset>
+		</copy>
+		<copy todir="${plugin.build.libs}">
+			<fileset dir="${distribution.dir}/TeamCity/lib">
+				<include name="*.jar" />
+			</fileset>
+		</copy>
+
+		<!-- unjar eclipse's plugin bundled libs -->
+		<unjar dest="${plugin.build.libs}" 
+			overwrite="yes">
+			<fileset dir="${distribution.dir}/TeamCity/webapps/ROOT/update/eclipse/plugins">
+				<include name="*.jar" />
+			</fileset>
+			<patternset>
+				<include name="lib/*.jar" />
+			</patternset>
+		</unjar>
+		<move todir="${plugin.build.libs}">
+			<fileset dir="${plugin.build.libs}/lib">
+				<include name="**/*.jar" />
+			</fileset>
+		</move>
+
+	</target>
+
+
+	<target name="prepare-bundle-lib" depends="prepare-artifacts" 
+		description="Bundle classes used by the plugin">
 
 		<mkdir dir="${tmp}/bin"/>
 		<property name="libs" location="${tmp}/bin"/>
 		<mkdir dir="${libs}"/>
 
 		<!-- will extract all libs content for bundling -->
-		<unjar src="${idea-libs}/util.jar" dest="${libs}" overwrite="yes"/>
+		<unjar src="${plugin.build.libs}/util.jar" dest="${libs}" overwrite="yes"/>
 
-		<unjar src="${teamcity-eclipse-libs}/patches-impl.jar"  dest="${libs}" overwrite="yes"/>
-		<unjar src="${teamcity-eclipse-libs}/remote-server-proxy.jar"  dest="${libs}" overwrite="yes"/>
-		<unjar src="${teamcity-eclipse-libs}/server-model.jar"  dest="${libs}" overwrite="yes"/>
+		<unjar src="${plugin.build.libs}/patches-impl.jar"  dest="${libs}" overwrite="yes"/>
+		<unjar src="${plugin.build.libs}/remote-server-proxy.jar"  dest="${libs}" overwrite="yes"/>
+		<unjar src="${plugin.build.libs}/server-model.jar"  dest="${libs}" overwrite="yes"/>
 
-		<unjar src="${teamcity-openapi-libs}/common-api.jar" dest="${libs}" overwrite="yes"/>
-		<unjar src="${teamcity-openapi-libs}/runtime-util.jar"  dest="${libs}" overwrite="yes"/>
+		<unjar src="${plugin.build.libs}/common-api.jar" dest="${libs}" overwrite="yes"/>
+		<unjar src="${plugin.build.libs}/runtime-util.jar"  dest="${libs}" overwrite="yes"/>
 
-		<unjar src="${teamcity-thirdparty-libs}/commons-codec-1.3.jar"  dest="${libs}" overwrite="yes"/>
-		<unjar src="${teamcity-thirdparty-libs}/commons-httpclient-3.1.jar"  dest="${libs}" overwrite="yes"/>
-		<unjar src="${teamcity-thirdparty-libs}/commons-logging.jar"  dest="${libs}" overwrite="yes"/>
-		<unjar src="${teamcity-thirdparty-libs}/log4j-1.2.12.jar"  dest="${libs}" overwrite="yes"/>
-		<unjar src="${teamcity-thirdparty-libs}/xmlrpc-2.0.1.jar"  dest="${libs}" overwrite="yes"/>
-		<unjar src="${teamcity-thirdparty-libs}/xpp3_min-1.1.3.4.M.jar"  dest="${libs}" overwrite="yes"/>
-		<unjar src="${teamcity-thirdparty-libs}/xstream-1.2.1.jar"  dest="${libs}" overwrite="yes"/>
+		<unjar src="${plugin.build.libs}/commons-codec-1.3.jar"  dest="${libs}" overwrite="yes"/>
+		<unjar src="${plugin.build.libs}/commons-httpclient-3.1.jar"  dest="${libs}" overwrite="yes"/>
+		<unjar src="${plugin.build.libs}/commons-logging.jar"  dest="${libs}" overwrite="yes"/>
+		<unjar src="${plugin.build.libs}/log4j-1.2.12.jar"  dest="${libs}" overwrite="yes"/>
+		<unjar src="${plugin.build.libs}/xmlrpc-2.0.1.jar"  dest="${libs}" overwrite="yes"/>
+		<unjar src="${plugin.build.libs}/xpp3_min-1.1.3.4.M.jar"  dest="${libs}" overwrite="yes"/>
+		<unjar src="${plugin.build.libs}/xstream-1.2.1.jar"  dest="${libs}" overwrite="yes"/>
 
 	</target>
 
