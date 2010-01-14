@@ -18,12 +18,14 @@ import jetbrains.buildServer.TeamServerSummaryData;
 import jetbrains.buildServer.messages.XStreamHolder;
 import jetbrains.buildServer.serverProxy.ApplicationFacade;
 import jetbrains.buildServer.serverProxy.ClientXmlRpcExecutorFacade;
+import jetbrains.buildServer.serverProxy.RemoteAuthenticationServer;
 import jetbrains.buildServer.serverProxy.RemoteBuildServer;
 import jetbrains.buildServer.serverProxy.RemoteBuildServerImpl;
 import jetbrains.buildServer.serverProxy.VersionChecker;
 import jetbrains.buildServer.serverProxy.impl.SessionXmlRpcTargetImpl;
 import jetbrains.buildServer.serverSide.auth.AuthenticationFailedException;
 import jetbrains.buildServer.vcs.VcsRoot;
+import jetbrains.buildServer.version.ServerVersionHolder;
 import jetbrains.buildServer.xmlrpc.RemoteCallException;
 import jetbrains.buildServer.xmlrpc.XmlRpcTarget.Cancelable;
 import jetbrains.buildServer.xstream.ServerXStreamFormat;
@@ -39,6 +41,7 @@ public class Server {
 	private SessionXmlRpcTargetImpl mySession;
 	private RemoteBuildServer myServerProxy;
 	private ArrayList<ProjectData> myProjects;
+	private ClientXmlRpcExecutorFacade myAuthenticationProxy;
 
 	public Server(final URL url) {
 		myUrl = url;
@@ -109,6 +112,26 @@ public class Server {
 		return myServerProxy;
 	}
 	
+	private ClientXmlRpcExecutorFacade getAuthenticationProxy() throws ECommunicationException {
+		if(myAuthenticationProxy == null){
+			myAuthenticationProxy = new ClientXmlRpcExecutorFacade(mySession, new ApplicationFacadeStub(),
+		            RemoteAuthenticationServer.REMOTE_AUTH_SERVER, new VersionCheckerStub());
+		}
+		return myAuthenticationProxy;
+	}
+	
+	public String getLocalProtocolVersion(){
+		return ServerVersionHolder.getVersion().getPluginProtocolVersion();
+	}
+	
+	public String getRemoteProtocolVersion() {
+		try {
+			return getAuthenticationProxy().callXmlRpc("getServerVersion");
+		} catch (Exception e) {
+			Debug.getInstance().error(getClass(), e.getMessage(), e);
+			return Constants.UNKNOWN_STRING;
+		}
+	}
 	
 	public void logout() {
 		mySession.logout();
@@ -204,7 +227,6 @@ public class Server {
 	static class VersionCheckerStub implements VersionChecker{
 
 		public void checkServerVersion() throws IncompatiblePluginError {
-			
 		}
 	}
 	

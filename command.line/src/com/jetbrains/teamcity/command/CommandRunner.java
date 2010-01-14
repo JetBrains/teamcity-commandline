@@ -12,6 +12,7 @@ import java.util.Comparator;
 
 import jetbrains.buildServer.serverSide.crypt.EncryptUtil;
 
+import com.jetbrains.teamcity.Constants;
 import com.jetbrains.teamcity.Debug;
 import com.jetbrains.teamcity.EAuthorizationException;
 import com.jetbrains.teamcity.ECommunicationException;
@@ -21,6 +22,7 @@ import com.jetbrains.teamcity.resources.ICredential;
 import com.jetbrains.teamcity.resources.TCAccess;
 import com.jetbrains.teamcity.runtime.ConsoleProgressMonitor;
 import com.jetbrains.teamcity.runtime.IProgressMonitor;
+import com.thoughtworks.xstream.converters.ConversionException;
 
 public class CommandRunner {
 	
@@ -42,9 +44,9 @@ public class CommandRunner {
 	};
 	
 	static {
-		Args.registerArgument(USER_ARG, String.format(".*%s\\s+[^\\s].*", USER_ARG));
-		Args.registerArgument(PASSWORD_ARG, String.format(".*%s\\s+[^\\s].*", PASSWORD_ARG));
-		Args.registerArgument(HOST_ARG, String.format(".*%s\\s+https*://.+", HOST_ARG));
+		Args.registerArgument(USER_ARG, String.format(".*%s\\s+[^\\s].*", USER_ARG)); //$NON-NLS-1$
+		Args.registerArgument(PASSWORD_ARG, String.format(".*%s\\s+[^\\s].*", PASSWORD_ARG)); //$NON-NLS-1$
+		Args.registerArgument(HOST_ARG, String.format(".*%s\\s+https*://.+", HOST_ARG)); //$NON-NLS-1$
 	}
 	
 	void run(final String[] args) throws Exception{
@@ -59,10 +61,11 @@ public class CommandRunner {
 		
 		final ICommand command = CommandRegistry.getInstance().getCommand(arguments.getCommandId());
 		if(command != null){
+			Server server = null;
 			try{
 				command.validate(arguments);
 				if(command.isConnectionRequired(arguments)){
-					final Server server = openConnection(arguments, monitor);
+					server = openConnection(arguments, monitor);
 					command.execute(server, arguments, monitor);
 				} else {
 					command.execute(null, arguments, monitor);
@@ -71,8 +74,8 @@ public class CommandRunner {
 				reportResult(command, monitor);
 			} catch (Throwable e){
 				//print error result
-				monitor.done(Messages.getString("CommandRunner.monitor.error.found")); //$NON-NLS-1$
-				reportError(command, e, monitor);
+				monitor.done(String.format(Messages.getString("CommandRunner.monitor.error.found"), command.getId())); //$NON-NLS-1$
+				reportError(server, command, e, monitor);
 				System.exit(-1);
 			}
 		} else {
@@ -86,7 +89,7 @@ public class CommandRunner {
 		new CommandRunner().run(args);
 	}
 	
-	private static void reportError(ICommand command, Throwable e, IProgressMonitor monitor) {
+	private static void reportError(final Server server, final ICommand command, final Throwable e, final IProgressMonitor monitor) {
 		Debug.getInstance().error(CommandRunner.class, e.getMessage(), e);
 		if(e instanceof UnknownHostException){
 			System.err.println(MessageFormat.format(Messages.getString("CommandRunner.unknown.host.error.pattern"), e.getMessage())); //$NON-NLS-1$
@@ -110,6 +113,20 @@ public class CommandRunner {
 			System.err.println(MessageFormat.format(Messages.getString("CommandRunner.invalid.command.arguments.error.pattern"), e.getMessage())); //$NON-NLS-1$
 			System.err.println();
 			System.err.println(command.getUsageDescription());
+			
+		} else if (e instanceof ConversionException){
+			//perhaps protocol version mismatch
+			final String toolVersion;
+			final String serverVersion;
+			if(server != null){
+				toolVersion = server.getLocalProtocolVersion();
+				serverVersion = server.getRemoteProtocolVersion();
+			} else {
+				toolVersion = serverVersion = Constants.UNKNOWN_STRING;
+			}
+			System.err.println(
+					String.format(Messages.getString("CommandRunner.incompatible.plugin.error.message.pattern"),  //$NON-NLS-1$
+							serverVersion, toolVersion));
 			
 		} else {
 			e.printStackTrace();
