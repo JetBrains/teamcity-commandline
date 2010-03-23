@@ -21,12 +21,15 @@ import jetbrains.buildServer.serverProxy.ClientXmlRpcExecutorFacade;
 import jetbrains.buildServer.serverProxy.RemoteAuthenticationServer;
 import jetbrains.buildServer.serverProxy.RemoteBuildServer;
 import jetbrains.buildServer.serverProxy.RemoteBuildServerImpl;
+import jetbrains.buildServer.serverProxy.SessionXmlRpcTarget;
+import jetbrains.buildServer.serverProxy.UserSummaryRemoteManager;
 import jetbrains.buildServer.serverProxy.VersionChecker;
 import jetbrains.buildServer.serverProxy.impl.SessionXmlRpcTargetImpl;
 import jetbrains.buildServer.serverSide.auth.AuthenticationFailedException;
 import jetbrains.buildServer.vcs.VcsRoot;
 import jetbrains.buildServer.version.ServerVersionHolder;
 import jetbrains.buildServer.xmlrpc.RemoteCallException;
+import jetbrains.buildServer.xmlrpc.XmlRpcTarget;
 import jetbrains.buildServer.xmlrpc.XmlRpcTarget.Cancelable;
 import jetbrains.buildServer.xstream.ServerXStreamFormat;
 import jetbrains.buildServer.xstream.XStreamWrapper;
@@ -35,13 +38,12 @@ import com.thoughtworks.xstream.XStream;
 
 public class Server {
 
-//	private static Logger LOGGER = Logger.getLogger(Server.class) ;
-	
 	private URL myUrl;
-	private SessionXmlRpcTargetImpl mySession;
+	private SessionXmlRpcTarget mySession;
 	private RemoteBuildServer myServerProxy;
 	private ArrayList<ProjectData> myProjects;
 	private ClientXmlRpcExecutorFacade myAuthenticationProxy;
+	private UserSummaryRemoteManager mySummaryProxy;
 
 	public Server(final URL url) {
 		myUrl = url;
@@ -97,19 +99,19 @@ public class Server {
 		}
 	}
 	
-//	private RemoteBuildServer getServerProxy() throws ECommunicationException {
-//		if(myServerProxy == null){
-//			myServerProxy = new RemoteBuildServerImpl(mySession, new ApplicationFacadeStub(), new VersionCheckerStub());
-//			ClientXmlRpcExecutorFacade aaa = new ClientXmlRpcExecutorFacade(mySession, new ApplicationFacadeStub(), "VersionControlServer", new VersionCheckerStub());
-//		}
-//		return myServerProxy;
-//	}
-	
 	private RemoteBuildServer getServerProxy() throws ECommunicationException {
 		if(myServerProxy == null){
 			myServerProxy = new RemoteBuildServerImpl(mySession, new ApplicationFacadeStub(), new VersionCheckerStub());
 		}
 		return myServerProxy;
+	}
+	
+	private UserSummaryRemoteManager getSummaryProxy() throws ECommunicationException {
+		if(mySummaryProxy == null){
+			mySummaryProxy = new SummaryManager(mySession, new ApplicationFacadeStub(), 
+					UserSummaryRemoteManager.HANDLER, new VersionCheckerStub());
+		}
+		return mySummaryProxy;
 	}
 	
 	private ClientXmlRpcExecutorFacade getAuthenticationProxy() throws ECommunicationException {
@@ -197,7 +199,7 @@ public class Server {
 	}
 	
 	public TeamServerSummaryData getSummary() throws ECommunicationException {
-		final byte[] serializedStr = getServerProxy().getGZippedSummary(String.valueOf(getCurrentUser()), true);
+		final byte[] serializedStr = getSummaryProxy().getGZippedSummary(String.valueOf(getCurrentUser()), true);
 		try {
 			final TeamServerSummaryData data = unzipAndDeserializeObject(serializedStr);
 			return data;
@@ -252,12 +254,36 @@ public class Server {
 	@SuppressWarnings("unchecked")
 	public Collection<String> getApplicableConfigurations(final Collection<String> urls) {
 		final ClientXmlRpcExecutorFacade xmlExecutor = new ClientXmlRpcExecutorFacade(mySession, new ApplicationFacadeStub(), "VersionControlServer", new VersionCheckerStub());
-		final Vector ids = xmlExecutor.callXmlRpc("getSuitableConfigurations", new Vector(urls));
+		final Vector ids = xmlExecutor.callXmlRpc("getSuitableConfigurations", new Vector<String>(urls));
 		final HashSet<String> buffer = new HashSet<String>(ids.size());
 		for(final Object id : ids){
 			buffer.add(String.valueOf(id));
 		}
 		return buffer;
+	}
+	
+	class SummaryManager extends ClientXmlRpcExecutorFacade implements UserSummaryRemoteManager {
+
+		public SummaryManager(XmlRpcTarget target, ApplicationFacade applicationFacade, String handlerName, VersionChecker checker) {
+			super(target, applicationFacade, handlerName, checker);
+		}
+
+		public byte[] getGZippedSummary(String userId, boolean specifiedUserChangesOnly) {
+			return null;
+		}
+
+		public Vector<?> getRunningBuildsStatus() {
+			return new Vector<Object>();
+		}
+
+		public String getSummary(String userId, boolean specifiedUserChangesOnly) {
+			return null;
+		}
+
+		public int getTotalNumberOfEvents(String serializedSubscription) {
+			return 0;
+		}
+		
 	}
 	
 
