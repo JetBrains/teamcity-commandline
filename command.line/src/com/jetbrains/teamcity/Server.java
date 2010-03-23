@@ -269,7 +269,7 @@ public class Server {
 		}
 
 		public byte[] getGZippedSummary(String userId, boolean specifiedUserChangesOnly) {
-			return null;
+			return callXmlRpc("getGZippedSummary", userId, specifiedUserChangesOnly);
 		}
 
 		public Vector<?> getRunningBuildsStatus() {
