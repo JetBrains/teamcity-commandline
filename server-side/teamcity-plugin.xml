@@ -4,8 +4,8 @@
   <info>
     <name>command.line</name> <!-- the name of plugin used in teamcity -->
     <display-name>Command-line runner for personal builds</display-name>
-    <description>Allows to run personal builds from command-line.</description>
     <version>@Plugin_Version@</version>
+    <description>Allows to run personal builds from command-line.</description>
     <vendor>
       <name>@Plugin_Vendor@</name>
       <url>@Plugin_Vendor_Url@</url>
