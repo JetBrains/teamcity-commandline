@@ -4,6 +4,7 @@ import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
+import java.lang.reflect.Method;
 import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -25,7 +26,7 @@ public class Util {
 	public static IFileFilter SVN_FILES_FILTER = new SVNFilter();
 	
 	private static Pattern ASTERISK_PATTERN = Pattern.compile(".*"); //$NON-NLS-1$
-	
+
 	public static String getArgumentValue(final String[] args, final String ...arguments) {
 		for(int i = 0; i< args.length; i++){
 			for(String argument : arguments){
@@ -296,39 +297,50 @@ public class Util {
 		
 	}
 	
-	public static void main(String[] args){
-		{
-			final StringTable table = new StringTable(new String[] {"Fist Column", "2", "The last"});
-			table.addRow(new String[] {"1", "qwiueiqwiei, qweiuqwieiqiwei", "a"});
-			table.addRow(new String[] {"2", "qweiuqwieiqiwei", "asdsdsdsd, sdsdsds\ndsdsdsdsd"});
-			table.addRow(new String[] {"3", "q", "asdsdsdsd"});
-			System.out.println(table);
-		}
-		
-		{
-			final StringTable table = new StringTable("Fist Column\t2\tThe last");
-			table.addRow("1\tqwiueiqwiei, qweiuqwieiqiwei\ta");
-			table.addRow("2\tqweiuqwieiqiwei\tasdsdsdsd, sdsdsdsdsdsdsdsd");
-			table.addRow("3\tq\tasdsdsdsd");
-			System.out.println(table);
-		}
-
-		{
-			final StringTable table = new StringTable(3);
-			table.addRow("1\tqwiueiqwiei, qweiuqwieiqiwei\ta");
-			table.addRow("2\tqweiuqwieiqiwei\tasdsdsdsd, sdsdsdsdsdsdsdsd");
-			table.addRow("3\tq\tasdsdsdsd");
-			System.out.println(table);
+	public static String readConsoleInput(String prompt, boolean secure) {
+		final byte minorVersion = getJavaVersion()[1];
+		if(!secure || minorVersion < 6){
+			if(prompt != null){
+				System.out.print(prompt);
+			}
+			final Scanner scanner = new Scanner(System.in);
+			String line = scanner.nextLine();
+			return line;
+			
+		} else {
+			return readPassword(prompt);
+			
 		}
 	}
 	
-	public static String readConsoleInput(String prompth, boolean secure) {
-		if(prompth != null){
-			System.out.print(prompth);
+	/**
+	 * have to use reflection because of 1.5 target platform 
+	 */
+	private static String readPassword(final String prompt){
+		try {
+			final Method method = System.class.getDeclaredMethod("console");
+			if (method != null) {
+				final Object consoleObj = method.invoke(null);
+				if(consoleObj != null){
+					final Method passwdMthd = consoleObj.getClass().getMethod("readPassword", String.class, new Object[0].getClass());
+					if(passwdMthd != null){
+						final char[] passwd = (char[]) passwdMthd.invoke(consoleObj, "%s", new Object[] { prompt });
+						return new String(passwd);
+					}
+				}
+			}
+		} catch (Throwable e) {
+			//do nothing
 		}
-		final Scanner scanner = new Scanner(System.in);
-		String line = scanner.nextLine();
-		return line;
+		return readConsoleInput(prompt, false);//read anyway
+	}
+	
+	public static byte[] getJavaVersion() {
+		byte[] out = new byte[2]; 
+		final String[] tokens = System.getProperty("java.version", "1.5").split("\\.");
+		out[0] = Byte.parseByte(tokens[0]);
+		out[1] = Byte.parseByte(tokens[1]);
+		return out;
 	}
 	
 	public static String toPortableString(final String path){

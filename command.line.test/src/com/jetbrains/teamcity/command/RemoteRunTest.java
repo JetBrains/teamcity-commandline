@@ -80,7 +80,9 @@ public class RemoteRunTest {
 			final File controlledFile = new File("java" + File.separator + "resources", "java.resources");
 			{//file under TC
 				final Collection<ITCResource> resources = ourCommand.getTCResources(new TCWorkspace(new File(".")), Collections.singletonList(controlledFile), new NullProgressMonitor());
+				System.out.println(String.format("TW_9694(): Collected resources: %s", resources));				
 				File patch = ourCommand.createPatch("http://any.com", resources, new NullProgressMonitor());
+				System.out.println(String.format("TW_9694(): Patch size = %s", patch.length()));
 				assertTrue(patch.length() > 10);
 			}
 			
@@ -92,9 +94,10 @@ public class RemoteRunTest {
 						return null;
 					}
 				},
-				Arrays.asList(new File[] {controlledFile, uncontrolledFile}),
-				new NullProgressMonitor());
+				Arrays.asList(new File[] {controlledFile, uncontrolledFile}),new NullProgressMonitor());
+				System.out.println(String.format("TW_9694(): Collected resources: %s", resources));
 				File patch = ourCommand.createPatch("http://any.com", resources, new NullProgressMonitor());
+				System.out.println(String.format("TW_9694(): Patch size = %s", patch.length()));
 				assertTrue(patch.length() > 10);
 			}
 		} finally {

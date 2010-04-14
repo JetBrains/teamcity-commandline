@@ -259,6 +259,7 @@ public class RemoteRun implements ICommand {
 	}
 
 	PersonalChangeDescriptor waitForSuccessResult(final long changeListId, final long timeOut, IProgressMonitor monitor) throws ECommunicationException, ERemoteError {
+		sleep(3000);		
 		monitor.beginTask(Messages.getString("RemoteRun.wait.for.build.step.name")); //$NON-NLS-1$
 		final long startTime = System.currentTimeMillis();
 		UserChangeStatus prevCurrentStatus = null;
@@ -301,6 +302,16 @@ public class RemoteRun implements ICommand {
 		throw new RuntimeException(MessageFormat.format(Messages.getString("RemoteRun.wait.for.build.timeout.exceed.error"), myTimeout, changeListId)); //$NON-NLS-1$
 	}
 
+
+	private void sleep(int millis) {
+		Debug.getInstance().debug(this.getClass(), String.format("Falling asleep for [%s] millis...", millis));
+		try {
+			Thread.sleep(millis);
+		} catch (InterruptedException e) {
+			Debug.getInstance().debug(this.getClass(), e.getMessage());	
+		}
+		
+	}
 
 	private Object getCommitStatusDescription(final PersonalChangeCommitDecision commitStatus) {
 		return commitStatus;
