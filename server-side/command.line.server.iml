@@ -10,7 +10,7 @@
           <root url="file://$MODULE_DIR$/src" />
           <root url="file://$MODULE_DIR$/resources" />
         </sourceRoots>
-        <context-artifact name="command.line.server:command.line exploded" />
+        <context-artifact name="web-deployment" />
       </configuration>
     </facet>
     <facet type="Spring" name="Spring">
