@@ -138,18 +138,24 @@ public class Build {
 				<include name="**/**"/>
 			</fileset>
 		</jar>
+		
+		<antcall target="prepare-teamcity-plugin-xml"/>
 
 		<zip destfile="${tmp}/command.line.zip">
 			<fileset dir="${tmp}">
 				<include name="server/command.line.jar"/>
-			</fileset>
-			<fileset dir="${basedir}/server-side">
 				<include name="teamcity-plugin.xml"/>
 			</fileset>
-
 		</zip>
 
 
+	</target>
+	
+	<target name="prepare-teamcity-plugin-xml" description="Updates variables in teamcity-plugin.xml file">
+	    <copy file="${basedir}/server-side/teamcity-plugin.xml" todir="${tmp}"/>
+	    <replace file="${tmp}/teamcity-plugin.xml" token="@Plugin_Version@" value="${build.number}"/>
+	    <replace file="${tmp}/teamcity-plugin.xml" token="@Plugin_Vendor@" value="JetBrains, s.r.o."/>
+	    <replace file="${tmp}/teamcity-plugin.xml" token="@Plugin_Vendor_Url@" value="http://jetbrains.com"/>
 	</target>
 
 
