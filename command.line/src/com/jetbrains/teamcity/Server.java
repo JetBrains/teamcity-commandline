@@ -126,12 +126,13 @@ public class Server {
 		return ServerVersionHolder.getVersion().getPluginProtocolVersion();
 	}
 	
-	public String getRemoteProtocolVersion() {
+	public String getRemoteProtocolVersion() throws ECommunicationException {
 		try {
 			return getAuthenticationProxy().callXmlRpc("getServerVersion");
 		} catch (Exception e) {
-			Debug.getInstance().error(getClass(), e.getMessage(), e);
-			return Constants.UNKNOWN_STRING;
+			throw new ECommunicationException(e);
+//			Debug.getInstance().error(getClass(), e.getMessage(), e);
+//			return Constants.UNKNOWN_STRING;
 		}
 	}
 	

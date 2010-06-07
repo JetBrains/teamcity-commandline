@@ -10,19 +10,19 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
 
+import jetbrains.buildServer.IncompatiblePluginError;
 import jetbrains.buildServer.serverSide.crypt.EncryptUtil;
 
-import com.jetbrains.teamcity.Constants;
 import com.jetbrains.teamcity.Debug;
 import com.jetbrains.teamcity.EAuthorizationException;
 import com.jetbrains.teamcity.ECommunicationException;
 import com.jetbrains.teamcity.ERemoteError;
 import com.jetbrains.teamcity.Server;
+import com.jetbrains.teamcity.Util;
 import com.jetbrains.teamcity.resources.ICredential;
 import com.jetbrains.teamcity.resources.TCAccess;
 import com.jetbrains.teamcity.runtime.ConsoleProgressMonitor;
 import com.jetbrains.teamcity.runtime.IProgressMonitor;
-import com.thoughtworks.xstream.converters.ConversionException;
 
 public class CommandRunner {
 	
@@ -91,42 +91,32 @@ public class CommandRunner {
 	
 	private static void reportError(final Server server, final ICommand command, final Throwable e, final IProgressMonitor monitor) {
 		Debug.getInstance().error(CommandRunner.class, e.getMessage(), e);
+		final String rootMessage = Util.getRootCause(e).getMessage();
 		if(e instanceof UnknownHostException){
-			System.err.println(MessageFormat.format(Messages.getString("CommandRunner.unknown.host.error.pattern"), e.getMessage())); //$NON-NLS-1$
+			System.err.println(MessageFormat.format(Messages.getString("CommandRunner.unknown.host.error.pattern"), rootMessage)); //$NON-NLS-1$
 			
 		} else if (e instanceof URISyntaxException){
-			System.err.println(MessageFormat.format(Messages.getString("CommandRunner.invalid.url.error.pattern"), e.getMessage())); //$NON-NLS-1$
+			System.err.println(MessageFormat.format(Messages.getString("CommandRunner.invalid.url.error.pattern"), rootMessage)); //$NON-NLS-1$
 			
 		} else if (e instanceof MalformedURLException){
-			System.err.println(MessageFormat.format(Messages.getString("CommandRunner.invalid.url.error.pattern"), e.getMessage())); //$NON-NLS-1$
+			System.err.println(MessageFormat.format(Messages.getString("CommandRunner.invalid.url.error.pattern"), rootMessage)); //$NON-NLS-1$
 				
 		} else if (e instanceof EAuthorizationException){
-			System.err.println(MessageFormat.format(Messages.getString("CommandRunner.invalid.credential.error.pattern"), e.getMessage())); //$NON-NLS-1$
+			System.err.println(MessageFormat.format(Messages.getString("CommandRunner.invalid.credential.error.pattern"), rootMessage)); //$NON-NLS-1$
 			
 		} else if (e instanceof ECommunicationException){
-			System.err.println(MessageFormat.format(Messages.getString("CommandRunner.could.not.connect.error.pattern"), e.getMessage())); //$NON-NLS-1$
+			System.err.println(MessageFormat.format(Messages.getString("CommandRunner.could.not.connect.error.pattern"), rootMessage)); //$NON-NLS-1$
 			
 		} else if (e instanceof ERemoteError){
-			System.err.println(MessageFormat.format(Messages.getString("CommandRunner.businesslogic.error.pattern"), e.getMessage())); //$NON-NLS-1$
+			System.err.println(MessageFormat.format(Messages.getString("CommandRunner.businesslogic.error.pattern"), rootMessage)); //$NON-NLS-1$
+			
+		} else if (e instanceof IncompatiblePluginError) {
+			System.err.println(rootMessage); //$NON-NLS-1$
 			
 		} else if (e instanceof IllegalArgumentException){
-			System.err.println(MessageFormat.format(Messages.getString("CommandRunner.invalid.command.arguments.error.pattern"), e.getMessage())); //$NON-NLS-1$
+			System.err.println(MessageFormat.format(Messages.getString("CommandRunner.invalid.command.arguments.error.pattern"), rootMessage)); //$NON-NLS-1$
 			System.err.println();
 			System.err.println(command.getUsageDescription());
-			
-		} else if (e instanceof ConversionException){
-			//perhaps protocol version mismatch
-			final String toolVersion;
-			final String serverVersion;
-			if(server != null){
-				toolVersion = server.getLocalProtocolVersion();
-				serverVersion = server.getRemoteProtocolVersion();
-			} else {
-				toolVersion = serverVersion = Constants.UNKNOWN_STRING;
-			}
-			System.err.println(
-					String.format(Messages.getString("CommandRunner.incompatible.plugin.error.message.pattern"),  //$NON-NLS-1$
-							serverVersion, toolVersion));
 			
 		} else {
 			e.printStackTrace();
@@ -167,7 +157,15 @@ public class CommandRunner {
 			monitor.beginTask(MessageFormat.format(Messages.getString("CommandRunner.connecting.step.name"), host)); //$NON-NLS-1$
 			server.connect();
 			monitor.done();
-			
+			//check protocol compatibility
+			monitor.beginTask("Checking compatibility");
+			final String remote = server.getRemoteProtocolVersion();
+			final String local = server.getLocalProtocolVersion();
+			Debug.getInstance().debug(CommandRunner.class, String.format("Checking protocol compatibility. Found local=%s, remote=%s", local, remote));
+			if(!remote.equals(local)){
+				throw new IncompatiblePluginError(String.format(Messages.getString("CommandRunner.incompatible.plugin.error.message.pattern"), remote, local));
+			}
+			monitor.done();
 			monitor.beginTask(Messages.getString("CommandRunner.logging.step.name")); //$NON-NLS-1$
 			server.logon(user, password);
 			monitor.done();

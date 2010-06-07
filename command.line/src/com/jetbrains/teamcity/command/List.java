@@ -2,18 +2,14 @@ package com.jetbrains.teamcity.command;
 
 import java.text.MessageFormat;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
-import java.util.Map;
-import java.util.TreeSet;
 
 import javax.naming.directory.InvalidAttributesException;
 
 import jetbrains.buildServer.BuildTypeData;
 import jetbrains.buildServer.ProjectData;
-//import jetbrains.buildServer.vcs.VcsRoot;
 
 import com.jetbrains.teamcity.EAuthorizationException;
 import com.jetbrains.teamcity.ECommunicationException;

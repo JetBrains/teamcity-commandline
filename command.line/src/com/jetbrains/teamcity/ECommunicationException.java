@@ -2,6 +2,10 @@ package com.jetbrains.teamcity;
 
 public class ECommunicationException extends Exception {
 
+	public ECommunicationException(final String message) {
+		super(message);
+	}
+	
 	public ECommunicationException(final Throwable e) {
 		super(e);
 	}
