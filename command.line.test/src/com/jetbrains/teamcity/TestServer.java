@@ -122,7 +122,7 @@ public class TestServer extends Server {
 	public static class  TestBuildTypeData extends BuildTypeData {
 
 		public TestBuildTypeData(String id, ProjectData project, List<VcsRoot> roots) {
-			super(false, id, project.getName(), project.getProjectId(), "<unknown>", id, "<unknown>",CheckoutType.MANUAL, Status.UNKNOWN, null, false, roots);
+			super(false, id, project.getName(), project.getProjectId(), Collections.singletonList("<unknown>"), id, "<unknown>",CheckoutType.MANUAL, Status.UNKNOWN, null, false, roots);
 			project.getBuildTypes().add(this);
 		}
 		
