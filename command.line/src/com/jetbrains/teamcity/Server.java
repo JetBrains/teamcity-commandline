@@ -57,7 +57,7 @@ public class Server {
 	public void connect() throws ECommunicationException {
 		try {
 			final int timeout = getTimeout();
-			mySession = new SessionXmlRpcTargetImpl(myUrl.toExternalForm(), timeout);
+			mySession = new SessionXmlRpcTargetImpl(myUrl.toExternalForm(), "Command Line Tool", timeout);
 			Debug.getInstance().debug(Server.class, String.format("XmlRpc session %s created. Timeout set to %s", mySession.describeMe(), timeout));
 		} catch (Throwable e) {
 			throw new ECommunicationException(String.format("Could not connect to server %s", myUrl), Util.getRootCause(e));
