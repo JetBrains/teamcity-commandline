@@ -227,7 +227,6 @@ public class Build {
 		<unjar src="${plugin.build.libs}/server-model.jar"  dest="${libs}" overwrite="yes"/>
 
 		<unjar src="${plugin.build.libs}/common-api.jar" dest="${libs}" overwrite="yes"/>
-		<unjar src="${plugin.build.libs}/runtime-util.jar"  dest="${libs}" overwrite="yes"/>
 
 		<unjar src="${plugin.build.libs}/commons-codec-1.3.jar"  dest="${libs}" overwrite="yes"/>
 		<unjar src="${plugin.build.libs}/commons-httpclient-3.1.jar"  dest="${libs}" overwrite="yes"/>
