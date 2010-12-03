@@ -3,29 +3,13 @@
 	<property file="build.properties"/>
 
 	<target name="clean">
-		<delete includeemptydirs="true" quiet="true" failonerror="false">
-			<fileset dir="${tool.home}/bin">
-				<include name="**/**"/>
-			</fileset>
-		</delete>
-		<delete includeemptydirs="true" quiet="true" failonerror="false">
-			<fileset dir="${tmp}">
-				<include name="**/**"/>
-			</fileset>
-		</delete>
-		<delete includeemptydirs="true" quiet="true" failonerror="false">
-			<fileset dir="${plugin.build.libs}">
-				<include name="**/**" />
-			</fileset>
-		</delete>
+	    <delete dir="${tool.home}/bin" failonerror="false" quiet="true" />
+	    <delete dir="${tmp}" failonerror="false" quiet="true" />
+	    <delete dir="${plugin.build.libs}" failonerror="false" quiet="true" />	    
 	</target>
 
 	<target name="clean-dist">
-		<delete includeemptydirs="true" quiet="true" failonerror="false">
-			<fileset dir="${dist-commandline}">
-				<include name="**/**"/>
-			</fileset>
-		</delete>
+	    <delete dir="${dist-commandline}" failonerror="false" quiet="true" />
 	</target>
 
 	<path id="tool.classpath">
@@ -138,24 +122,18 @@ public class Build {
 				<include name="**/**"/>
 			</fileset>
 		</jar>
-		
-		<antcall target="prepare-teamcity-plugin-xml"/>
 
 		<zip destfile="${tmp}/command.line.zip">
 			<fileset dir="${tmp}">
 				<include name="server/command.line.jar"/>
+			</fileset>
+			<fileset dir="${basedir}/server-side">
 				<include name="teamcity-plugin.xml"/>
 			</fileset>
+
 		</zip>
 
 
-	</target>
-	
-	<target name="prepare-teamcity-plugin-xml" description="Updates variables in teamcity-plugin.xml file">
-	    <copy file="${basedir}/server-side/teamcity-plugin.xml" todir="${tmp}"/>
-	    <replace file="${tmp}/teamcity-plugin.xml" token="@Plugin_Version@" value="${build.number}"/>
-	    <replace file="${tmp}/teamcity-plugin.xml" token="@Plugin_Vendor@" value="JetBrains, s.r.o."/>
-	    <replace file="${tmp}/teamcity-plugin.xml" token="@Plugin_Vendor_Url@" value="http://jetbrains.com"/>
 	</target>
 
 
@@ -227,6 +205,7 @@ public class Build {
 		<unjar src="${plugin.build.libs}/server-model.jar"  dest="${libs}" overwrite="yes"/>
 
 		<unjar src="${plugin.build.libs}/common-api.jar" dest="${libs}" overwrite="yes"/>
+		<unjar src="${plugin.build.libs}/runtime-util.jar"  dest="${libs}" overwrite="yes"/>
 
 		<unjar src="${plugin.build.libs}/commons-codec-1.3.jar"  dest="${libs}" overwrite="yes"/>
 		<unjar src="${plugin.build.libs}/commons-httpclient-3.1.jar"  dest="${libs}" overwrite="yes"/>
