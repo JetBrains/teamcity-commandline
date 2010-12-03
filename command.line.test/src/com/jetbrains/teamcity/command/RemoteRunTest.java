@@ -128,7 +128,28 @@ public class RemoteRunTest {
 
 	@Test
 	public void getFiles_nothing_passed() {
-		final Collection<File> files = ourCommand.getFiles(new Args(new String[] {RemoteRun.NO_WAIT_SWITCH_LONG, RemoteRun.CONFIGURATION_PARAM_LONG, "bt2"}), new NullProgressMonitor());
+		final Collection<File> files = ourCommand.getFiles(new Args(new String[] {RemoteRun.ID, RemoteRun.CONFIGURATION_PARAM_LONG, "bt2"}), new NullProgressMonitor());
+		assertNotNull("null file's collection got", files);
+		assertEquals("wrong files count collected", 5, files.size());
+	}
+	
+	@Test
+	public void getFiles_nowait_passed() {
+		final Collection<File> files = ourCommand.getFiles(new Args(new String[] {RemoteRun.ID, RemoteRun.NO_WAIT_SWITCH_LONG, RemoteRun.CONFIGURATION_PARAM_LONG, "bt2"}), new NullProgressMonitor());
+		assertNotNull("null file's collection got", files);
+		assertEquals("wrong files count collected", 5, files.size());
+	}
+	
+	@Test
+	public void getFiles_check_changes_passed() {
+		final Collection<File> files = ourCommand.getFiles(new Args(new String[] {RemoteRun.ID, RemoteRun.CHECK_FOR_CHANGES_EARLY_SWITCH, RemoteRun.CONFIGURATION_PARAM_LONG, "bt2"}), new NullProgressMonitor());
+		assertNotNull("null file's collection got", files);
+		assertEquals("wrong files count collected", 5, files.size());
+	}
+	
+	@Test
+	public void getFiles_nowait_and_check_changes_passed() {
+		final Collection<File> files = ourCommand.getFiles(new Args(new String[] {RemoteRun.ID, RemoteRun.NO_WAIT_SWITCH_LONG, RemoteRun.CHECK_FOR_CHANGES_EARLY_SWITCH, RemoteRun.CONFIGURATION_PARAM_LONG, "bt2"}), new NullProgressMonitor());
 		assertNotNull("null file's collection got", files);
 		assertEquals("wrong files count collected", 5, files.size());
 	}
