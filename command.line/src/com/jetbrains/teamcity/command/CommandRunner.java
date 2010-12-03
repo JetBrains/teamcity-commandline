@@ -87,6 +87,7 @@ public class CommandRunner {
 
 	public static void main(final String[] args) throws Exception {
 		new CommandRunner().run(args);
+		System.exit(0);
 	}
 	
 	private static void reportError(final Server server, final ICommand command, final Throwable e, final IProgressMonitor monitor) {

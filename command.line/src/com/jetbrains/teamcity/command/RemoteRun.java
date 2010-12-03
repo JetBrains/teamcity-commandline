@@ -584,7 +584,7 @@ public class RemoteRun implements ICommand {
 	}
 
 	public String getUsageDescription() {
-		return MessageFormat.format(Messages.getString("RemoteRun.help.usage.pattern"),  //$NON-NLS-1$
+		return String.format(Messages.getString("RemoteRun.help.usage.pattern"),  //$NON-NLS-1$
 				getCommandDescription(),
 				getId(), CONFIGURATION_PARAM, CONFIGURATION_PARAM_LONG, 
 				MESSAGE_PARAM, MESSAGE_PARAM_LONG, 
