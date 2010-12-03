@@ -94,11 +94,16 @@ public class RemoteRun implements ICommand {
 	
 	static final String PATCHES_FOLDER = System.getProperty("java.io.tmpdir"); //$NON-NLS-1$
 	
+	static final String CHECK_FOR_CHANGES_EARLY_SWITCH = Messages.getString("RemoteRun.checkforchangesearly.runtime.param.long"); //$NON-NLS-1$
+	
 	private Server myServer;
 	private String myComments;
-	private boolean isNoWait = false;
-	private long myTimeout;
 	private String myResultDescription;
+	
+	private boolean isNoWait = false;
+	
+	private long myTimeout;
+	
 
 
 	private boolean myCleanoff;
@@ -123,6 +128,7 @@ public class RemoteRun implements ICommand {
 		final String cfgId = args.getArgument(CONFIGURATION_PARAM, CONFIGURATION_PARAM_LONG);
 		//comment
 		myComments = args.getArgument(MESSAGE_PARAM, MESSAGE_PARAM_LONG);
+		
 		//wait/no wait for build result
 		if(args.hasArgument(NO_WAIT_SWITCH, NO_WAIT_SWITCH_LONG)){
 			isNoWait  = true;
@@ -156,7 +162,7 @@ public class RemoteRun implements ICommand {
 		final long chaneListId = createChangeList(myServer.getURL(), myServer.getCurrentUser(), patchFile, monitor);
 		
 		//fire RR
-		scheduleRemoteRun(configurations, chaneListId, monitor);
+		scheduleRemoteRun(configurations, chaneListId, args.hasArgument(CHECK_FOR_CHANGES_EARLY_SWITCH), monitor);
 		
 		//process result
 		if(isNoWait){
@@ -344,21 +350,30 @@ public class RemoteRun implements ICommand {
 		return currentStatus;
 	}
 
-	long scheduleRemoteRun(final Collection<String> configurations, final long changeId, final IProgressMonitor monitor) throws ECommunicationException, ERemoteError {
+	long scheduleRemoteRun(final Collection<String> configurations, final long changeId, boolean checkForChangesEarly, final IProgressMonitor monitor) throws ECommunicationException, ERemoteError {
 		final ArrayList<AddToQueueRequest> batch = new ArrayList<AddToQueueRequest>();
 		for(final String cfgId : configurations){
 			final AddToQueueRequest request = new AddToQueueRequest(cfgId, changeId);
+			request.setCheckForChangesEarly(checkForChangesEarly);
 			batch.add(request);
+			final String debugMessage = String.format("Created build request for \"%s\" configuration of changeId=%s, checkForChangesEarly=%s",
+					cfgId, changeId, checkForChangesEarly);
+			Debug.getInstance().debug(RemoteRun.class, debugMessage); //$NON-NLS-1$			
 		}
 		monitor.beginTask(Messages.getString("RemoteRun.scheduling.build.step.name")); //$NON-NLS-1$
 		final AddToQueueResult result = myServer.addRemoteRunToQueue(batch, myComments);//TODO: process Result here
+					
 		if(result.hasFailures()){
 			final StringBuffer errors = new StringBuffer();
 			for(final String cfgId : configurations){
 				errors.append(result.getFailureReason(cfgId)).append("\n"); //$NON-NLS-1$
 			}
+			Debug.getInstance().debug(RemoteRun.class, String.format("Remote Run scheduling failed: %s", errors.toString())); //$NON-NLS-1$			
 			throw new ERemoteError(errors.toString());
+		} else {
+			Debug.getInstance().debug(RemoteRun.class, String.format("Remote Run scheduled successfull.")); //$NON-NLS-1$			
 		}
+			
 		monitor.done();
 		return changeId;
 	}
@@ -477,7 +492,8 @@ public class RemoteRun implements ICommand {
 			final String currentToken = elements[i].toLowerCase();
 			if(elements[i].startsWith("-")){ //$NON-NLS-1$
 				if(elements[i].toLowerCase().equals(NO_WAIT_SWITCH) 
-						|| currentToken.equals(NO_WAIT_SWITCH_LONG)){
+						|| currentToken.equals(NO_WAIT_SWITCH_LONG)
+						|| currentToken.equals(CHECK_FOR_CHANGES_EARLY_SWITCH)){
 					i++; //single token
 				} else {
 					i++; //arg
