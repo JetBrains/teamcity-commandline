@@ -1,221 +1,253 @@
 <project name="jetbrains.teamcity.plugin" basedir="." default="deploy">
 
-	<property file="build.properties"/>
+    <property file="build.properties" />
 
-	<target name="clean">
-	    <delete dir="${tool.home}/bin" failonerror="false" quiet="true" />
-	    <delete dir="${tmp}" failonerror="false" quiet="true" />
-	    <delete dir="${plugin.build.libs}" failonerror="false" quiet="true" />	    
-	</target>
+    <target name="clean">
+        <delete dir="${tool.home}/bin" failonerror="false" quiet="true" />
+        <delete dir="${tmp}" failonerror="false" quiet="true" />
+        <delete dir="${plugin.build.libs}" failonerror="false" quiet="true" />
 
-	<target name="clean-dist">
-	    <delete dir="${dist-commandline}" failonerror="false" quiet="true" />
-	</target>
+        <!--delete includeemptydirs="true" quiet="true" failonerror="false">
+			<fileset dir="${tool.home}/bin">
+				<include name="**/**"/>
+			</fileset>
+		</delete>
+		<delete includeemptydirs="true" quiet="true" failonerror="false">
+			<fileset dir="${tmp}">
+				<include name="**/**"/>
+			</fileset>
+		</delete>
+		<delete includeemptydirs="true" quiet="true" failonerror="false">
+			<fileset dir="${plugin.build.libs}">
+				<include name="**/**" />
+			</fileset>
+		</delete-->
+    </target>
 
-	<path id="tool.classpath">
-		<dirset dir="${tmp}/bin">
-		</dirset>
-	</path>
+    <target name="clean-dist">
+        <delete dir="${dist-commandline}" failonerror="false" quiet="true" />
+        <!--delete includeemptydirs="true" quiet="true" failonerror="false">
+			<fileset dir="${dist-commandline}">
+				<include name="**/**"/>
+			</fileset>
+		</delete-->
+    </target>
 
-	<target name="compile" depends="prepare-bundle-lib">
+    <path id="tool.classpath">
+        <dirset dir="${tmp}/bin">
+        </dirset>
+    </path>
+
+    <target name="compile" depends="prepare-bundle-lib">
 
 
-		<echo file="${tool.home}/src/com/jetbrains/teamcity/Build.java">package com.jetbrains.teamcity;
+        <echo file="${tool.home}/src/com/jetbrains/teamcity/Build.java">package com.jetbrains.teamcity;
 
 public class Build {
     public static final String major = "${major.version}";
     public static final String build = "${build.number}";
 }</echo>
 
-		<javac destdir="${tmp}/bin" debug="on" target="1.5">
-			<src path="${tool.home}/src"/>
-		</javac>
-		<copy todir="${tmp}/bin">
-			<fileset dir="${tool.home}/src">
-				<include name="**/?*.properties"/>
-			</fileset>
-		</copy>
-		<copy todir="${tmp}/scripts">
-			<fileset dir="${tool.home}/scripts">
-				<include name="**/*.*"/>
-			</fileset>
-		</copy>
+        <javac destdir="${tmp}/bin" debug="on" target="1.5">
+            <src path="${tool.home}/src" />
+        </javac>
+        <copy todir="${tmp}/bin">
+            <fileset dir="${tool.home}/src">
+                <include name="**/?*.properties" />
+            </fileset>
+        </copy>
+        <copy todir="${tmp}/scripts">
+            <fileset dir="${tool.home}/scripts">
+                <include name="**/*.*" />
+            </fileset>
+        </copy>
 
-	</target>
+    </target>
 
-	<target name="build" depends="compile">
+    <target name="build" depends="compile">
 
-		<mkdir dir="${tmp}"/>
+        <mkdir dir="${tmp}" />
 
-		<copy file="${tool.home}/META-INF/MANIFEST.MF" tofile="${tmp}/MANIFEST.MF"/>
-		<copy file="${tool.home}/log4j.properties" tofile="${tmp}/bin/log4j.properties"/>
+        <copy file="${tool.home}/META-INF/MANIFEST.MF" tofile="${tmp}/MANIFEST.MF" />
+        <copy file="${tool.home}/log4j.properties" tofile="${tmp}/bin/log4j.properties" />
 
-		<jar destfile="${tmp}/${product.name}.jar" manifest="${tmp}/MANIFEST.MF">
-			<fileset dir="${tmp}/bin">
-				<include name="**/**"/>
-			</fileset>
-			<fileset dir="${tmp}/scripts">
-				<include name="**/**"/>
-			</fileset>
-		</jar>
+        <jar destfile="${tmp}/${product.name}.jar" manifest="${tmp}/MANIFEST.MF">
+            <fileset dir="${tmp}/bin">
+                <include name="**/**" />
+            </fileset>
+            <fileset dir="${tmp}/scripts">
+                <include name="**/**" />
+            </fileset>
+        </jar>
 
-	</target>
+    </target>
 
-	<target name="deploy" depends="clean,build,clean-dist,create-plugin">
-		<mkdir dir="${dist-commandline}"/>
+    <target name="deploy" depends="clean,build,clean-dist,create-plugin">
+        <mkdir dir="${dist-commandline}" />
 
-		<copy todir="${dist-commandline}">
-			<fileset dir="${tmp}">
-				<!--include name="*.jar"/-->
-				<include name="*.zip"/>
-			</fileset>
-		</copy>
+        <copy todir="${dist-commandline}">
+            <fileset dir="${tmp}">
+                <!--include name="*.jar"/-->
+                <include name="*.zip" />
+            </fileset>
+        </copy>
 
-		<antcall target="clean"/>
-	</target>
+        <antcall target="clean" />
+    </target>
 
-	<target name="create-plugin" depends="clean-plugin,build-plugin">
+    <target name="create-plugin" depends="clean-plugin,build-plugin">
 
-	</target>
+    </target>
 
-	<target name="clean-plugin">
-		<delete includeemptydirs="true" quiet="true" failonerror="false">
-			<fileset dir="${basedir}/server-side/tmp">
-				<include name="**/**"/>
-			</fileset>
-		</delete>
-	</target>
+    <target name="clean-plugin">
+        <delete includeemptydirs="true" quiet="true" failonerror="false">
+            <fileset dir="${basedir}/server-side/tmp">
+                <include name="**/**" />
+            </fileset>
+        </delete>
+    </target>
 
-	<path id="command.line.libs">
-		<fileset dir="${plugin.build.libs}">
-			<include name="**/*.jar" />
-		</fileset>
-	</path>
+    <path id="command.line.libs">
+        <fileset dir="${plugin.build.libs}">
+            <include name="**/*.jar" />
+        </fileset>
+    </path>
 
-	<target name="build-plugin">
+    <target name="build-plugin">
 
-		<mkdir dir="${basedir}/server-side/tmp"/>
+        <mkdir dir="${basedir}/server-side/tmp" />
 
-		<javac destdir="${basedir}/server-side/tmp" debug="on" target="1.5">
-			<src path="${basedir}/server-side/src"/>
-			<classpath refid="command.line.libs"/>
-		</javac>
+        <javac destdir="${basedir}/server-side/tmp" debug="on" target="1.5">
+            <src path="${basedir}/server-side/src" />
+            <classpath refid="command.line.libs" />
+        </javac>
 
-		<copy todir="${basedir}/server-side/tmp/buildServerResources">
-			<fileset dir="${basedir}/server-side/resources/buildServerResources">
-				<include name="**/*.*" />
-			</fileset>
-		</copy>
+        <copy todir="${basedir}/server-side/tmp/buildServerResources">
+            <fileset dir="${basedir}/server-side/resources/buildServerResources">
+                <include name="**/*.*" />
+            </fileset>
+        </copy>
 
-		<mkdir dir="${basedir}/server-side/tmp/META-INF"/>
-		<copy todir="${basedir}/server-side/tmp/META-INF">
-			<fileset dir="${basedir}/server-side/src/META-INF">
-				<include name="**/*.*" />
-			</fileset>
-		</copy>
+        <mkdir dir="${basedir}/server-side/tmp/META-INF" />
+        <copy todir="${basedir}/server-side/tmp/META-INF">
+            <fileset dir="${basedir}/server-side/src/META-INF">
+                <include name="**/*.*" />
+            </fileset>
+        </copy>
 
-		<copy file="${tmp}/tcc.jar" todir="${basedir}/server-side/tmp/buildServerResources"/>
+        <copy file="${tmp}/tcc.jar" todir="${basedir}/server-side/tmp/buildServerResources" />
 
-		<mkdir dir="${tmp}/server"/>
-		<jar destfile="${tmp}/server/command.line.jar">
-			<fileset dir="${basedir}/server-side/tmp">
-				<include name="**/**"/>
-			</fileset>
-		</jar>
+        <mkdir dir="${tmp}/server" />
+        <jar destfile="${tmp}/server/command.line.jar">
+            <fileset dir="${basedir}/server-side/tmp">
+                <include name="**/**" />
+            </fileset>
+        </jar>
 
-		<zip destfile="${tmp}/command.line.zip">
-			<fileset dir="${tmp}">
-				<include name="server/command.line.jar"/>
-			</fileset>
-			<fileset dir="${basedir}/server-side">
-				<include name="teamcity-plugin.xml"/>
-			</fileset>
+        <zip destfile="${tmp}/command.line.zip">
+            <fileset dir="${tmp}">
+                <include name="server/command.line.jar" />
+            </fileset>
+            <fileset dir="${basedir}/server-side">
+                <include name="teamcity-plugin.xml" />
+            </fileset>
 
-		</zip>
-
-
-	</target>
+        </zip>
 
 
-	<target name="dist" depends="deploy" />
-
-	<target name="test" depends="test-plugin">
-		<ant dir="${tests.project.path}" inheritall="yes" inheritrefs="yes" target="test" />
-	</target>
-
-	<target name="test-plugin">
-
-	</target>
-
-	<target name="prepare-artifacts" 
-		description="Extract libraries from TeamCity distributive">
-
-		<!-- unpack existing destributive-->
-		<untar compression="gzip" dest="${distribution.dir}">
-			<fileset dir="${distribution.dir}">
-				<include name="*.tar.gz" />
-			</fileset>
-		</untar>
-
-		<mkdir dir="${plugin.build.libs}"/>
-
-		<!-- copy all required libraries from the unpacked distr -->
-		<copy todir="${plugin.build.libs}">
-			<fileset dir="${distribution.dir}/TeamCity/webapps/ROOT/WEB-INF/lib">
-				<include name="*.jar" />
-			</fileset>
-		</copy>
-		<copy todir="${plugin.build.libs}">
-			<fileset dir="${distribution.dir}/TeamCity/lib">
-				<include name="*.jar" />
-			</fileset>
-		</copy>
-
-		<!-- unjar eclipse's plugin bundled libs -->
-		<unjar dest="${plugin.build.libs}" 
-			overwrite="yes">
-			<fileset dir="${distribution.dir}/TeamCity/webapps/ROOT/update/eclipse/plugins">
-				<include name="*.jar" />
-			</fileset>
-			<patternset>
-				<include name="lib/*.jar" />
-			</patternset>
-		</unjar>
-		<move todir="${plugin.build.libs}">
-			<fileset dir="${plugin.build.libs}/lib">
-				<include name="**/*.jar" />
-			</fileset>
-		</move>
-
-	</target>
+    </target>
 
 
-	<target name="prepare-bundle-lib" depends="prepare-artifacts" 
-		description="Bundle classes used by the plugin">
+    <target name="dist" depends="deploy" />
 
-		<mkdir dir="${tmp}/bin"/>
-		<property name="libs" location="${tmp}/bin"/>
-		<mkdir dir="${libs}"/>
+    <target name="test" depends="test-plugin">
+        <ant dir="${tests.project.path}" inheritall="yes" inheritrefs="yes" target="test" />
+    </target>
 
-		<!-- will extract all libs content for bundling -->
-		<unjar src="${plugin.build.libs}/util.jar" dest="${libs}" overwrite="yes"/>
+    <target name="test-plugin">
 
-		<unjar src="${plugin.build.libs}/patches-impl.jar"  dest="${libs}" overwrite="yes"/>
-		<unjar src="${plugin.build.libs}/remote-server-proxy.jar"  dest="${libs}" overwrite="yes"/>
-		<unjar src="${plugin.build.libs}/server-model.jar"  dest="${libs}" overwrite="yes"/>
+    </target>
 
-		<unjar src="${plugin.build.libs}/common-api.jar" dest="${libs}" overwrite="yes"/>
-		<unjar src="${plugin.build.libs}/runtime-util.jar"  dest="${libs}" overwrite="yes"/>
+    <target name="prepare-artifacts" description="Extract libraries from TeamCity distributive">
 
-		<unjar src="${plugin.build.libs}/commons-codec-1.3.jar"  dest="${libs}" overwrite="yes"/>
-		<unjar src="${plugin.build.libs}/commons-httpclient-3.1.jar"  dest="${libs}" overwrite="yes"/>
-		<unjar src="${plugin.build.libs}/commons-logging.jar"  dest="${libs}" overwrite="yes"/>
-		<unjar src="${plugin.build.libs}/log4j-1.2.12.jar"  dest="${libs}" overwrite="yes"/>
-		<unjar src="${plugin.build.libs}/xmlrpc-2.0.1.jar"  dest="${libs}" overwrite="yes"/>
-		<unjar src="${tool.lib.location}/xpp3_min-1.1.3.4.M.jar"  dest="${libs}" overwrite="yes"/>
-		<unjar src="${tool.lib.location}/xstream-1.2.1.jar"  dest="${libs}" overwrite="yes"/>
+        <!-- unpack existing destributive-->
+        <untar compression="gzip" dest="${distribution.dir}">
+            <fileset dir="${distribution.dir}">
+                <include name="*.tar.gz" />
+            </fileset>
+        </untar>
 
-	</target>
+        <mkdir dir="${plugin.build.libs}" />
+
+        <!-- copy all required libraries from the unpacked distr -->
+        <copy todir="${plugin.build.libs}">
+            <fileset dir="${distribution.dir}/TeamCity/webapps/ROOT/WEB-INF/lib">
+                <include name="*.jar" />
+            </fileset>
+        </copy>
+        <copy todir="${plugin.build.libs}">
+            <fileset dir="${distribution.dir}/TeamCity/lib">
+                <include name="*.jar" />
+            </fileset>
+        </copy>
+
+        <!-- unjar eclipse's plugin bundled libs -->
+        <unjar dest="${plugin.build.libs}" overwrite="yes">
+            <fileset dir="${distribution.dir}/TeamCity/webapps/ROOT/update/eclipse/plugins">
+                <include name="**/jetbrains.teamcity.core_*.jar" />
+            </fileset>
+            <patternset>
+                <include name="**/lib/server-model.jar" />
+                <include name="**/lib/remote-server-proxy.jar" />
+                <include name="**/lib/patches-impl.jar" />
+            </patternset>
+        </unjar>
+        <move todir="${plugin.build.libs}">
+            <fileset dir="${plugin.build.libs}/lib">
+                <include name="**/*.jar" />
+            </fileset>
+        </move>
+
+    </target>
+
+
+    <target name="prepare-bundle-lib" depends="prepare-artifacts" description="Bundle classes used by the plugin">
+
+        <mkdir dir="${tmp}/bin" />
+        <property name="libs" location="${tmp}/bin" />
+        <mkdir dir="${libs}" />
+
+        <!-- will extract all libs content for bundling -->
+        <unjar src="${plugin.build.libs}/util.jar" dest="${libs}" overwrite="yes" />
+
+        <unjar src="${plugin.build.libs}/patches-impl.jar" dest="${libs}" overwrite="yes" />
+        <unjar src="${plugin.build.libs}/remote-server-proxy.jar" dest="${libs}" overwrite="yes" />
+        <unjar src="${plugin.build.libs}/server-model.jar" dest="${libs}" overwrite="yes" />
+
+        <unjar src="${plugin.build.libs}/common-api.jar" dest="${libs}" overwrite="yes" />
+        <unjar src="${plugin.build.libs}/runtime-util.jar" dest="${libs}" overwrite="yes" />
+
+        <unjar src="${plugin.build.libs}/commons-codec-1.3.jar" dest="${libs}" overwrite="yes" />
+        <unjar src="${plugin.build.libs}/commons-httpclient-3.1.jar" dest="${libs}" overwrite="yes" />
+        <unjar src="${plugin.build.libs}/commons-logging.jar" dest="${libs}" overwrite="yes" />
+        <unjar src="${plugin.build.libs}/log4j-1.2.12.jar" dest="${libs}" overwrite="yes" />
+        
+        <unjar dest="${libs}" overwrite="yes">
+            <fileset dir="${plugin.build.libs}">
+                <include name="**/xmlrpc-*.jar" />
+            </fileset>
+        </unjar> 
+        <unjar dest="${libs}" overwrite="yes">
+            <fileset dir="${plugin.build.libs}">
+                <include name="**/xpp3_min-*.jar" />
+            </fileset>
+        </unjar>
+        <unjar dest="${libs}" overwrite="yes">
+            <fileset dir="${plugin.build.libs}">
+                <include name="**/xstream-*.jar" />
+            </fileset>
+        </unjar>
+    </target>
 
 </project>
 

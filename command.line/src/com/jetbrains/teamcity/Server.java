@@ -284,6 +284,17 @@ public class Server {
 		public int getTotalNumberOfEvents(String serializedSubscription) {
 			return 0;
 		}
+
+		public byte[] getFilteredGZippedSummary(String arg0, Vector arg1) {
+			// TODO Auto-generated method stub
+			return null;
+		}
+
+		public Vector getWatchedRunningBuildsStatus(String arg0, boolean arg1,
+				Vector arg2) {
+			// TODO Auto-generated method stub
+			return null;
+		}
 		
 	}
 	
