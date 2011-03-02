@@ -42,6 +42,9 @@ import jetbrains.buildServer.AddToQueueResult;
 import jetbrains.buildServer.TeamServerSummaryData;
 import jetbrains.buildServer.UserChangeInfoData;
 import jetbrains.buildServer.UserChangeStatus;
+import jetbrains.buildServer.core.runtime.IProgressMonitor;
+import jetbrains.buildServer.core.runtime.IProgressStatus;
+import jetbrains.buildServer.core.runtime.ProgressStatus;
 import jetbrains.buildServer.serverSide.userChanges.PersonalChangeCommitDecision;
 import jetbrains.buildServer.serverSide.userChanges.PersonalChangeDescriptor;
 import jetbrains.buildServer.serverSide.userChanges.PreTestedCommitType;
@@ -70,7 +73,6 @@ import com.jetbrains.teamcity.resources.FileBasedMatcher;
 import com.jetbrains.teamcity.resources.ITCResource;
 import com.jetbrains.teamcity.resources.ITCResourceMatcher;
 import com.jetbrains.teamcity.resources.TCWorkspace;
-import com.jetbrains.teamcity.runtime.IProgressMonitor;
 
 public class RemoteRun implements ICommand {
 
@@ -204,7 +206,8 @@ public class RemoteRun implements ICommand {
     if (out.isEmpty()) {
       throw new IllegalArgumentException(String.format(Messages.getString("RemoteRun.no.one.mappins.found.error.message"), files.size())); //$NON-NLS-1$
     }
-    monitor.done(String.format(Messages.getString("RemoteRun.mapping.step.done.message"), out.size(), files.size())); //$NON-NLS-1$
+    monitor.status(new ProgressStatus(IProgressStatus.INFO, String.format(Messages.getString("RemoteRun.mapping.step.done.message"), out.size(), files.size())));
+    monitor.done(); //$NON-NLS-1$
     return out;
   }
 
@@ -255,7 +258,8 @@ public class RemoteRun implements ICommand {
     // if nothing passed run on all applicable
     Debug.getInstance().debug(this.getClass(), String.format("Using all applicable configurations for runing", ""));
     buffer.addAll(applicableConfigurations);
-    monitor.done(MessageFormat.format(Messages.getString("RemoteRun.collected.configuration.done.pattern"), buffer.size(), buffer)); //$NON-NLS-1$
+    monitor.status(new ProgressStatus(IProgressStatus.INFO, MessageFormat.format(Messages.getString("RemoteRun.collected.configuration.done.pattern"), buffer.size(), buffer))); //$NON-NLS-1$
+    monitor.done();
     return buffer;
   }
 
@@ -287,7 +291,8 @@ public class RemoteRun implements ICommand {
           final UserChangeStatus currentStatus = data.getChangeStatus();
           if (!currentStatus.equals(prevCurrentStatus)) {
             prevCurrentStatus = currentStatus;
-            monitor.worked(MessageFormat.format(Messages.getString("RemoteRun.wait.for.build.statuschanged.step.name"), getBuildStatusDescription(currentStatus))); //$NON-NLS-1$
+            monitor.status(new ProgressStatus(IProgressStatus.INFO, MessageFormat.format(Messages.getString("RemoteRun.wait.for.build.statuschanged.step.name"), getBuildStatusDescription(currentStatus)))); //$NON-NLS-1$
+//            monitor.worked(); //$NON-NLS-1$
           }
           if (UserChangeStatus.FAILED_WITH_RESPONSIBLE == currentStatus || UserChangeStatus.FAILED == currentStatus || UserChangeStatus.CANCELED == currentStatus) {
             throw new ERemoteError(MessageFormat.format(Messages.getString("RemoteRun.build.failed.error.pattern"), getBuildStatusDescription(currentStatus))); //$NON-NLS-1$
@@ -417,7 +422,8 @@ public class RemoteRun implements ICommand {
       }
       // post requests to queue
       final String response = postMethod.getResponseBodyAsString();
-      monitor.done(String.format("sent %d bytes", patchFile.length()));
+      monitor.status(new ProgressStatus(IProgressStatus.INFO, String.format("sent %d bytes", patchFile.length()))); //$NON-NLS-1$      
+      monitor.done();
       return Long.parseLong(response);
 
     } catch (IOException e) {
@@ -471,7 +477,8 @@ public class RemoteRun implements ICommand {
       if (!deletedResources.isEmpty()) {
         patchingResult.append(String.format("%d deleted file(s): %s", deletedResources.size(), deletedResources));
       }
-      monitor.done(patchingResult.toString());
+      monitor.status(new ProgressStatus(IProgressStatus.INFO, patchingResult.toString())); //$NON-NLS-1$
+      monitor.done();
     }
     return patchFile;
 
@@ -540,8 +547,8 @@ public class RemoteRun implements ICommand {
     if (result.size() == 0) {
       throw new IllegalArgumentException(Messages.getString("RemoteRun.no.files.collected.for.remoterun.eror.message")); //$NON-NLS-1$
     }
-
-    monitor.done(MessageFormat.format(Messages.getString("RemoteRun.collect.changes.step.result.pattern"), result.size())); //$NON-NLS-1$
+    monitor.status(new ProgressStatus(IProgressStatus.INFO, MessageFormat.format(Messages.getString("RemoteRun.collect.changes.step.result.pattern"), result.size()))); //$NON-NLS-1$
+    monitor.done(); //$NON-NLS-1$
     for (final File collected : result) {
       Debug.getInstance().debug(RemoteRun.class, String.format("%s", collected)); //$NON-NLS-1$ //$NON-NLS-2$
     }

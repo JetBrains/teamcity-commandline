@@ -26,6 +26,10 @@ import java.util.Collections;
 import java.util.Comparator;
 
 import jetbrains.buildServer.IncompatiblePluginError;
+import jetbrains.buildServer.core.runtime.IProgressMonitor;
+import jetbrains.buildServer.core.runtime.IProgressStatus;
+import jetbrains.buildServer.core.runtime.ProgressStatus;
+import jetbrains.buildServer.core.runtime.RuntimeUtil;
 import jetbrains.buildServer.serverSide.crypt.EncryptUtil;
 
 import com.jetbrains.teamcity.Debug;
@@ -36,8 +40,6 @@ import com.jetbrains.teamcity.Server;
 import com.jetbrains.teamcity.Util;
 import com.jetbrains.teamcity.resources.ICredential;
 import com.jetbrains.teamcity.resources.TCAccess;
-import com.jetbrains.teamcity.runtime.ConsoleProgressMonitor;
-import com.jetbrains.teamcity.runtime.IProgressMonitor;
 
 public class CommandRunner {
 
@@ -71,9 +73,7 @@ public class CommandRunner {
      */
     final Debug debug = Debug.getInstance();
     debug.setDebug(arguments.isDebugOn());
-
-    final IProgressMonitor monitor = new ConsoleProgressMonitor(System.out);
-
+    final IProgressMonitor monitor = RuntimeUtil.CONSOLE_MONITOR;
     final ICommand command = CommandRegistry.getInstance().getCommand(arguments.getCommandId());
     if (command != null) {
       Server server = null;
@@ -89,7 +89,7 @@ public class CommandRunner {
         reportResult(command, monitor);
       } catch (Throwable e) {
         // print error result
-        monitor.done(String.format(Messages.getString("CommandRunner.monitor.error.found"), command.getId())); //$NON-NLS-1$
+        monitor.status(new ProgressStatus(IProgressStatus.ERROR, String.format(Messages.getString("CommandRunner.monitor.error.found"), command.getId())));
         reportError(server, command, e, monitor);
         System.exit(-1);
       }

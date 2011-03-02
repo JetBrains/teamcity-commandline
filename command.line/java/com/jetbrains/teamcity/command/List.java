@@ -25,6 +25,7 @@ import javax.naming.directory.InvalidAttributesException;
 
 import jetbrains.buildServer.BuildTypeData;
 import jetbrains.buildServer.ProjectData;
+import jetbrains.buildServer.core.runtime.IProgressMonitor;
 
 import com.jetbrains.teamcity.EAuthorizationException;
 import com.jetbrains.teamcity.ECommunicationException;
@@ -32,7 +33,6 @@ import com.jetbrains.teamcity.ERemoteError;
 import com.jetbrains.teamcity.Server;
 import com.jetbrains.teamcity.Util;
 import com.jetbrains.teamcity.Util.StringTable;
-import com.jetbrains.teamcity.runtime.IProgressMonitor;
 
 public class List implements ICommand {
 
