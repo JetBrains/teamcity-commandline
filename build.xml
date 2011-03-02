@@ -40,8 +40,7 @@
 
     <target name="compile" depends="prepare-bundle-lib">
 
-
-        <echo file="${tool.home}/src/com/jetbrains/teamcity/Build.java">package com.jetbrains.teamcity;
+        <echo file="${tool.home}/java/com/jetbrains/teamcity/Build.java">package com.jetbrains.teamcity;
 
 public class Build {
     public static final String major = "${major.version}";
@@ -49,10 +48,10 @@ public class Build {
 }</echo>
 
         <javac destdir="${tmp}/bin" debug="on" target="1.5">
-            <src path="${tool.home}/src" />
+            <src path="${tool.home}/java" />
         </javac>
         <copy todir="${tmp}/bin">
-            <fileset dir="${tool.home}/src">
+            <fileset dir="${tool.home}/java">
                 <include name="**/?*.properties" />
             </fileset>
         </copy>
