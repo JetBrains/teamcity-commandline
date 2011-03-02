@@ -13,20 +13,12 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.jetbrains.teamcity.resources;
+package jetbrains.buildServer.serverProxy;
 
-import java.io.File;
+public class RemoteServerProxy extends RemoteBuildServerImpl {
 
-public interface ITCResourceMatcher {
-
-  public Matching getMatching(final File file) throws IllegalArgumentException;
-
-  public interface Matching {
-
-    public String getTCID();
-
-    public String getRelativePath();
-
+  public RemoteServerProxy(SessionXmlRpcTarget target, ApplicationFacade applicationFacade, VersionChecker checker) {
+    super(target, applicationFacade, checker);
   }
 
 }
