@@ -197,9 +197,7 @@ public class Build {
                 <include name="**/jetbrains.teamcity.core_*.jar" />
             </fileset>
             <patternset>
-                <include name="**/lib/server-model.jar" />
-                <include name="**/lib/remote-server-proxy.jar" />
-                <include name="**/lib/patches-impl.jar" />
+                <include name="**/lib/ide-common.jar" />
             </patternset>
         </unjar>
         <move todir="${plugin.build.libs}">
@@ -220,9 +218,7 @@ public class Build {
         <!-- will extract all libs content for bundling -->
         <unjar src="${plugin.build.libs}/util.jar" dest="${libs}" overwrite="yes" />
 
-        <unjar src="${plugin.build.libs}/patches-impl.jar" dest="${libs}" overwrite="yes" />
-        <unjar src="${plugin.build.libs}/remote-server-proxy.jar" dest="${libs}" overwrite="yes" />
-        <unjar src="${plugin.build.libs}/server-model.jar" dest="${libs}" overwrite="yes" />
+        <unjar src="${plugin.build.libs}/ide-common.jar" dest="${libs}" overwrite="yes" />
 
         <unjar src="${plugin.build.libs}/common-api.jar" dest="${libs}" overwrite="yes" />
         <unjar src="${plugin.build.libs}/runtime-util.jar" dest="${libs}" overwrite="yes" />
