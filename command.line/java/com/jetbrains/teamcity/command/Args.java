@@ -26,6 +26,8 @@ public class Args {
 
   public static final String DEBUG_ARG = Messages.getString("Args.debug.switch.name"); //$NON-NLS-1$
 
+  public static final String SILENT_ARG = Messages.getString("Args.silent.switch.name"); //$NON-NLS-1$  
+
   public static final String DEBUG_CLEAN_OFF = Messages.getString("Args.do.not.delete.file.after.run.switch.name"); //$NON-NLS-1$
 
   static HashMap<String, Pattern> ourRegisteredArgs = new HashMap<String, Pattern>();
@@ -37,6 +39,8 @@ public class Args {
   private String myCommandId;
 
   private boolean isDebugOn;
+
+  private boolean isSilentOn;
 
   private boolean isCleanOff;
 
@@ -67,6 +71,11 @@ public class Args {
     if (list.contains(DEBUG_CLEAN_OFF)) {
       list.remove(DEBUG_CLEAN_OFF);
       isCleanOff = true;
+    }
+    // remove -silent
+    if (list.contains(SILENT_ARG)) {
+      list.remove(SILENT_ARG);
+      isSilentOn = true;
     }
     myArgs = list.toArray(new String[list.size()]);
     for (String arg : myArgs) {
@@ -122,6 +131,10 @@ public class Args {
 
   public boolean isCleanOff() {
     return isCleanOff;
+  }
+
+  public boolean isSilentOn() {
+    return isSilentOn;
   }
 
 }

@@ -73,7 +73,36 @@ public class CommandRunner {
      */
     final Debug debug = Debug.getInstance();
     debug.setDebug(arguments.isDebugOn());
-    final IProgressMonitor monitor = RuntimeUtil.CONSOLE_MONITOR;
+    //wrap Console to reduce stdout in silent mode
+    final IProgressMonitor consoleMonitor = RuntimeUtil.CONSOLE_MONITOR;
+    final IProgressMonitor monitor = new IProgressMonitor() {
+
+      public void status(IProgressStatus status) {
+        if (!arguments.isSilentOn()) {
+          consoleMonitor.status(status);
+        }
+      }
+
+      public boolean isCancelled() {
+        return consoleMonitor.isCancelled();
+      }
+
+      public void done() {
+        if (!arguments.isSilentOn()) {
+          consoleMonitor.done();
+        }
+      }
+
+      public void cancel() {
+        consoleMonitor.cancel();
+      }
+      public void beginTask(String taskName) {
+        if (!arguments.isSilentOn()) {
+          consoleMonitor.beginTask(taskName);
+        }
+      }
+    };
+    
     final ICommand command = CommandRegistry.getInstance().getCommand(arguments.getCommandId());
     if (command != null) {
       Server server = null;
