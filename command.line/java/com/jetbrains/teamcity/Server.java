@@ -20,7 +20,6 @@ import java.net.Proxy;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Vector;
 
@@ -41,7 +40,6 @@ import jetbrains.buildServer.serverProxy.UserSummaryRemoteManager;
 import jetbrains.buildServer.serverProxy.VersionChecker;
 import jetbrains.buildServer.serverProxy.impl.SessionXmlRpcTargetImpl;
 import jetbrains.buildServer.serverSide.auth.AuthenticationFailedException;
-import jetbrains.buildServer.vcs.VcsRoot;
 import jetbrains.buildServer.version.ServerVersionHolder;
 import jetbrains.buildServer.xmlrpc.RemoteCallException;
 import jetbrains.buildServer.xmlrpc.XmlRpcTarget;
@@ -185,28 +183,6 @@ public class Server {
     for (final BuildTypeData config : allConfigurations) {
       if (id.equals(config.getId())) {
         return config;
-      }
-    }
-    return null;
-  }
-
-  public synchronized Collection<VcsRoot> getVcsRoots() throws ECommunicationException {
-    final Collection<BuildTypeData> allConfigurations = getConfigurations();
-    final HashMap<Long, VcsRoot> vcsRoots = new HashMap<Long, VcsRoot>();
-    for (BuildTypeData configuration : allConfigurations) {
-      for (VcsRoot root : configuration.getVcsRoots()) {
-        if (!vcsRoots.containsKey(root.getId())) {
-          vcsRoots.put(root.getId(), root);
-        }
-      }
-    }
-    return vcsRoots.values();
-  }
-
-  public synchronized VcsRoot getVcsRoot(long id) throws ECommunicationException {
-    for (VcsRoot root : getVcsRoots()) {
-      if (root.getId() == id) {
-        return root;
       }
     }
     return null;
