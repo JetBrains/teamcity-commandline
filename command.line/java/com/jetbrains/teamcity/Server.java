@@ -16,13 +16,15 @@
 package com.jetbrains.teamcity;
 
 import java.io.IOException;
+import java.lang.Object;
 import java.net.Proxy;
 import java.net.URL;
+import java.util.*;
+
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.Vector;
-
 import jetbrains.buildServer.AddToQueueRequest;
 import jetbrains.buildServer.AddToQueueResult;
 import jetbrains.buildServer.BuildTypeData;
@@ -189,7 +191,7 @@ public class Server {
   }
 
   public TeamServerSummaryData getSummary() throws ECommunicationException {
-    final byte[] serializedStr = getSummaryProxy().getGZippedSummary(String.valueOf(getCurrentUser()), true);
+    final byte[] serializedStr = getSummaryProxy().getGZippedSummaryByVcsUris(String.valueOf(getCurrentUser()), new Vector());
     try {
       final TeamServerSummaryData data = unzipAndDeserializeObject(serializedStr);
       return data;
@@ -257,8 +259,12 @@ public class Server {
       super(target, applicationFacade, handlerName, checker);
     }
 
-    public byte[] getGZippedSummary(String userId, boolean specifiedUserChangesOnly) {
-      return callXmlRpc("getGZippedSummary", userId, specifiedUserChangesOnly);
+    public byte[] getGZippedSummaryByVcsUris(String userId, Vector vcsUris) {
+      return callXmlRpc("getGZippedSummaryByVcsUris", userId, vcsUris);
+    }
+
+    public byte[] getGZippedSummaryByBuildTypes(String userId, Vector buildTypeIds) {
+      return callXmlRpc("getGZippedSummaryByBuildTypes", userId, buildTypeIds);
     }
 
     public Vector<?> getRunningBuildsStatus() {
