@@ -19,7 +19,6 @@ import java.io.IOException;
 import java.lang.Object;
 import java.net.Proxy;
 import java.net.URL;
-import java.util.*;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -191,7 +190,7 @@ public class Server {
   }
 
   public TeamServerSummaryData getSummary() throws ECommunicationException {
-    final byte[] serializedStr = getSummaryProxy().getGZippedSummaryByVcsUris(String.valueOf(getCurrentUser()), false, new Vector());
+    final byte[] serializedStr = getSummaryProxy().getGZippedSummary(String.valueOf(getCurrentUser()));
     try {
       final TeamServerSummaryData data = unzipAndDeserializeObject(serializedStr);
       return data;
@@ -259,8 +258,12 @@ public class Server {
       super(target, applicationFacade, handlerName, checker);
     }
 
-    public byte[] getGZippedSummaryByVcsUris(String userId, boolean filter, Vector vcsUris) {
-      return callXmlRpc("getGZippedSummaryByVcsUris", userId, filter, vcsUris);
+    public byte[] getFilteredGZippedSummaryByVcsUris(String userId, Vector vcsUris) {
+      return callXmlRpc("getFilteredGZippedSummaryByVcsUris", userId, vcsUris);
+    }
+
+    public byte[] getFilteredGZippedSummaryByBuildTypes(String userId, Vector buildTypeIds) {
+      return callXmlRpc("getFilteredGZippedSummaryByBuildTypes", userId, buildTypeIds);
     }
 
     public byte[] getGZippedSummaryByBuildTypes(String userId, Vector buildTypeIds) {
