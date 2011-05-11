@@ -266,10 +266,6 @@ public class Server {
       return callXmlRpc("getFilteredGZippedSummaryByBuildTypes", userId, buildTypeIds);
     }
 
-    public byte[] getGZippedSummaryByBuildTypes(String userId, Vector buildTypeIds) {
-      return callXmlRpc("getGZippedSummaryByBuildTypes", userId, buildTypeIds);
-    }
-
     public Vector<?> getRunningBuildsStatus() {
       return new Vector<Object>();
     }
