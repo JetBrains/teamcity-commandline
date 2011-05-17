@@ -16,14 +16,13 @@
 package com.jetbrains.teamcity;
 
 import java.io.IOException;
-import java.lang.Object;
 import java.net.Proxy;
 import java.net.URL;
-
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.Vector;
+
 import jetbrains.buildServer.AddToQueueRequest;
 import jetbrains.buildServer.AddToQueueResult;
 import jetbrains.buildServer.BuildTypeData;
@@ -258,12 +257,8 @@ public class Server {
       super(target, applicationFacade, handlerName, checker);
     }
 
-    public byte[] getFilteredGZippedSummaryByVcsUris(String userId, Vector vcsUris) {
-      return callXmlRpc("getFilteredGZippedSummaryByVcsUris", userId, vcsUris);
-    }
-
-    public byte[] getFilteredGZippedSummaryByBuildTypes(String userId, Vector buildTypeIds) {
-      return callXmlRpc("getFilteredGZippedSummaryByBuildTypes", userId, buildTypeIds);
+    public byte[] getGZippedSummary(String userId, boolean specifiedUserChangesOnly) {
+      return callXmlRpc("getGZippedSummary", userId, specifiedUserChangesOnly);
     }
 
     public Vector<?> getRunningBuildsStatus() {
@@ -285,6 +280,21 @@ public class Server {
 
     @SuppressWarnings("rawtypes")
     public Vector getWatchedRunningBuildsStatus(String arg0, boolean arg1, Vector arg2) {
+      // TODO Auto-generated method stub
+      return null;
+    }
+
+    public byte[] getFilteredGZippedSummaryByBuildTypes(String arg0, Vector arg1) {
+      // TODO Auto-generated method stub
+      return null;
+    }
+
+    public byte[] getFilteredGZippedSummaryByVcsUris(String arg0, Vector arg1) {
+      // TODO Auto-generated method stub
+      return null;
+    }
+
+    public byte[] getGZippedSummary(String arg0) {
       // TODO Auto-generated method stub
       return null;
     }
