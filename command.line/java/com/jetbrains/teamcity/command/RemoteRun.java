@@ -89,7 +89,7 @@ public class RemoteRun implements ICommand {
     }
   };
 
-  static final int SLEEP_INTERVAL = 1000 * 10;
+  static final int SLEEP_INTERVAL = 1000 * 5;
   static final int DEFAULT_TIMEOUT = 1000 * 60 * 60;
 
   static final String ID = Messages.getString("RemoteRun.command.id"); //$NON-NLS-1$
@@ -291,27 +291,32 @@ public class RemoteRun implements ICommand {
           final UserChangeStatus currentStatus = data.getChangeStatus();
           if (!currentStatus.equals(prevCurrentStatus)) {
             prevCurrentStatus = currentStatus;
-            monitor.status(new ProgressStatus(IProgressStatus.INFO, MessageFormat.format(Messages.getString("RemoteRun.wait.for.build.statuschanged.step.name"), getBuildStatusDescription(currentStatus)))); //$NON-NLS-1$
+            System.out.print(MessageFormat.format(Messages.getString("RemoteRun.wait.for.build.statuschanged.step.name"), getBuildStatusDescription(currentStatus)));
+//            monitor.status(new ProgressStatus(IProgressStatus.INFO, MessageFormat.format(Messages.getString("RemoteRun.wait.for.build.statuschanged.step.name"), getBuildStatusDescription(currentStatus)))); //$NON-NLS-1$
 //            monitor.worked(); //$NON-NLS-1$
           }
           if (UserChangeStatus.FAILED_WITH_RESPONSIBLE == currentStatus || UserChangeStatus.FAILED == currentStatus || UserChangeStatus.CANCELED == currentStatus) {
+            System.out.println();
             throw new ERemoteError(MessageFormat.format(Messages.getString("RemoteRun.build.failed.error.pattern"), getBuildStatusDescription(currentStatus))); //$NON-NLS-1$
           }
           // check commit status
           final PersonalChangeDescriptor descriptor = data.getPersonalDesc();
           PersonalChangeCommitDecision commitStatus = descriptor.getPersonalChangeStatus();
           if (PersonalChangeCommitDecision.COMMIT == commitStatus) {
+            System.out.println();            
             // OK
             monitor.done();
             return descriptor;
 
           } else if (PersonalChangeCommitDecision.DO_NOT_COMMIT == commitStatus) {
+            System.out.println();            
             // build is OK, but commit is not allowed
             throw new ERemoteError(MessageFormat.format(Messages.getString("RemoteRun.build.ok.commit.rejected.error.pattern"), getCommitStatusDescription(commitStatus))); //$NON-NLS-1$
           }
         }
       }
       try {
+        System.out.print(".");
         Thread.sleep(SLEEP_INTERVAL);
       } catch (InterruptedException e) {
         throw new RuntimeException(e);

@@ -49,11 +49,14 @@ public class List implements ICommand {
   private String myResultDescription;
 
   public void execute(final Server server, final Args args, final IProgressMonitor monitor) throws EAuthorizationException, ECommunicationException, ERemoteError, InvalidAttributesException {
-    if (args.hasArgument(PROJECT_SWITCH, PROJECT_SWITCH_LONG) && !args.hasArgument(CONFIGURATION_SWITCH, CONFIGURATION_SWITCH_LONG)) {
+    if (args.hasArgument(PROJECT_SWITCH, PROJECT_SWITCH_LONG) 
+        &&args.getArgument(PROJECT_SWITCH, PROJECT_SWITCH_LONG) == null 
+        &&!args.hasArgument(CONFIGURATION_SWITCH, CONFIGURATION_SWITCH_LONG)) {
 
       myResultDescription = printProjects(server);
 
-    } else if (args.hasArgument(CONFIGURATION_SWITCH, CONFIGURATION_SWITCH_LONG)) {
+    } else if (args.getArgument(PROJECT_SWITCH, PROJECT_SWITCH_LONG) != null
+        || args.hasArgument(CONFIGURATION_SWITCH, CONFIGURATION_SWITCH_LONG)) {
 
       myResultDescription = printConfigurations(server, args);
 

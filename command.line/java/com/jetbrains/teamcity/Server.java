@@ -294,9 +294,8 @@ public class Server {
       return null;
     }
 
-    public byte[] getGZippedSummary(String arg0) {
-      // TODO Auto-generated method stub
-      return null;
+    public byte[] getGZippedSummary(String userId) {
+      return callXmlRpc("getGZippedSummary", userId);
     }
 
   }

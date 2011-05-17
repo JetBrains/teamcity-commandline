@@ -45,7 +45,7 @@ public class Args {
   private boolean isCleanOff;
 
   public static void registerArgument(final String argName, final String argPattern) {
-    final Pattern pattern = Pattern.compile(argPattern);
+    final Pattern pattern = Pattern.compile(argPattern, Pattern.CASE_INSENSITIVE | Pattern.DOTALL | Pattern.MULTILINE);
     ourRegisteredArgs.put(argName, pattern);
   }
 
