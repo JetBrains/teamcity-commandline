@@ -209,7 +209,7 @@ public class CommandRunner {
       final String local = server.getLocalProtocolVersion();
       Debug.getInstance().debug(CommandRunner.class, String.format("Checking protocol compatibility. Found local=%s, remote=%s", local, remote));
       if (!remote.equals(local)) {
-        throw new IncompatiblePluginError(String.format(Messages.getString("CommandRunner.incompatible.plugin.error.message.pattern"), remote, local));
+        throw new IncompatiblePluginError(String.format(Messages.getString("CommandRunner.incompatible.plugin.error.message.pattern"), remote, local), remote, local, "<unknown>");
       }
       monitor.done();
       monitor.beginTask(Messages.getString("CommandRunner.logging.step.name")); //$NON-NLS-1$
