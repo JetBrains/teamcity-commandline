@@ -11,8 +11,8 @@
 	<classpathentry kind="lib" path="lib/runtime-util.jar"/>
 	<classpathentry kind="lib" path="lib/util.jar"/>
 	<classpathentry kind="lib" path="lib/xmlrpc-2.0.1.jar"/>
-	<classpathentry kind="lib" path="lib/xpp3_min-1.1.3.4.M.jar"/>
-	<classpathentry kind="lib" path="lib/xstream-1.2.1.jar"/>
+	<classpathentry kind="lib" path="lib/xpp3-1.1.4c.jar"/>
+	<classpathentry kind="lib" path="lib/xstream-1.4-20110423.112604-3.jar"/>
 	<classpathentry kind="lib" path="lib/remote-server-proxy.jar"/>
 	<classpathentry kind="lib" path="lib/server-model.jar"/>
 	<classpathentry kind="output" path="bin"/>
