@@ -28,7 +28,7 @@ public class GetBuildTypeMappingAction implements ControllerAction {
     myController = controller;
   }
 
-  public boolean canProcess(final HttpServletRequest request) {
+  public boolean canProcess(@NotNull final HttpServletRequest request) {
     return StringUtil.isNotEmpty(btId(request));
   }
 
