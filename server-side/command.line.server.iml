@@ -43,7 +43,7 @@
     <orderEntry type="library" name="log4j-1.2.12" level="project" />
     <orderEntry type="module" module-name="common" />
     <orderEntry type="module" module-name="utils" />
-    <orderEntry type="module" module-name="test-core" />
+    <orderEntry type="module" module-name="integration-test-core" />
     <orderEntry type="module" module-name="server" />
     <orderEntry type="module" module-name="web-test" />
     <orderEntry type="module" module-name="server-test" />
