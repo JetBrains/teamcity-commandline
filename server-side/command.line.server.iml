@@ -46,6 +46,7 @@
     <orderEntry type="module" module-name="test-core" />
     <orderEntry type="module" module-name="server" />
     <orderEntry type="module" module-name="web-test" />
+    <orderEntry type="module" module-name="server-test" />
   </component>
 </module>
 

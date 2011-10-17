@@ -1,7 +1,6 @@
 package jetbrains.buildServer.commandline;
 
 import java.util.List;
-import java.util.ArrayList;
 import jetbrains.buildServer.serverSide.impl.BaseServerTestCase;
 import jetbrains.buildServer.vcs.impl.SVcsRootImpl;
 import jetbrains.buildServer.vcs.*;
