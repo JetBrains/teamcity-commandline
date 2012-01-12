@@ -125,14 +125,14 @@ BS.CommandLine = {
     });
     tbody.appendChild(tr);
 
-    $('mappingTable').select("input").each(function(input_element){
+    $('mappingTable').select("input").each(function(input_element) {
       input_element.onblur = BS.CommandLine.updatePreview;
       input_element.onkeypress = BS.CommandLine.updatePreviewDelayed;
     });
   },
 
   updatePreview: function() {
-    var left2Tr = {}
+    var left2Tr = {};
     $('resultsConfig').value = '';
     $$('#mappingTable tr').each(function(trElement) {
       var inputs = trElement.getElementsByTagName('input');
@@ -170,7 +170,7 @@ BS.CommandLine = {
   },
 
   removeRow: function(tr_element) {
-    $(tr_element).select("input").each(function(input_element){
+    $(tr_element).select("input").each(function(input_element) {
       input_element.onblur = null;
       input_element.onkeypress = null;
     });
