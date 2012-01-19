@@ -180,7 +180,7 @@ BS.CommandLine = {
 };
 
 
-Behaviour.addLoadEvent(function() {
+document.observe("dom:loaded", function() {
   BS.CommandLine.fillBuildTypesList();
   BS.CommandLine.installControlHandlers();
 });
