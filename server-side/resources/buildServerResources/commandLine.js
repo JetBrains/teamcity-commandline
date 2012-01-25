@@ -45,11 +45,11 @@ BS.CommandLine = {
 
   installControlHandlers: function() {
     var select = this.selectElement();
-    select.observe("change", function() {
+    select.on("change", function() {
       $('addMapping').disabled = this.selectedIndex == 0;
     });
 
-    $('addMapping').observe("click", function() {
+    $('addMapping').on("click", function() {
       var buildTypeId = this.buildTypeId();
       if (buildTypeId) {
         this.addMappingFor(buildTypeId);
