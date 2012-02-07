@@ -15,6 +15,16 @@
  */
 package com.jetbrains.teamcity.command;
 
+import com.jetbrains.teamcity.*;
+import com.jetbrains.teamcity.resources.ICredential;
+import com.jetbrains.teamcity.resources.TCAccess;
+import jetbrains.buildServer.IncompatiblePluginError;
+import jetbrains.buildServer.core.runtime.IProgressMonitor;
+import jetbrains.buildServer.core.runtime.IProgressStatus;
+import jetbrains.buildServer.core.runtime.ProgressStatus;
+import jetbrains.buildServer.core.runtime.RuntimeUtil;
+import jetbrains.buildServer.serverSide.crypt.EncryptUtil;
+
 import java.net.MalformedURLException;
 import java.net.URISyntaxException;
 import java.net.URL;
@@ -24,22 +34,6 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
-
-import jetbrains.buildServer.IncompatiblePluginError;
-import jetbrains.buildServer.core.runtime.IProgressMonitor;
-import jetbrains.buildServer.core.runtime.IProgressStatus;
-import jetbrains.buildServer.core.runtime.ProgressStatus;
-import jetbrains.buildServer.core.runtime.RuntimeUtil;
-import jetbrains.buildServer.serverSide.crypt.EncryptUtil;
-
-import com.jetbrains.teamcity.Debug;
-import com.jetbrains.teamcity.EAuthorizationException;
-import com.jetbrains.teamcity.ECommunicationException;
-import com.jetbrains.teamcity.ERemoteError;
-import com.jetbrains.teamcity.Server;
-import com.jetbrains.teamcity.Util;
-import com.jetbrains.teamcity.resources.ICredential;
-import com.jetbrains.teamcity.resources.TCAccess;
 
 public class CommandRunner {
 
@@ -202,15 +196,6 @@ public class CommandRunner {
       final Server server = new Server(new URL(host));
       monitor.beginTask(MessageFormat.format(Messages.getString("CommandRunner.connecting.step.name"), host)); //$NON-NLS-1$
       server.connect();
-      monitor.done();
-      // check protocol compatibility
-      monitor.beginTask("Checking compatibility");
-      final String remote = server.getRemoteProtocolVersion();
-      final String local = server.getLocalProtocolVersion();
-      Debug.getInstance().debug(CommandRunner.class, String.format("Checking protocol compatibility. Found local=%s, remote=%s", local, remote));
-      if (!remote.equals(local)) {
-        throw new IncompatiblePluginError(String.format(Messages.getString("CommandRunner.incompatible.plugin.error.message.pattern"), remote, local), remote, local, "<unknown>");
-      }
       monitor.done();
       monitor.beginTask(Messages.getString("CommandRunner.logging.step.name")); //$NON-NLS-1$
       server.logon(user, password);

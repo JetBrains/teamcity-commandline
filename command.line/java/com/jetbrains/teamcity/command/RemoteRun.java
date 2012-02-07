@@ -15,33 +15,13 @@
  */
 package com.jetbrains.teamcity.command;
 
-import java.io.BufferedInputStream;
-import java.io.BufferedOutputStream;
-import java.io.DataOutputStream;
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.security.MessageDigest;
-import java.security.NoSuchAlgorithmException;
-import java.text.MessageFormat;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.Comparator;
-import java.util.HashSet;
-import java.util.TreeSet;
-
-import javax.naming.directory.InvalidAttributesException;
-
-import jetbrains.buildServer.AddToQueueRequest;
-import jetbrains.buildServer.AddToQueueResult;
-import jetbrains.buildServer.TeamServerSummaryData;
-import jetbrains.buildServer.UserChangeInfoData;
-import jetbrains.buildServer.UserChangeStatus;
+import com.jetbrains.teamcity.*;
+import com.jetbrains.teamcity.Util.IFileFilter;
+import com.jetbrains.teamcity.resources.FileBasedMatcher;
+import com.jetbrains.teamcity.resources.ITCResource;
+import com.jetbrains.teamcity.resources.ITCResourceMatcher;
+import com.jetbrains.teamcity.resources.TCWorkspace;
+import jetbrains.buildServer.*;
 import jetbrains.buildServer.core.runtime.IProgressMonitor;
 import jetbrains.buildServer.core.runtime.IProgressStatus;
 import jetbrains.buildServer.core.runtime.ProgressStatus;
@@ -51,28 +31,17 @@ import jetbrains.buildServer.serverSide.userChanges.PreTestedCommitType;
 import jetbrains.buildServer.vcs.patches.LowLevelPatchBuilder;
 import jetbrains.buildServer.vcs.patches.LowLevelPatchBuilderImpl;
 import jetbrains.buildServer.vcs.patches.PatchBuilderImpl;
-
 import org.apache.commons.codec.binary.Base64;
-import org.apache.commons.httpclient.HostConfiguration;
-import org.apache.commons.httpclient.HttpConnection;
-import org.apache.commons.httpclient.HttpState;
-import org.apache.commons.httpclient.NameValuePair;
-import org.apache.commons.httpclient.SimpleHttpConnectionManager;
-import org.apache.commons.httpclient.URI;
+import org.apache.commons.httpclient.*;
 import org.apache.commons.httpclient.methods.InputStreamRequestEntity;
 import org.apache.commons.httpclient.methods.PostMethod;
 
-import com.jetbrains.teamcity.Debug;
-import com.jetbrains.teamcity.EAuthorizationException;
-import com.jetbrains.teamcity.ECommunicationException;
-import com.jetbrains.teamcity.ERemoteError;
-import com.jetbrains.teamcity.Server;
-import com.jetbrains.teamcity.Util;
-import com.jetbrains.teamcity.Util.IFileFilter;
-import com.jetbrains.teamcity.resources.FileBasedMatcher;
-import com.jetbrains.teamcity.resources.ITCResource;
-import com.jetbrains.teamcity.resources.ITCResourceMatcher;
-import com.jetbrains.teamcity.resources.TCWorkspace;
+import javax.naming.directory.InvalidAttributesException;
+import java.io.*;
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
+import java.text.MessageFormat;
+import java.util.*;
 
 public class RemoteRun implements ICommand {
 
@@ -185,9 +154,7 @@ public class RemoteRun implements ICommand {
     } else {
       final PersonalChangeDescriptor result = waitForSuccessResult(chaneListId, myTimeout, monitor);
       myResultDescription = MessageFormat.format(Messages.getString("RemoteRun.build.result.ok.pattern"), String.valueOf(chaneListId), result.getPersonalChangeStatus()); //$NON-NLS-1$
-
     }
-    return;
   }
 
   Collection<ITCResource> getTCResources(final TCWorkspace workspace, final Collection<File> files, final IProgressMonitor monitor) throws IllegalArgumentException {
@@ -198,13 +165,13 @@ public class RemoteRun implements ICommand {
       if (resource != null && resource.getRepositoryPath() != null) {
         out.add(resource);
       } else {
-        Debug.getInstance().debug(RemoteRun.class, String.format("? \"%s\" has not accosiated ITCResource(%s) or empty RepositoryPath(%s)", //$NON-NLS-1$ 
-            file, resource, resource != null ? resource.getRepositoryPath() : (String) null));
+        Debug.getInstance().debug(RemoteRun.class, String.format("? \"%s\" has not associated ITCResource(%s) or empty RepositoryPath(%s)", //$NON-NLS-1$
+            file, resource, resource != null ? resource.getRepositoryPath() : null));
       }
     }
     // fire exception if nothing found
     if (out.isEmpty()) {
-      throw new IllegalArgumentException(String.format(Messages.getString("RemoteRun.no.one.mappins.found.error.message"), files.size())); //$NON-NLS-1$
+      throw new IllegalArgumentException(String.format(Messages.getString("RemoteRun.no.one.mappings.found.error.message"), files.size())); //$NON-NLS-1$
     }
     monitor.status(new ProgressStatus(IProgressStatus.INFO, String.format(Messages.getString("RemoteRun.mapping.step.done.message"), out.size(), files.size())));
     monitor.done(); //$NON-NLS-1$
@@ -246,17 +213,17 @@ public class RemoteRun implements ICommand {
     Debug.getInstance().debug(this.getClass(), String.format("All applicable configurations: %s", applicableConfigurations));
     // make intersection of passed and applicable
     if (cfgId != null) {
-      final Collection<String> requstedConfigurations = parseConfigurations(cfgId);
-      Debug.getInstance().debug(this.getClass(), String.format("Requested configurations for runing: %s", requstedConfigurations));
-      if (!requstedConfigurations.isEmpty()) {
-        final Collection<String> intersecion = Util.intersect(applicableConfigurations, requstedConfigurations);
-        Debug.getInstance().debug(this.getClass(), String.format("Use configurations for runing: %s", intersecion));
-        return intersecion;
+      final Collection<String> requestedConfigurations = parseConfigurations(cfgId);
+      Debug.getInstance().debug(this.getClass(), String.format("Requested configurations for running: %s", requestedConfigurations));
+      if (!requestedConfigurations.isEmpty()) {
+        final Collection<String> intersection = Util.intersect(applicableConfigurations, requestedConfigurations);
+        Debug.getInstance().debug(this.getClass(), String.format("Use configurations for running: %s", intersection));
+        return intersection;
       }
-      return requstedConfigurations;
+      return requestedConfigurations;
     }
     // if nothing passed run on all applicable
-    Debug.getInstance().debug(this.getClass(), String.format("Using all applicable configurations for runing", ""));
+    Debug.getInstance().debug(this.getClass(), String.format("Using all applicable configurations for running", ""));
     buffer.addAll(applicableConfigurations);
     monitor.status(new ProgressStatus(IProgressStatus.INFO, MessageFormat.format(Messages.getString("RemoteRun.collected.configuration.done.pattern"), buffer.size(), buffer))); //$NON-NLS-1$
     monitor.done();
@@ -361,7 +328,7 @@ public class RemoteRun implements ICommand {
       return Messages.getString("RemoteRun.UserChangeStatus.RUNNING_FAILED"); //$NON-NLS-1$
 
     } else if (UserChangeStatus.RUNNING_SUCCESSFULY == currentStatus) {
-      return Messages.getString("RemoteRun.UserChangeStatus.RUNNING_SUCCESSFULY"); //$NON-NLS-1$
+      return Messages.getString("RemoteRun.UserChangeStatus.RUNNING_SUCCESSFULLY"); //$NON-NLS-1$
 
     }
     return currentStatus;
@@ -377,20 +344,20 @@ public class RemoteRun implements ICommand {
       Debug.getInstance().debug(RemoteRun.class, debugMessage); //$NON-NLS-1$			
     }
     monitor.beginTask(Messages.getString("RemoteRun.scheduling.build.step.name")); //$NON-NLS-1$
-    final AddToQueueResult result = myServer.addRemoteRunToQueue(batch, myComments);// TODO:
+    final AddToQueueResult result = myServer.addRemoteRunToQueue(batch);// TODO:
                                                                                     // process
                                                                                     // Result
                                                                                     // here
 
     if (result.hasFailures()) {
-      final StringBuffer errors = new StringBuffer();
+      final StringBuilder errors = new StringBuilder();
       for (final String cfgId : configurations) {
         errors.append(result.getFailureReason(cfgId)).append("\n"); //$NON-NLS-1$
       }
       Debug.getInstance().debug(RemoteRun.class, String.format("Remote Run scheduling failed: %s", errors.toString())); //$NON-NLS-1$			
       throw new ERemoteError(errors.toString());
     } else {
-      Debug.getInstance().debug(RemoteRun.class, String.format("Remote Run scheduled successfull.")); //$NON-NLS-1$			
+      Debug.getInstance().debug(RemoteRun.class, String.format("Remote Run scheduled successfully.")); //$NON-NLS-1$
     }
 
     monitor.done();
@@ -462,8 +429,8 @@ public class RemoteRun implements ICommand {
       }
 
     } finally {// finalize patching
-      patcher.exit(""); //$NON-NLS-1$
       if (patcher != null) {
+        patcher.exit(""); //$NON-NLS-1$
         patcher.close();
       }
       if (os != null) {
@@ -472,7 +439,7 @@ public class RemoteRun implements ICommand {
         } catch (IOException e) {
         }
       }
-      final StringBuffer patchingResult = new StringBuffer();
+      final StringBuilder patchingResult = new StringBuilder();
       if (!modifiedResources.isEmpty()) {
         patchingResult.append(String.format("%d new/modified file(s)", modifiedResources.size()));
         if (!deletedResources.isEmpty()) {
@@ -550,7 +517,7 @@ public class RemoteRun implements ICommand {
       }
     }
     if (result.size() == 0) {
-      throw new IllegalArgumentException(Messages.getString("RemoteRun.no.files.collected.for.remoterun.eror.message")); //$NON-NLS-1$
+      throw new IllegalArgumentException(Messages.getString("RemoteRun.no.files.collected.for.remoterun.error.message")); //$NON-NLS-1$
     }
     monitor.status(new ProgressStatus(IProgressStatus.INFO, MessageFormat.format(Messages.getString("RemoteRun.collect.changes.step.result.pattern"), result.size()))); //$NON-NLS-1$
     monitor.done(); //$NON-NLS-1$
@@ -575,8 +542,7 @@ public class RemoteRun implements ICommand {
 
   private Collection<File> collectFiles(final String[] elements) {
     final HashSet<File> out = new HashSet<File>();
-    for (int i = 0; i < elements.length; i++) {
-      final String path = elements[i];
+    for (final String path : elements) {
       final Collection<File> files;
       if (!path.startsWith("@")) { //$NON-NLS-1$
         files = Util.getFiles(path);
@@ -590,7 +556,7 @@ public class RemoteRun implements ICommand {
   }
 
   String readFromStream(final InputStream stream) {
-    final StringBuffer buffer = new StringBuffer();
+    final StringBuilder buffer = new StringBuilder();
     final InputStreamReader in = new InputStreamReader(new BufferedInputStream(stream));
     try {
       if (stream.available() != 0) {

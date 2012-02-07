@@ -15,56 +15,31 @@
  */
 package com.jetbrains.teamcity;
 
-import java.io.IOException;
-import java.net.Proxy;
+import jetbrains.buildServer.*;
+import jetbrains.buildServer.serverProxy.RemoteServerFacade;
+import jetbrains.buildServer.serverProxy.RemoteServerFacadeImpl;
+import jetbrains.buildServer.serverProxy.SessionXmlRpcTarget;
+import jetbrains.buildServer.serverProxy.impl.SessionXmlRpcTargetImpl;
+import jetbrains.buildServer.serverSide.TriggeredByBuilder;
+import jetbrains.buildServer.serverSide.auth.AuthenticationFailedException;
+import jetbrains.buildServer.xmlrpc.RemoteCallException;
+import jetbrains.buildServer.xmlrpc.XmlRpcTarget.Cancelable;
+import org.jetbrains.annotations.NotNull;
+
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.HashSet;
-import java.util.Vector;
-
-import jetbrains.buildServer.AddToQueueRequest;
-import jetbrains.buildServer.AddToQueueResult;
-import jetbrains.buildServer.BuildTypeData;
-import jetbrains.buildServer.IncompatiblePluginError;
-import jetbrains.buildServer.ProjectData;
-import jetbrains.buildServer.TeamServerSummaryData;
-import jetbrains.buildServer.messages.XStreamHolder;
-import jetbrains.buildServer.serverProxy.ApplicationFacade;
-import jetbrains.buildServer.serverProxy.ClientXmlRpcExecutorFacade;
-import jetbrains.buildServer.serverProxy.RemoteAuthenticationServer;
-import jetbrains.buildServer.serverProxy.RemoteBuildServer;
-import jetbrains.buildServer.serverProxy.RemoteServerProxy;
-import jetbrains.buildServer.serverProxy.SessionXmlRpcTarget;
-import jetbrains.buildServer.serverProxy.UserSummaryRemoteManager;
-import jetbrains.buildServer.serverProxy.VersionChecker;
-import jetbrains.buildServer.serverProxy.impl.SessionXmlRpcTargetImpl;
-import jetbrains.buildServer.serverSide.auth.AuthenticationFailedException;
-import jetbrains.buildServer.version.ServerVersionHolder;
-import jetbrains.buildServer.xmlrpc.RemoteCallException;
-import jetbrains.buildServer.xmlrpc.XmlRpcTarget;
-import jetbrains.buildServer.xmlrpc.XmlRpcTarget.Cancelable;
-import jetbrains.buildServer.xstream.ServerXStreamFormat;
-import jetbrains.buildServer.xstream.XStreamWrapper;
-
-import com.thoughtworks.xstream.XStream;
+import java.util.List;
 
 public class Server {
 
   private URL myUrl;
   private SessionXmlRpcTarget mySession;
-  private RemoteBuildServer myServerProxy;
-  private ArrayList<ProjectData> myProjects;
-  private ClientXmlRpcExecutorFacade myAuthenticationProxy;
-  private UserSummaryRemoteManager mySummaryProxy;
+  private RemoteServerFacade myServerFacade;
+  private List<ProjectData> myProjects;
 
   public Server(final URL url) {
     myUrl = url;
-  }
-
-  public Server(final URL url, final Proxy proxy) {
-    this(url);
-    // myProxy = proxy;
   }
 
   public void connect() throws ECommunicationException {
@@ -81,7 +56,7 @@ public class Server {
     final String timeoutStr = System.getProperty(Constants.XMLRPC_TIMEOUT_SYSTEM_PROPERTY);
     if (timeoutStr != null) {
       try {
-        final int timeout = new Integer(timeoutStr.trim()).intValue();
+        final int timeout = new Integer(timeoutStr.trim());
         if (timeout > 0) {
           return timeout;
         }
@@ -112,43 +87,11 @@ public class Server {
     }
   }
 
-  private RemoteBuildServer getServerProxy() throws ECommunicationException {
-    if (myServerProxy == null) {
-      myServerProxy = new RemoteServerProxy(mySession, new ApplicationFacadeStub(), new VersionCheckerStub());
+  private RemoteServerFacade getServerFacade() {
+    if (myServerFacade == null) {
+      myServerFacade = new RemoteServerFacadeImpl(mySession);
     }
-    return myServerProxy;
-  }
-
-  private UserSummaryRemoteManager getSummaryProxy() throws ECommunicationException {
-    if (mySummaryProxy == null) {
-      mySummaryProxy = new SummaryManager(mySession, new ApplicationFacadeStub(), UserSummaryRemoteManager.HANDLER, new VersionCheckerStub());
-    }
-    return mySummaryProxy;
-  }
-
-  private ClientXmlRpcExecutorFacade getAuthenticationProxy() throws ECommunicationException {
-    if (myAuthenticationProxy == null) {
-      myAuthenticationProxy = new ClientXmlRpcExecutorFacade(mySession, new ApplicationFacadeStub(), RemoteAuthenticationServer.REMOTE_AUTH_SERVER, new VersionCheckerStub());
-    }
-    return myAuthenticationProxy;
-  }
-
-  public String getLocalProtocolVersion() {
-    return ServerVersionHolder.getVersion().getPluginProtocolVersion();
-  }
-
-  public String getRemoteProtocolVersion() throws ECommunicationException {
-    try {
-      return getAuthenticationProxy().callXmlRpc("getServerVersion");
-    } catch (Exception e) {
-      throw new ECommunicationException(e);
-      // Debug.getInstance().error(getClass(), e.getMessage(), e);
-      // return Constants.UNKNOWN_STRING;
-    }
-  }
-
-  public void logout() {
-    mySession.logout();
+    return myServerFacade;
   }
 
   public int getCurrentUser() {
@@ -158,13 +101,7 @@ public class Server {
   @SuppressWarnings("rawtypes")
   public synchronized Collection<ProjectData> getProjects() throws ECommunicationException {
     if (myProjects == null) {
-      final RemoteBuildServer serverProxy = getServerProxy();
-      final Vector builds = serverProxy.getRegisteredProjects(false);
-      myProjects = new ArrayList<ProjectData>(builds.size());
-      for (Object typeData : builds) {
-        final ProjectData projectData = (ProjectData) deserializeObject(typeData);
-        myProjects.add(projectData);
-      }
+      myProjects = getServerFacade().getRegisteredProjects();
     }
     return myProjects;
   }
@@ -178,126 +115,24 @@ public class Server {
     return configurations;
   }
 
-  public synchronized BuildTypeData getConfiguration(final String id) throws ECommunicationException {
-    final Collection<BuildTypeData> allConfigurations = getConfigurations();
-    for (final BuildTypeData config : allConfigurations) {
-      if (id.equals(config.getId())) {
-        return config;
-      }
-    }
-    return null;
-  }
-
   public TeamServerSummaryData getSummary() throws ECommunicationException {
-    final byte[] serializedStr = getSummaryProxy().getGZippedSummary(String.valueOf(getCurrentUser()));
-    try {
-      final TeamServerSummaryData data = unzipAndDeserializeObject(serializedStr);
-      return data;
-    } catch (IOException e) {
-      throw new RuntimeException(e);
-    }
-  }
-
-  // TODO: move to utils
-  private final static XStreamHolder ourXStreamHolder = new XStreamHolder() {
-    protected void configureXStream(XStream xStream) {
-      ServerXStreamFormat.formatXStream(xStream);
-    }
-  };
-
-  // TODO: move to utils
-  private static <T> T deserializeObject(final Object typeData) {
-    return XStreamWrapper.<T> deserializeObject((String) typeData, ourXStreamHolder);
-  }
-
-  // TODO: move to utils
-  private <T> T unzipAndDeserializeObject(final Object typeData) throws IOException {
-    return XStreamWrapper.<T> unzipAndDeserializeObject((byte[]) typeData, ourXStreamHolder);
-  }
-
-  static class VersionCheckerStub implements VersionChecker {
-
-    public void checkServerVersion() throws IncompatiblePluginError {
-    }
-  }
-
-  static class ApplicationFacadeStub implements ApplicationFacade {
-
-    public Cancelable createCancelable() {
-      return null;
-    }
-
-    public void onProcessCanceled() {
-    }
-
+    return getServerFacade().getSummaryData(String.valueOf(getCurrentUser()));
   }
 
   public String getURL() {
     return mySession.getServerURL();
   }
 
-  public AddToQueueResult addRemoteRunToQueue(ArrayList<AddToQueueRequest> batch, String myComments) throws ECommunicationException {
-    return deserializeObject(getServerProxy().addToQueue(XStreamWrapper.serializeObjects(batch, ourXStreamHolder), myComments));
+  @NotNull
+  public AddToQueueResult addRemoteRunToQueue(@NotNull List<AddToQueueRequest> batch) throws ECommunicationException {
+    final TriggeredByBuilder builder = new TriggeredByBuilder();
+    builder.addParameter(TriggeredByBuilder.USER_PARAM_NAME, String.valueOf(getCurrentUser()));
+    builder.addParameter(TriggeredByBuilder.IDE_PLUGIN_PARAM_NAME, "Command line remote run");
+    return getServerFacade().addToQueue(batch, builder.toString());
   }
 
   @SuppressWarnings("rawtypes")
-  public Collection<String> getApplicableConfigurations(final Collection<String> urls) {
-    final ClientXmlRpcExecutorFacade xmlExecutor = new ClientXmlRpcExecutorFacade(mySession, new ApplicationFacadeStub(), "VersionControlServer", new VersionCheckerStub());
-    final Vector ids = xmlExecutor.callXmlRpc("getSuitableConfigurations", new Vector<String>(urls));
-    final HashSet<String> buffer = new HashSet<String>(ids.size());
-    for (final Object id : ids) {
-      buffer.add(String.valueOf(id));
-    }
-    return buffer;
+  public Collection<String> getApplicableConfigurations(final Collection<String> urls) throws ECommunicationException {
+    return getServerFacade().getSuitableConfigurations(urls);
   }
-
-  class SummaryManager extends ClientXmlRpcExecutorFacade implements UserSummaryRemoteManager {
-
-    public SummaryManager(XmlRpcTarget target, ApplicationFacade applicationFacade, String handlerName, VersionChecker checker) {
-      super(target, applicationFacade, handlerName, checker);
-    }
-
-    public byte[] getGZippedSummary(String userId, boolean specifiedUserChangesOnly) {
-      return callXmlRpc("getGZippedSummary", userId, specifiedUserChangesOnly);
-    }
-
-    public Vector<?> getRunningBuildsStatus() {
-      return new Vector<Object>();
-    }
-
-    public String getSummary(String userId, boolean specifiedUserChangesOnly) {
-      return null;
-    }
-
-    public int getTotalNumberOfEvents(String serializedSubscription) {
-      return 0;
-    }
-
-    public byte[] getFilteredGZippedSummary(String arg0, @SuppressWarnings("rawtypes") Vector arg1) {
-      // TODO Auto-generated method stub
-      return null;
-    }
-
-    @SuppressWarnings("rawtypes")
-    public Vector getWatchedRunningBuildsStatus(String arg0, boolean arg1, Vector arg2) {
-      // TODO Auto-generated method stub
-      return null;
-    }
-
-    public byte[] getFilteredGZippedSummaryByBuildTypes(String arg0, Vector arg1) {
-      // TODO Auto-generated method stub
-      return null;
-    }
-
-    public byte[] getFilteredGZippedSummaryByVcsUris(String arg0, Vector arg1) {
-      // TODO Auto-generated method stub
-      return null;
-    }
-
-    public byte[] getGZippedSummary(String userId) {
-      return callXmlRpc("getGZippedSummary", userId);
-    }
-
-  }
-
 }

@@ -216,6 +216,8 @@ public class Build {
         <mkdir dir="${libs}" />
 
         <!-- will extract all libs content for bundling -->
+        <unjar src="${plugin.build.libs}/annotations.jar" dest="${libs}" overwrite="yes" />
+
         <unjar src="${plugin.build.libs}/util.jar" dest="${libs}" overwrite="yes" />
 
         <unjar src="${plugin.build.libs}/ide-common.jar" dest="${libs}" overwrite="yes" />
@@ -235,7 +237,7 @@ public class Build {
         </unjar> 
         <unjar dest="${libs}" overwrite="yes">
             <fileset dir="${plugin.build.libs}">
-                <include name="**/xpp3-*.jar" />
+                <include name="**/xpp3*.jar" />
             </fileset>
         </unjar>
         <unjar dest="${libs}" overwrite="yes">

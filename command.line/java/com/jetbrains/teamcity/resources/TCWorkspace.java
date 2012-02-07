@@ -15,20 +15,19 @@
  */
 package com.jetbrains.teamcity.resources;
 
+import com.jetbrains.teamcity.Debug;
+import com.jetbrains.teamcity.Storage;
+
 import java.io.File;
 import java.io.IOException;
 import java.text.MessageFormat;
 import java.util.HashMap;
 
-import com.jetbrains.teamcity.Debug;
-import com.jetbrains.teamcity.Storage;
-
 public class TCWorkspace {
 
   public static final String TCC_ADMIN_FILE = Messages.getString("TCWorkspace.per.folder.admin.file"); //$NON-NLS-1$
 
-  public static final String TCC_GLOBAL_ADMIN_FILE = System.getProperty("user.home") //$NON-NLS-1$
-      + File.separator + Storage.TC_CLI_HOME + File.separator + Messages.getString("TCWorkspace.global.admin.file"); //$NON-NLS-1$
+  public static final String TCC_GLOBAL_ADMIN_FILE = new File(System.getProperty("user.home"), Storage.TC_CLI_HOME + File.separator + Messages.getString("TCWorkspace.global.admin.file")).getAbsolutePath();
 
   private HashMap<File, ITCResourceMatcher> myCache = new HashMap<File, ITCResourceMatcher>();
 

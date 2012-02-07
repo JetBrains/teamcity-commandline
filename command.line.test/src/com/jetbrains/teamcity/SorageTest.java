@@ -1,14 +1,13 @@
 package com.jetbrains.teamcity;
 
-import static org.junit.Assert.assertEquals;
-
-import java.io.File;
-
+import com.jetbrains.teamcity.Storage.IKey;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
-import com.jetbrains.teamcity.Storage.IKey;
+import java.io.File;
+
+import static org.junit.Assert.assertEquals;
 
 public class SorageTest {
 	
@@ -38,7 +37,7 @@ public class SorageTest {
 				return "TestKey";
 			}
 		};
-		Storage.getInstance().put(testKey, new Long(12345));
+		Storage.getInstance().put(testKey, 12345L);
 		//discard caching
 		Storage.reload();
 		//check
@@ -53,8 +52,8 @@ public class SorageTest {
 				return "TestKey";
 			}
 		};
-		Storage.getInstance().put(testKey, new Long(12345));
-		Storage.getInstance().put(testKey, new Long(67890));
+		Storage.getInstance().put(testKey, 12345L);
+		Storage.getInstance().put(testKey, 67890L);
 		//discard caching
 		Storage.reload();
 		//check
@@ -81,8 +80,8 @@ public class SorageTest {
 			}
 		};
 		
-		Storage.getInstance().put(testKey1, new Long(12345));
-		Storage.getInstance().put(testKey2, new Long(67890));
+		Storage.getInstance().put(testKey1, 12345L);
+		Storage.getInstance().put(testKey2, 67890L);
 		//discard caching
 		Storage.reload();
 		

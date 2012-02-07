@@ -15,14 +15,15 @@
  */
 package com.jetbrains.teamcity;
 
+import org.apache.log4j.Logger;
+
 import java.io.PrintStream;
 import java.util.HashMap;
-
-import org.apache.log4j.Logger;
+import java.util.Map;
 
 public class Debug {
 
-  private static HashMap<String, Logger> ourLoggers = new HashMap<String, Logger>();
+  private static Map<String, Logger> ourLoggers = new HashMap<String, Logger>();
 
   private boolean debugMode = false;
 

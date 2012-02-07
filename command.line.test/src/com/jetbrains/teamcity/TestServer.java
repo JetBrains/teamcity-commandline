@@ -1,21 +1,13 @@
 package com.jetbrains.teamcity;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.List;
-
-import jetbrains.buildServer.AddToQueueRequest;
-import jetbrains.buildServer.AddToQueueResult;
 import jetbrains.buildServer.BuildTypeData;
 import jetbrains.buildServer.BuildTypeDescriptor.CheckoutType;
 import jetbrains.buildServer.ProjectData;
-import jetbrains.buildServer.TeamServerSummaryData;
 import jetbrains.buildServer.messages.Status;
 import jetbrains.buildServer.vcs.VcsRoot;
-
 import org.junit.Test;
+
+import java.util.*;
 
 public class TestServer extends Server {
 
@@ -55,28 +47,11 @@ public class TestServer extends Server {
       super(false, id, project.getName(), project.getProjectId(), Collections.singletonList("<unknown>"), id, "<unknown>", CheckoutType.MANUAL, Status.UNKNOWN, null, false, roots);
       project.getBuildTypes().add(this);
     }
-
-  }
-
-  @Override
-  public AddToQueueResult addRemoteRunToQueue(ArrayList<AddToQueueRequest> batch, String myComments) throws ECommunicationException {
-    // TODO Auto-generated method stub
-    return super.addRemoteRunToQueue(batch, myComments);
   }
 
   @Override
   public void connect() throws ECommunicationException {
     // do nothing
-  }
-
-  @Override
-  public Collection<String> getApplicableConfigurations(Collection<String> urls) {
-    return super.getApplicableConfigurations(urls);
-  }
-
-  @Override
-  public synchronized BuildTypeData getConfiguration(String id) throws ECommunicationException {
-    return myConfigurations.get(id);
   }
 
   @Override
@@ -95,23 +70,12 @@ public class TestServer extends Server {
   }
 
   @Override
-  public TeamServerSummaryData getSummary() throws ECommunicationException {
-    // TODO Auto-generated method stub
-    return super.getSummary();
-  }
-
-  @Override
   public String getURL() {
     return "http://localhost";
   }
 
   @Override
   public void logon(String username, String password) throws ECommunicationException, EAuthorizationException {
-    // do nothing
-  }
-
-  @Override
-  public void logout() {
     // do nothing
   }
 
