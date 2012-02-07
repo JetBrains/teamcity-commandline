@@ -1,0 +1,21 @@
+<component name="libraryTable">
+  <library name="teamcity_deps">
+    <CLASSES>
+      <root url="jar://$PROJECT_DIR$/tmp.plugin.build.libs/xpp3_min-1.1.4c.jar!/" />
+      <root url="jar://$PROJECT_DIR$/tmp.plugin.build.libs/xstream-1.3.1.jar!/" />
+      <root url="jar://$PROJECT_DIR$/tmp.plugin.build.libs/xmlrpc-2.0.1.jar!/" />
+      <root url="jar://$PROJECT_DIR$/tmp.plugin.build.libs/server-api.jar!/" />
+      <root url="jar://$PROJECT_DIR$/tmp.plugin.build.libs/annotations.jar!/" />
+      <root url="jar://$PROJECT_DIR$/tmp.plugin.build.libs/commons-codec-1.3.jar!/" />
+      <root url="jar://$PROJECT_DIR$/tmp.plugin.build.libs/commons-cli-1.0.jar!/" />
+      <root url="jar://$PROJECT_DIR$/tmp.plugin.build.libs/commons-httpclient-3.1.jar!/" />
+      <root url="jar://$PROJECT_DIR$/tmp.plugin.build.libs/commons-io-1.3.2.jar!/" />
+      <root url="jar://$PROJECT_DIR$/tmp.plugin.build.libs/ide-common.jar!/" />
+      <root url="jar://$PROJECT_DIR$/tmp.plugin.build.libs/common-api.jar!/" />
+      <root url="jar://$PROJECT_DIR$/tmp.plugin.build.libs/log4j-1.2.12.jar!/" />
+      <root url="jar://$PROJECT_DIR$/tmp.plugin.build.libs/util.jar!/" />
+    </CLASSES>
+    <JAVADOC />
+    <SOURCES />
+  </library>
+</component>
