@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2011 JetBrains s.r.o.
+ * Copyright 2000-2012 JetBrains s.r.o.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,20 +15,13 @@
  */
 package com.jetbrains.teamcity.command;
 
+import com.jetbrains.teamcity.*;
+import com.jetbrains.teamcity.resources.TCAccess;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.text.MessageFormat;
-
 import javax.naming.directory.InvalidAttributesException;
-
 import jetbrains.buildServer.core.runtime.IProgressMonitor;
-
-import com.jetbrains.teamcity.EAuthorizationException;
-import com.jetbrains.teamcity.ECommunicationException;
-import com.jetbrains.teamcity.ERemoteError;
-import com.jetbrains.teamcity.Server;
-import com.jetbrains.teamcity.Util;
-import com.jetbrains.teamcity.resources.TCAccess;
 
 public class Login implements ICommand {
 

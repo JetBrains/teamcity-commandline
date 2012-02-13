@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2011 JetBrains s.r.o.
+ * Copyright 2000-2012 JetBrains s.r.o.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,6 +15,8 @@
  */
 package com.jetbrains.teamcity.resources;
 
+import com.jetbrains.teamcity.Debug;
+import com.jetbrains.teamcity.Storage;
 import java.io.Serializable;
 import java.net.MalformedURLException;
 import java.net.URL;
@@ -23,11 +25,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Map;
-
 import jetbrains.buildServer.serverSide.crypt.EncryptUtil;
-
-import com.jetbrains.teamcity.Debug;
-import com.jetbrains.teamcity.Storage;
 
 public class TCAccess {
 

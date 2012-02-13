@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2011 JetBrains s.r.o.
+ * Copyright 2000-2012 JetBrains s.r.o.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,13 +15,17 @@
  */
 package com.jetbrains.teamcity.command;
 
-import com.jetbrains.teamcity.*;
 import com.jetbrains.teamcity.Util.IFileFilter;
 import com.jetbrains.teamcity.resources.FileBasedMatcher;
 import com.jetbrains.teamcity.resources.ITCResource;
 import com.jetbrains.teamcity.resources.ITCResourceMatcher;
 import com.jetbrains.teamcity.resources.TCWorkspace;
-import jetbrains.buildServer.*;
+import java.io.*;
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
+import java.text.MessageFormat;
+import java.util.*;
+import javax.naming.directory.InvalidAttributesException;
 import jetbrains.buildServer.core.runtime.IProgressMonitor;
 import jetbrains.buildServer.core.runtime.IProgressStatus;
 import jetbrains.buildServer.core.runtime.ProgressStatus;
@@ -32,16 +36,8 @@ import jetbrains.buildServer.vcs.patches.LowLevelPatchBuilder;
 import jetbrains.buildServer.vcs.patches.LowLevelPatchBuilderImpl;
 import jetbrains.buildServer.vcs.patches.PatchBuilderImpl;
 import org.apache.commons.codec.binary.Base64;
-import org.apache.commons.httpclient.*;
 import org.apache.commons.httpclient.methods.InputStreamRequestEntity;
 import org.apache.commons.httpclient.methods.PostMethod;
-
-import javax.naming.directory.InvalidAttributesException;
-import java.io.*;
-import java.security.MessageDigest;
-import java.security.NoSuchAlgorithmException;
-import java.text.MessageFormat;
-import java.util.*;
 
 public class RemoteRun implements ICommand {
 

@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2011 JetBrains s.r.o.
+ * Copyright 2000-2012 JetBrains s.r.o.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,19 +15,13 @@
  */
 package com.jetbrains.teamcity.resources;
 
+import com.jetbrains.teamcity.Util;
 import java.io.File;
 import java.io.IOException;
 import java.text.MessageFormat;
-import java.util.Comparator;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.TreeMap;
-
+import java.util.*;
 import jetbrains.buildServer.util.FileUtil;
 import jetbrains.buildServer.util.StringUtil;
-
-import com.jetbrains.teamcity.Util;
 
 public class FileBasedMatcher implements ITCResourceMatcher {
 
