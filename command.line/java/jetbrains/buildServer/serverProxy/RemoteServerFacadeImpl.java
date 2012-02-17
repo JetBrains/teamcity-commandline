@@ -20,10 +20,12 @@ import com.jetbrains.teamcity.ECommunicationException;
 import com.jetbrains.teamcity.XStreamUtil;
 import com.jetbrains.teamcity.command.CommandRunner;
 import com.jetbrains.teamcity.command.Messages;
-import java.util.*;
+import jetbrains.buildServer.*;
 import jetbrains.buildServer.version.ServerVersionHolder;
 import jetbrains.buildServer.xmlrpc.XmlRpcTarget;
 import org.jetbrains.annotations.NotNull;
+
+import java.util.*;
 
 public class RemoteServerFacadeImpl extends RemoteBuildServerImpl implements RemoteServerFacade {
   private SessionXmlRpcTarget mySession;

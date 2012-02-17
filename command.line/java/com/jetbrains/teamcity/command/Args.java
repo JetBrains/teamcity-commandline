@@ -15,11 +15,12 @@
  */
 package com.jetbrains.teamcity.command;
 
-import com.jetbrains.teamcity.Util;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.regex.Pattern;
+
+import com.jetbrains.teamcity.Util;
 
 public class Args {
 

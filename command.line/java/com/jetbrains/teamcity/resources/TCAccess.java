@@ -15,8 +15,6 @@
  */
 package com.jetbrains.teamcity.resources;
 
-import com.jetbrains.teamcity.Debug;
-import com.jetbrains.teamcity.Storage;
 import java.io.Serializable;
 import java.net.MalformedURLException;
 import java.net.URL;
@@ -25,7 +23,11 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Map;
+
 import jetbrains.buildServer.serverSide.crypt.EncryptUtil;
+
+import com.jetbrains.teamcity.Debug;
+import com.jetbrains.teamcity.Storage;
 
 public class TCAccess {
 

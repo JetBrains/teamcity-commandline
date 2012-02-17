@@ -15,14 +15,17 @@
  */
 package com.jetbrains.teamcity.command;
 
+import java.text.MessageFormat;
+
+import javax.naming.directory.InvalidAttributesException;
+
+import jetbrains.buildServer.core.runtime.IProgressMonitor;
+
 import com.jetbrains.teamcity.EAuthorizationException;
 import com.jetbrains.teamcity.ECommunicationException;
 import com.jetbrains.teamcity.ERemoteError;
 import com.jetbrains.teamcity.Server;
 import com.jetbrains.teamcity.resources.TCAccess;
-import java.text.MessageFormat;
-import javax.naming.directory.InvalidAttributesException;
-import jetbrains.buildServer.core.runtime.IProgressMonitor;
 
 public class Logout implements ICommand {
 

@@ -15,10 +15,7 @@
  */
 package com.jetbrains.teamcity;
 
-import java.net.URL;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.List;
+import jetbrains.buildServer.*;
 import jetbrains.buildServer.serverProxy.RemoteServerFacade;
 import jetbrains.buildServer.serverProxy.RemoteServerFacadeImpl;
 import jetbrains.buildServer.serverProxy.SessionXmlRpcTarget;
@@ -28,6 +25,11 @@ import jetbrains.buildServer.serverSide.auth.AuthenticationFailedException;
 import jetbrains.buildServer.xmlrpc.RemoteCallException;
 import jetbrains.buildServer.xmlrpc.XmlRpcTarget.Cancelable;
 import org.jetbrains.annotations.NotNull;
+
+import java.net.URL;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.List;
 
 public class Server {
 

@@ -15,10 +15,11 @@
  */
 package com.jetbrains.teamcity;
 
+import org.apache.log4j.Logger;
+
 import java.io.PrintStream;
 import java.util.HashMap;
 import java.util.Map;
-import org.apache.log4j.Logger;
 
 public class Debug {
 

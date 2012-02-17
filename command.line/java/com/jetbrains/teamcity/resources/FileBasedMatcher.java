@@ -15,13 +15,19 @@
  */
 package com.jetbrains.teamcity.resources;
 
-import com.jetbrains.teamcity.Util;
 import java.io.File;
 import java.io.IOException;
 import java.text.MessageFormat;
-import java.util.*;
+import java.util.Comparator;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.TreeMap;
+
 import jetbrains.buildServer.util.FileUtil;
 import jetbrains.buildServer.util.StringUtil;
+
+import com.jetbrains.teamcity.Util;
 
 public class FileBasedMatcher implements ITCResourceMatcher {
 

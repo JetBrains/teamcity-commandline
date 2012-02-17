@@ -15,8 +15,16 @@
  */
 package com.jetbrains.teamcity.command;
 
+import com.jetbrains.teamcity.*;
 import com.jetbrains.teamcity.resources.ICredential;
 import com.jetbrains.teamcity.resources.TCAccess;
+import jetbrains.buildServer.IncompatiblePluginError;
+import jetbrains.buildServer.core.runtime.IProgressMonitor;
+import jetbrains.buildServer.core.runtime.IProgressStatus;
+import jetbrains.buildServer.core.runtime.ProgressStatus;
+import jetbrains.buildServer.core.runtime.RuntimeUtil;
+import jetbrains.buildServer.serverSide.crypt.EncryptUtil;
+
 import java.net.MalformedURLException;
 import java.net.URISyntaxException;
 import java.net.URL;
@@ -26,12 +34,6 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
-import jetbrains.buildServer.IncompatiblePluginError;
-import jetbrains.buildServer.core.runtime.IProgressMonitor;
-import jetbrains.buildServer.core.runtime.IProgressStatus;
-import jetbrains.buildServer.core.runtime.ProgressStatus;
-import jetbrains.buildServer.core.runtime.RuntimeUtil;
-import jetbrains.buildServer.serverSide.crypt.EncryptUtil;
 
 public class CommandRunner {
 
