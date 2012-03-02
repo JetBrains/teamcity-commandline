@@ -18,11 +18,13 @@
 
 <jsp:attribute name="head_include">
 
-  <style type="text/css">
-    @import "${cmdPathPrefix}commandLine.css";
-  </style>
-  <script type="text/javascript" src="${cmdPathPrefix}commandLine.js"></script>
+  <bs:linkCSS>
+    ${cmdPathPrefix}commandLine.css
+  </bs:linkCSS>
 
+  <bs:linkScript>
+    ${cmdPathPrefix}commandLine.js
+  </bs:linkScript>
 
   <!-- ===== JS files, provided by plugins: ==== -->
 
