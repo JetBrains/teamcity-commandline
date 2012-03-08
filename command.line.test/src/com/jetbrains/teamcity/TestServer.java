@@ -26,25 +26,25 @@ public class TestServer extends Server {
     final TestProjectData prj0 = new TestProjectData(TC_PRJ_0);
     myProjects.put(prj0.getProjectId(), prj0);
     // fill configurations
-    final TestBuildTypeData cfg0 = new TestBuildTypeData(TC_CONFIG_NO_ROOTS, prj0, Collections.<VcsRoot> emptyList());
+    final TestBuildTypeData cfg0 = new TestBuildTypeData(TC_CONFIG_NO_ROOTS, prj0);
     myConfigurations.put(cfg0.getId(), cfg0);
-    final TestBuildTypeData cfg1 = new TestBuildTypeData(TC_CONFIG_SINGLE_ROOT, prj0, Collections.<VcsRoot> emptyList());
+    final TestBuildTypeData cfg1 = new TestBuildTypeData(TC_CONFIG_SINGLE_ROOT, prj0);
     myConfigurations.put(cfg1.getId(), cfg1);
-    final TestBuildTypeData cfg2 = new TestBuildTypeData(TC_CONFIG_MULTIPLE_ROOT, prj0, Collections.<VcsRoot> emptyList());
+    final TestBuildTypeData cfg2 = new TestBuildTypeData(TC_CONFIG_MULTIPLE_ROOT, prj0);
     myConfigurations.put(cfg2.getId(), cfg2);
   }
 
   public static class TestProjectData extends ProjectData {
     public TestProjectData(String id) {
-      super(id, id, "<unknown>", Status.UNKNOWN, new ArrayList<BuildTypeData>(), new ArrayList<VcsRoot>());
+      super(id, id, "<unknown>", Status.UNKNOWN, new ArrayList<BuildTypeData>());
     }
 
   }
 
   public static class TestBuildTypeData extends BuildTypeData {
 
-    public TestBuildTypeData(String id, ProjectData project, List<VcsRoot> roots) {
-      super(false, id, project.getName(), project.getProjectId(), Collections.singletonList("<unknown>"), id, "<unknown>", CheckoutType.MANUAL, Status.UNKNOWN, null, false, roots);
+    public TestBuildTypeData(String id, ProjectData project) {
+      super(false, id, project.getName(), project.getProjectId(), Collections.singletonList("<unknown>"), id, "<unknown>", CheckoutType.MANUAL, Status.UNKNOWN, null, false);
       project.getBuildTypes().add(this);
     }
   }
