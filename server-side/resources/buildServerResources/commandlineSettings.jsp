@@ -11,7 +11,7 @@
   %><%@ taglib prefix="afn" uri="/WEB-INF/functions/authz"
   %><%@ taglib prefix="graph" tagdir="/WEB-INF/tags/graph" %>
 
-<c:set var="title" value="Command Line Tool Settings" scope="request"/>
+<c:set var="pageTitle" value="Command Line Tool Settings" scope="request"/>
 <c:set var="loginLine" >java -jar c:\tcc.jar login --host <%= WebUtil.getRootUrl(request)%> --user <%= SessionUser.getUser(request).getUsername()%></c:set>
 <c:set var="remoteRunLine" >java -jar c:\tcc.jar run --host <%= WebUtil.getRootUrl(request)%> -m "remote run message" -c <span id="btId">btXXX</span> &lt;list of modified files&gt;</c:set>
 <bs:page>
@@ -36,7 +36,7 @@
         url: "profile.html",
         selected:false
       },
-      { title: "${title}",
+      { title: "${pageTitle}",
         url: "",
         selected:true
       }
