@@ -40,7 +40,7 @@
         url: "",
         selected:true
       }
-      ];
+    ];
 
     <jsp:useBean id="buildTypes" type="java.util.List<jetbrains.buildServer.serverSide.SBuildType>" scope="request"/>
     BS.BuildTypes = [
