@@ -15,7 +15,6 @@ import org.jetbrains.annotations.NotNull;
 * To change this template use File | Settings | File Templates.
 */
 class PathPrefixesSupport {
-
   public static MockVcsSupport registerIncludeRuleVcsMappingSupport(final List<VcsClientMapping> prefixes, VcsManagerEx vcsManager) {
     final MockVcsSupport support = new MockVcsSupport("mock") {
       @Override
@@ -39,31 +38,29 @@ class PathPrefixesSupport {
   }
 
   private static class IncludeRuleBasedMock extends MockPersonalSupport implements IncludeRuleBasedMappingProvider {
-    private Collection<VcsClientMapping> prefixes;
+    private final Collection<VcsClientMapping> myPrefixes;
 
     private IncludeRuleBasedMock(final Collection<VcsClientMapping> prefixes) {
-      this.prefixes = prefixes;
+      this.myPrefixes = prefixes;
     }
 
     public Collection<VcsClientMapping> getClientMapping(@NotNull final VcsRoot vcsRoot,
                                                                      @NotNull final IncludeRule includeRule)
       throws VcsException {
-      return prefixes;
+      return myPrefixes;
     }
 
   }
 
   private static class VcsRootBasedMock extends MockPersonalSupport implements VcsRootBasedMappingProvider {
-    private Collection<VcsClientMapping> prefixes;
+    private final Collection<VcsClientMapping> myPrefixes;
 
     private VcsRootBasedMock(final Collection<VcsClientMapping> prefixes) {
-      this.prefixes = prefixes;
+      this.myPrefixes = prefixes;
     }
 
     public Collection<VcsClientMapping> getClientMapping(@NotNull final VcsRoot vcsRoot) throws VcsException {
-      return prefixes;
+      return myPrefixes;
     }
-
   }
-
 }

@@ -2,7 +2,6 @@ package jetbrains.buildServer.commandline;
 
 import java.util.ArrayList;
 import java.util.List;
-import jetbrains.buildServer.serverSide.impl.BaseServerTestCase;
 import jetbrains.buildServer.vcs.CheckoutRules;
 import jetbrains.buildServer.vcs.VcsClientMapping;
 import jetbrains.buildServer.vcs.impl.SVcsRootImpl;
@@ -11,7 +10,6 @@ import org.testng.annotations.Test;
 
 @Test
 public class MappingGeneratorVcsRootTest extends BaseMappingGeneratorTest {
-
   public void generate_mapping_with_include_rule_1() throws Exception {
     doTest(".=>svnrepo", new String[] {
       "svnrepo", "mock://PATH",
@@ -50,7 +48,6 @@ public class MappingGeneratorVcsRootTest extends BaseMappingGeneratorTest {
   }
 
   private void doTest(final String checkoutRule, final String[] expectations) {
-
     myPathPrefixes.add(new VcsClientMapping("PATH", ""));
     myPathPrefixes.add(new VcsClientMapping("AAAPATH", "aaa"));
 
@@ -68,7 +65,6 @@ public class MappingGeneratorVcsRootTest extends BaseMappingGeneratorTest {
   }
 
   public void generate_mapping_with_2_include_rules() throws Exception {
-
     final SVcsRootImpl vcsRoot = vcsRoot();
     myBuildType.setCheckoutRules(vcsRoot, CheckoutRules.createOn(".=>svnrepo\na=>b"));
 
@@ -88,5 +84,4 @@ public class MappingGeneratorVcsRootTest extends BaseMappingGeneratorTest {
     myPathPrefixes = new ArrayList<VcsClientMapping>();
     PathPrefixesSupport.registerVcsRootMappingSupport(myPathPrefixes, myServer.getVcsManager());
   }
-
 }

@@ -9,8 +9,6 @@ import jetbrains.buildServer.serverSide.impl.BuildTypeImpl;
 import jetbrains.buildServer.users.SUser;
 import jetbrains.buildServer.vcs.VcsClientMapping;
 import jetbrains.buildServer.web.openapi.PluginDescriptor;
-import jetbrains.buildServer.web.openapi.WebControllerManager;
-import jetbrains.buildServer.web.openapi.WebResourcesManager;
 import org.jmock.Expectations;
 import org.jmock.Mockery;
 import org.testng.annotations.Test;
@@ -21,9 +19,8 @@ import org.testng.annotations.Test;
 @Test
 public class CommandLineControllerTest extends BaseControllerTestCase {
   @Override
-  protected BaseController createController(final WebControllerManager manager, final WebResourcesManager resourcesManager) {
-
-    return new CommandLineController(mockPluginDescriptor(), manager, myFixture.getProjectManager(), 
+  protected BaseController createController() {
+    return new CommandLineController(mockPluginDescriptor(), myWebManager, myFixture.getProjectManager(),
                                      myServer.getVcsManager(), myFixture.getSecurityContext());
   }
 
@@ -48,7 +45,6 @@ public class CommandLineControllerTest extends BaseControllerTestCase {
 
 
   public void no_right_to_fill_buildTypes_with_vcs_roots() throws Exception {
-
     final SUser user = createUser("kir");
     makeLoggedIn(user);
 
@@ -62,7 +58,6 @@ public class CommandLineControllerTest extends BaseControllerTestCase {
   }
 
   public void should_fill_buildTypes_with_vcs_roots() throws Exception {
-
     final SUser user = createUser("kir");
     makeLoggedIn(user);
 

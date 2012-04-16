@@ -50,6 +50,7 @@ public class GetBuildTypeMappingActionTest extends BaseWebTestCase {
 
   }
 
+  @Override
   @BeforeMethod
   protected void setUp() throws Exception {
     super.setUp();

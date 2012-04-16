@@ -1,17 +1,15 @@
 package jetbrains.buildServer.commandline;
 
 import java.util.List;
-import jetbrains.buildServer.serverSide.impl.BaseServerTestCase;
+import jetbrains.buildServer.vcs.CheckoutRules;
+import jetbrains.buildServer.vcs.VcsClientMapping;
 import jetbrains.buildServer.vcs.impl.SVcsRootImpl;
-import jetbrains.buildServer.vcs.*;
-import org.testng.annotations.Test;
 import org.testng.annotations.BeforeMethod;
+import org.testng.annotations.Test;
 
 @Test
 public class MappingGeneratorIncludeRuleTest extends BaseMappingGeneratorTest {
-
   public void generate_mapping_with_target_checkout_rule() throws Exception {
-
     final SVcsRootImpl vcsRoot = vcsRoot();
     myBuildType.setCheckoutRules(vcsRoot, CheckoutRules.createOn("+:.=>svnrepo"));
 
@@ -24,7 +22,6 @@ public class MappingGeneratorIncludeRuleTest extends BaseMappingGeneratorTest {
   }
 
   public void generate_mapping_with_2_include_rules() throws Exception {
-
     final SVcsRootImpl vcsRoot = vcsRoot();
     myBuildType.setCheckoutRules(vcsRoot, CheckoutRules.createOn("+:.=>svnrepo\ndddPath"));
 
@@ -46,5 +43,4 @@ public class MappingGeneratorIncludeRuleTest extends BaseMappingGeneratorTest {
     super.setUp();
     PathPrefixesSupport.registerIncludeRuleVcsMappingSupport(myPathPrefixes, myServer.getVcsManager());
   }
-
 }
