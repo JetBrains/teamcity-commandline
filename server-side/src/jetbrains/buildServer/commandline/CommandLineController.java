@@ -52,7 +52,7 @@ public class CommandLineController extends BaseController {
   }
 
   @Override
-  protected ModelAndView doHandle(final HttpServletRequest request, final HttpServletResponse response) throws Exception {
+  protected ModelAndView doHandle(@NotNull final HttpServletRequest request, @NotNull final HttpServletResponse response) throws Exception {
     final HashMap model = new HashMap();
     addBuildTypes(model);
     CommandLineSection.addPathPrefix(model, request, myPluginDescriptor);
