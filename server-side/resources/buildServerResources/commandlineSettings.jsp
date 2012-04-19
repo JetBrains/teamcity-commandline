@@ -29,8 +29,6 @@
   <!-- ===== JS files, provided by plugins: ==== -->
 
   <script type="text/javascript">
-    <!--
-
     BS.Navigation.items = [
       { title: "My Settings & Tools",
         url: "profile.html",
@@ -48,7 +46,6 @@
       {id: "${buildType.id}", fullName: '<bs:escapeForJs text="${buildType.fullName}"/>'},</c:forEach>
       {}
     ];
-    //-->
   </script>
 </jsp:attribute>
 
