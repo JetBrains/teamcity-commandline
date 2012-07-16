@@ -67,7 +67,7 @@
     </select>
     &nbsp;&nbsp;
     <button id="addMapping" disabled="true" title="Add VCS mapping for selected build configuration">Add</button>
-    <forms:saving id="updateIndicator" className="progressRingInline" savingTitle="Adding VCS mapping for selected configuration, please wait"/>
+    <forms:saving id="updateIndicator" style="float: none;" savingTitle="Adding VCS mapping for selected configuration, please wait"/>
   </div>
 
   <div class="hiddenBlock">
