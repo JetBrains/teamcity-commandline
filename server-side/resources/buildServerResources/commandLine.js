@@ -133,34 +133,39 @@ BS.CommandLine = {
 
   updatePreview: function() {
     var left2Tr = {};
+    var results = jQuery('#mappingTable').find('tr');
     $('resultsConfig').value = '';
-    $$('#mappingTable tr').each(function(trElement) {
+    results.each(function() {
+      var trElement = $(this);
       var inputs = trElement.getElementsByTagName('input');
       if (!inputs || inputs.length != 2) return;
-      var from = inputs[0].value; 
-      var to = inputs[1].value;
+
+      var fromInput = inputs[0],
+          toInput = inputs[1];
+
+      var from = fromInput.value;
+      var to = toInput.value;
 
       if (left2Tr[from]) {
         trElement.down("div.errorDup").show();
-        var dublicated = $(left2Tr[from].getElementsByTagName('input')[0]);
-        dublicated.addClassName("duplicated");
-        dublicated.title = "This path is dublicated below";
+        var duplicated = $(left2Tr[from].getElementsByTagName('input')[0]);
+        duplicated.addClassName("duplicated");
+        duplicated.title = "This path is duplicated below";
 
-        $(inputs[0]).addClassName("duplicate");
+        fromInput.addClassName("duplicate");
       }
       else {
         left2Tr[from] = trElement;
-        $(inputs[0]).removeClassName("duplicated");
-        $(inputs[0]).removeClassName("duplicate");
-        $(inputs[0]).title = "";
+        fromInput.removeClassName("duplicated");
+        fromInput.removeClassName("duplicate");
+        fromInput.title = "";
         trElement.down("div.errorDup").hide();
 
         $('resultsConfig').value += from + "=" + to + "\r\n";
       }
+    });
 
-    }, this);
-
-    if ($$('#mappingTable tr').size() == 1) {
+    if (results.length == 1) {
       this.hideMapping();
     }
   },
