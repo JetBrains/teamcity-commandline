@@ -9,7 +9,6 @@
     margin: 0;
   }
 </style>
-<div class="divider"></div>
 <p class="toolTitle" style="background: url(${cmdPathPrefix}TC_commandLineTool.gif) no-repeat transparent 0 4px;">Command Line Remote Run</p>
 <div class=links>
   <a showdiscardchangesmessage="false" href="commandline.html">configure</a>
