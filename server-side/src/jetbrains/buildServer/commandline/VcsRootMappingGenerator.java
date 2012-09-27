@@ -2,7 +2,6 @@ package jetbrains.buildServer.commandline;
 
 import java.util.*;
 import jetbrains.buildServer.serverSide.impl.personal.PersonalPatchUtil;
-import jetbrains.buildServer.util.FileUtil;
 import jetbrains.buildServer.vcs.*;
 
 /**
