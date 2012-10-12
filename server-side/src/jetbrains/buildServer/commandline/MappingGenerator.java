@@ -1,11 +1,14 @@
 package jetbrains.buildServer.commandline;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
 import jetbrains.buildServer.log.Loggers;
 import jetbrains.buildServer.serverSide.SBuildType;
 import jetbrains.buildServer.serverSide.impl.personal.PersonalPatchUtil;
 import jetbrains.buildServer.util.StringUtil;
 import jetbrains.buildServer.vcs.*;
+import org.jetbrains.annotations.Nullable;
 
 public class MappingGenerator {
   private final VcsManager myVcsManager;
@@ -44,9 +47,11 @@ public class MappingGenerator {
     }
   }
 
+  @Nullable
   private VcsPersonalSupport getPersonalSupport() {
     final String vcsName = (myCurrentEntry.getVcsRoot()).getVcsName();
-    return myVcsManager.findVcsPersonalSupportByName(vcsName);
+    final VcsSupportContext ctx = myVcsManager.findVcsContextByName(vcsName);
+    return ctx != null ? ctx.getPersonalSupport() : null;
   }
 
   private void obtainMappingUsing(final VcsClientMappingProvider personalSupport) throws VcsException {
