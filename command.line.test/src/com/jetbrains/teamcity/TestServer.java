@@ -2,9 +2,10 @@ package com.jetbrains.teamcity;
 
 import jetbrains.buildServer.BuildTypeData;
 import jetbrains.buildServer.BuildTypeDescriptor.CheckoutType;
+import jetbrains.buildServer.BuildTypeStatusDescriptorData;
 import jetbrains.buildServer.ProjectData;
+import jetbrains.buildServer.StatusDescriptor;
 import jetbrains.buildServer.messages.Status;
-import jetbrains.buildServer.vcs.VcsRoot;
 import org.junit.Test;
 
 import java.util.*;
@@ -44,8 +45,12 @@ public class TestServer extends Server {
   public static class TestBuildTypeData extends BuildTypeData {
 
     public TestBuildTypeData(String id, ProjectData project) {
-      super(false, id, null, project.getName(), project.getProjectId(), Collections.singletonList("<unknown>"), id, "<unknown>", CheckoutType.MANUAL, Status.UNKNOWN, null, false);
+      super(false, id, null, project.getName(), project.getProjectId(), Collections.singletonList("<unknown>"), id, "<unknown>", CheckoutType.MANUAL, createStatusDescriptor(), null, false);
       project.getBuildTypes().add(this);
+    }
+
+    private static BuildTypeStatusDescriptorData createStatusDescriptor() {
+      return new BuildTypeStatusDescriptorData(new StatusDescriptor(Status.UNKNOWN, ""), null);
     }
   }
 
