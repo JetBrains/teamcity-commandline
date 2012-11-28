@@ -8,7 +8,6 @@ import jetbrains.buildServer.serverSide.SBuildType;
 import jetbrains.buildServer.serverSide.impl.personal.PersonalPatchUtil;
 import jetbrains.buildServer.util.StringUtil;
 import jetbrains.buildServer.vcs.*;
-import org.jetbrains.annotations.Nullable;
 
 public class MappingGenerator {
   private final VcsManager myVcsManager;
@@ -36,22 +35,18 @@ public class MappingGenerator {
 
   private void generateMappingForEntry() {
     try {
-      final VcsPersonalSupport personalSupport = getPersonalSupport();
+      final String vcsName = (myCurrentEntry.getVcsRoot()).getVcsName();
+      final VcsSupportContext ctx = myVcsManager.findVcsContextByName(vcsName);
 
-      if (personalSupport instanceof VcsClientMappingProvider) {
-        obtainMappingUsing((VcsClientMappingProvider)personalSupport);
+      VcsClientMappingProvider clientMappingProvider = ctx == null ? null : ctx.getVcsExtension(VcsClientMappingProvider.class);
+
+      if (clientMappingProvider != null) {
+        obtainMappingUsing(clientMappingProvider);
       }
     } catch (VcsException e) {
       Loggers.SERVER.warn(e);
       // TODO
     }
-  }
-
-  @Nullable
-  private VcsPersonalSupport getPersonalSupport() {
-    final String vcsName = (myCurrentEntry.getVcsRoot()).getVcsName();
-    final VcsSupportContext ctx = myVcsManager.findVcsContextByName(vcsName);
-    return ctx != null ? ctx.getPersonalSupport() : null;
   }
 
   private void obtainMappingUsing(final VcsClientMappingProvider personalSupport) throws VcsException {

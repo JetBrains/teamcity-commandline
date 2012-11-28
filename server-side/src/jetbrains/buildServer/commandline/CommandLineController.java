@@ -11,7 +11,10 @@ import jetbrains.buildServer.serverSide.auth.Permission;
 import jetbrains.buildServer.serverSide.auth.SecurityContext;
 import jetbrains.buildServer.util.CollectionsUtil;
 import jetbrains.buildServer.util.filters.Filter;
-import jetbrains.buildServer.vcs.*;
+import jetbrains.buildServer.vcs.SVcsRoot;
+import jetbrains.buildServer.vcs.VcsClientMappingProvider;
+import jetbrains.buildServer.vcs.VcsManager;
+import jetbrains.buildServer.vcs.VcsSupportContext;
 import jetbrains.buildServer.web.openapi.PluginDescriptor;
 import jetbrains.buildServer.web.openapi.WebControllerManager;
 import org.jetbrains.annotations.NonNls;
@@ -81,10 +84,11 @@ public class CommandLineController extends BaseController {
 
     for (SVcsRoot root : roots) {
       final VcsSupportContext ctx = myVcsManager.findVcsContextByName(root.getVcsName());
-      if (ctx == null) continue;
-      final VcsPersonalSupport personalSupport = ctx.getPersonalSupport();
-      if (personalSupport instanceof VcsClientMappingProvider) {
-        return true;
+      if (ctx != null) {
+        final VcsClientMappingProvider clientMappingProvider = ctx.getVcsExtension(VcsClientMappingProvider.class);
+        if (clientMappingProvider != null) {
+          return true;
+        }
       }
     }
     return false;
