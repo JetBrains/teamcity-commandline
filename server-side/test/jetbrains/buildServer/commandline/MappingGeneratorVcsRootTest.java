@@ -73,8 +73,8 @@ public class MappingGeneratorVcsRootTest extends BaseMappingGeneratorTest {
     final List<MappingElement> mapping = generateMappingForBuildType();
     assertEquals(mapping.toString(), 2, mapping.size());
 
-    verifyMapping(mapping.get(0), "svnrepo", "mock://UID1|path", vcsRoot.getDescription() + "; .=>svnrepo");
-    verifyMapping(mapping.get(1), "b", "mock://UID1|path/a", vcsRoot.getDescription() + "; a=>b");
+    verifyMapping(mapping.get(0), "b", "mock://UID1|path/a", vcsRoot.getDescription() + "; a=>b");
+    verifyMapping(mapping.get(1), "svnrepo", "mock://UID1|path", vcsRoot.getDescription() + "; .=>svnrepo");
   }
 
   @BeforeMethod

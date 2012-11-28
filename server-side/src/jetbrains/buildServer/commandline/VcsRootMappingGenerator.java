@@ -25,6 +25,7 @@ class VcsRootMappingGenerator {
 
     final List<VcsClientMapping> vcsClientMappings = new ArrayList<VcsClientMapping>(myMappingProvider.getClientMapping(myVcsRoot));
     Collections.sort(vcsClientMappings);
+    Collections.reverse(vcsClientMappings);
 
     for (IncludeRule includeRule : myCurrentEntry.getCheckoutRules().getIncludeRules()) {
 
@@ -43,7 +44,6 @@ class VcsRootMappingGenerator {
       }
 
     }
-    Collections.reverse(myMappings);
     return myMappings;
   }
 
