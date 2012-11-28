@@ -31,10 +31,10 @@ public class MappingGeneratorIncludeRuleTest extends BaseMappingGeneratorTest {
     final List<MappingElement> mapping = generateMappingForBuildType();
     assertEquals(mapping.toString(), 4, mapping.size());
 
-    verifyMapping(mapping.get(0), ".", "mock://UID|some/path", vcsRoot.getDescription() + "; dddPath=>dddPath");
-    verifyMapping(mapping.get(1), "subpathMapping", "mock://UID|some/path/subpath", vcsRoot.getDescription() + "; dddPath=>dddPath");
-    verifyMapping(mapping.get(2), ".", "mock://UID|some/path", vcsRoot.getDescription() + "; .=>svnrepo");
-    verifyMapping(mapping.get(3), "subpathMapping", "mock://UID|some/path/subpath", vcsRoot.getDescription()+ "; .=>svnrepo");
+    verifyMapping(mapping.get(0), "subpathMapping", "mock://UID|some/path/subpath", vcsRoot.getDescription() + "; dddPath=>dddPath");
+    verifyMapping(mapping.get(1), ".", "mock://UID|some/path", vcsRoot.getDescription() + "; dddPath=>dddPath");
+    verifyMapping(mapping.get(2), "subpathMapping", "mock://UID|some/path/subpath", vcsRoot.getDescription()+ "; .=>svnrepo");
+    verifyMapping(mapping.get(3), ".", "mock://UID|some/path", vcsRoot.getDescription() + "; .=>svnrepo");
   }
 
   @BeforeMethod

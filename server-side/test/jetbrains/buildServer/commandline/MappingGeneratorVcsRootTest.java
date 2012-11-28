@@ -12,8 +12,8 @@ import org.testng.annotations.Test;
 public class MappingGeneratorVcsRootTest extends BaseMappingGeneratorTest {
   public void generate_mapping_with_include_rule_1() throws Exception {
     doTest(".=>svnrepo", new String[] {
-      "svnrepo", "mock://PATH",
       "svnrepo/aaa", "mock://AAAPATH",
+      "svnrepo", "mock://PATH",
     });
   }
 

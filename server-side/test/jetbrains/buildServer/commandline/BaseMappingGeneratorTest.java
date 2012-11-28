@@ -5,7 +5,8 @@ import java.util.List;
 import jetbrains.buildServer.serverSide.impl.BaseServerTestCase;
 import jetbrains.buildServer.vcs.VcsClientMapping;
 import jetbrains.buildServer.vcs.impl.SVcsRootImpl;
-import org.testng.annotations.*;
+import org.testng.annotations.BeforeMethod;
+import org.testng.annotations.Test;
 
 /**
  * @author kir
@@ -75,8 +76,8 @@ public abstract class BaseMappingGeneratorTest extends BaseServerTestCase {
     final List<MappingElement> mapping = generateMappingForBuildType();
     assertEquals(mapping.toString(), 2, mapping.size());
 
-    verifyMapping(mapping.get(0), ".", "mock://UID|some/path", vcsRoot.getDescription());
-    verifyMapping(mapping.get(1), "path3", "mock://UID|some/path/subpath", vcsRoot.getDescription());
+    verifyMapping(mapping.get(0), "path3", "mock://UID|some/path/subpath", vcsRoot.getDescription());
+    verifyMapping(mapping.get(1), ".", "mock://UID|some/path", vcsRoot.getDescription());
   }
 
   protected void verifySimpleMapping(final MappingElement actual, final SVcsRootImpl vcsRoot) {
