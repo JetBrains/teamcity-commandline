@@ -45,12 +45,12 @@ public class TestServer extends Server {
   public static class TestBuildTypeData extends BuildTypeData {
 
     public TestBuildTypeData(String id, ProjectData project) {
-      super(false, id, null, project.getName(), project.getProjectId(), Collections.singletonList("<unknown>"), id, "<unknown>", CheckoutType.MANUAL, createStatusDescriptor(), null, false);
+      super(false, id, null, project.getName(), project.getProjectId(), Collections.singletonList("<unknown>"), id, "<unknown>", CheckoutType.MANUAL, createStatusDescriptor(), null, false, false);
       project.getBuildTypes().add(this);
     }
 
     private static BuildTypeStatusDescriptorData createStatusDescriptor() {
-      return new BuildTypeStatusDescriptorData(new StatusDescriptor(Status.UNKNOWN, ""), null);
+      return new BuildTypeStatusDescriptorData(new StatusDescriptor(Status.UNKNOWN, ""), null, null);
     }
   }
 
