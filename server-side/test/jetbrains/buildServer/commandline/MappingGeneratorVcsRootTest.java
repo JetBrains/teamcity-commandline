@@ -56,7 +56,7 @@ public class MappingGeneratorVcsRootTest extends BaseMappingGeneratorTest {
 
     final List<MappingElement> mapping = generateMappingForBuildType();
 
-    assertEquals(expectations.length / 2, mapping.size());
+    assertEquals(mapping.toString(), expectations.length / 2, mapping.size());
 
     verifyMapping(mapping.get(0), expectations[0], expectations[1], vcsRoot.getDescription() + "; " + checkoutRule);
     if (expectations.length > 2) {
