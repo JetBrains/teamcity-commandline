@@ -65,7 +65,7 @@ public class CommandLineControllerTest extends BaseControllerTestCase {
 
     final BuildTypeImpl goodBuildType = addBuildTypeWithVcsMapping();
 
-    addRole2LoggedInUser(RoleScope.projectScope(goodBuildType.getProjectId()), getProjectDevRole());
+    addRole2LoggedInUser(RoleScope.projectScope(goodBuildType.getProjectInternalId()), getProjectDevRole());
 
     processRequest();
 
