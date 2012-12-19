@@ -1,5 +1,9 @@
 package com.jetbrains.teamcity;
 
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.HashMap;
 import jetbrains.buildServer.BuildTypeData;
 import jetbrains.buildServer.BuildTypeDescriptor.CheckoutType;
 import jetbrains.buildServer.BuildTypeStatusDescriptorData;
@@ -7,8 +11,6 @@ import jetbrains.buildServer.ProjectData;
 import jetbrains.buildServer.StatusDescriptor;
 import jetbrains.buildServer.messages.Status;
 import org.junit.Test;
-
-import java.util.*;
 
 public class TestServer extends Server {
 
@@ -37,7 +39,7 @@ public class TestServer extends Server {
 
   public static class TestProjectData extends ProjectData {
     public TestProjectData(String id) {
-      super(id, id, "<unknown>", Status.UNKNOWN, new ArrayList<BuildTypeData>());
+      super(id, id, id, "<unknown>", Status.UNKNOWN, new ArrayList<BuildTypeData>());
     }
 
   }
