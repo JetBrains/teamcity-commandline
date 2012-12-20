@@ -76,7 +76,7 @@ public class CommandLineController extends BaseController {
   }
 
   private boolean hasRightToViewBuildTypeDetails(final SBuildType buildType) {
-    return mySecurityContext.getAuthorityHolder().isPermissionGrantedForProject(buildType.getProjectInternalId(), Permission.VIEW_BUILD_CONFIGURATION_SETTINGS);
+    return mySecurityContext.getAuthorityHolder().isPermissionGrantedForProject(buildType.getProjectId(), Permission.VIEW_BUILD_CONFIGURATION_SETTINGS);
   }
 
   private boolean hasRootWithVcsClientMappingProvider(final SBuildType data) {

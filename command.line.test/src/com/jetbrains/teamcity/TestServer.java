@@ -1,9 +1,5 @@
 package com.jetbrains.teamcity;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.HashMap;
 import jetbrains.buildServer.BuildTypeData;
 import jetbrains.buildServer.BuildTypeDescriptor.CheckoutType;
 import jetbrains.buildServer.BuildTypeStatusDescriptorData;
@@ -11,6 +7,8 @@ import jetbrains.buildServer.ProjectData;
 import jetbrains.buildServer.StatusDescriptor;
 import jetbrains.buildServer.messages.Status;
 import org.junit.Test;
+
+import java.util.*;
 
 public class TestServer extends Server {
 
@@ -39,7 +37,7 @@ public class TestServer extends Server {
 
   public static class TestProjectData extends ProjectData {
     public TestProjectData(String id) {
-      super(id, id, id, "<unknown>", Status.UNKNOWN, new ArrayList<BuildTypeData>());
+      super(id, id, "<unknown>", Status.UNKNOWN, new ArrayList<BuildTypeData>());
     }
 
   }
@@ -47,7 +45,7 @@ public class TestServer extends Server {
   public static class TestBuildTypeData extends BuildTypeData {
 
     public TestBuildTypeData(String id, ProjectData project) {
-      super(false, id, null, project.getName(), project.getProjectId(), project.getInternalId(), Collections.singletonList("<unknown>"), id, "<unknown>", CheckoutType.MANUAL, createStatusDescriptor(), null, false);
+      super(false, id, null, project.getName(), project.getProjectId(), Collections.singletonList("<unknown>"), id, "<unknown>", CheckoutType.MANUAL, createStatusDescriptor(), null, false);
       project.getBuildTypes().add(this);
     }
 
