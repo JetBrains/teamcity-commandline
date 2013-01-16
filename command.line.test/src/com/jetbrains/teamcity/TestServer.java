@@ -20,8 +20,8 @@ public class TestServer extends Server {
 
   public static final String TC_PRJ_0 = "tc-prj-0";
 
-  private HashMap<String, ProjectData> myProjects = new HashMap<String, ProjectData>();
-  private HashMap<String, BuildTypeData> myConfigurations = new HashMap<String, BuildTypeData>();
+  private final HashMap<String, ProjectData> myProjects = new HashMap<String, ProjectData>();
+  private final HashMap<String, BuildTypeData> myConfigurations = new HashMap<String, BuildTypeData>();
 
   public TestServer() {
     super(null);
@@ -39,9 +39,8 @@ public class TestServer extends Server {
 
   public static class TestProjectData extends ProjectData {
     public TestProjectData(String id) {
-      super(id, id, id, "<unknown>", Status.UNKNOWN, new ArrayList<BuildTypeData>());
+      super(id, id, null, id, "<unknown>", Status.UNKNOWN, new ArrayList<BuildTypeData>());
     }
-
   }
 
   public static class TestBuildTypeData extends BuildTypeData {
