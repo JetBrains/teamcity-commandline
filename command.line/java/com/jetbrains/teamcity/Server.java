@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2012 JetBrains s.r.o.
+ * Copyright 2000-2013 JetBrains s.r.o.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,6 +15,10 @@
  */
 package com.jetbrains.teamcity;
 
+import java.net.URL;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.List;
 import jetbrains.buildServer.*;
 import jetbrains.buildServer.serverProxy.RemoteServerFacade;
 import jetbrains.buildServer.serverProxy.RemoteServerFacadeImpl;
@@ -25,11 +29,6 @@ import jetbrains.buildServer.serverSide.auth.AuthenticationFailedException;
 import jetbrains.buildServer.xmlrpc.RemoteCallException;
 import jetbrains.buildServer.xmlrpc.XmlRpcTarget.Cancelable;
 import org.jetbrains.annotations.NotNull;
-
-import java.net.URL;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.List;
 
 public class Server {
 

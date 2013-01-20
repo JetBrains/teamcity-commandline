@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2012 JetBrains s.r.o.
+ * Copyright 2000-2013 JetBrains s.r.o.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,28 +15,21 @@
  */
 package com.jetbrains.teamcity.command;
 
+import com.jetbrains.teamcity.Debug;
+import com.jetbrains.teamcity.Server;
+import com.jetbrains.teamcity.Storage;
+import com.jetbrains.teamcity.resources.TCAccess;
 import java.io.File;
 import java.io.IOException;
 import java.net.URL;
 import java.net.URLClassLoader;
 import java.text.MessageFormat;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.Enumeration;
-import java.util.HashMap;
-import java.util.HashSet;
+import java.util.*;
 import java.util.jar.JarEntry;
 import java.util.jar.JarFile;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-
 import jetbrains.buildServer.util.FileUtil;
-
-import com.jetbrains.teamcity.Debug;
-import com.jetbrains.teamcity.Server;
-import com.jetbrains.teamcity.Storage;
-import com.jetbrains.teamcity.resources.TCAccess;
 
 class CommandRegistry {
 

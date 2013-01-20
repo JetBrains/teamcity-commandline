@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2012 JetBrains s.r.o.
+ * Copyright 2000-2013 JetBrains s.r.o.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,24 +15,14 @@
  */
 package com.jetbrains.teamcity;
 
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
-import java.io.FileReader;
-import java.io.ObjectInputStream;
-import java.io.ObjectOutput;
-import java.io.ObjectOutputStream;
-import java.io.Serializable;
+import com.thoughtworks.xstream.XStream;
+import java.io.*;
 import java.util.HashMap;
 import java.util.Map;
-
 import jetbrains.buildServer.messages.XStreamHolder;
 import jetbrains.buildServer.util.FileUtil;
 import jetbrains.buildServer.xstream.ServerXStreamFormat;
 import jetbrains.buildServer.xstream.XStreamWrapper;
-
-import com.thoughtworks.xstream.XStream;
 
 //TODO: support parallel working!!!
 public class Storage {
