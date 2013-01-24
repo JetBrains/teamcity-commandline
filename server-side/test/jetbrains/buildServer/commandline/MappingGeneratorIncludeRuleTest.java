@@ -4,6 +4,7 @@ import java.util.List;
 import jetbrains.buildServer.vcs.CheckoutRules;
 import jetbrains.buildServer.vcs.VcsClientMapping;
 import jetbrains.buildServer.vcs.impl.SVcsRootImpl;
+import jetbrains.vcs.api.services.tc.VcsMappingElement;
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
 
@@ -15,7 +16,7 @@ public class MappingGeneratorIncludeRuleTest extends BaseMappingGeneratorTest {
 
     myPathPrefixes.add(new VcsClientMapping("UID|some/path", ""));
 
-    final List<MappingElement> mapping = generateMappingForBuildType();
+    final List<VcsMappingElement> mapping = generateMappingForBuildType();
     assertEquals(mapping.toString(), 1, mapping.size());
 
     verifyMapping(mapping.get(0), ".", "mock://UID|some/path", vcsRoot.getDescription() + "; .=>svnrepo");
@@ -28,7 +29,7 @@ public class MappingGeneratorIncludeRuleTest extends BaseMappingGeneratorTest {
     myPathPrefixes.add(new VcsClientMapping("UID|some/path", ""));
     myPathPrefixes.add(new VcsClientMapping("UID|some/path/subpath", "subpathMapping"));
 
-    final List<MappingElement> mapping = generateMappingForBuildType();
+    final List<VcsMappingElement> mapping = generateMappingForBuildType();
     assertEquals(mapping.toString(), 4, mapping.size());
 
     verifyMapping(mapping.get(0), "subpathMapping", "mock://UID|some/path/subpath", vcsRoot.getDescription() + "; dddPath=>dddPath");

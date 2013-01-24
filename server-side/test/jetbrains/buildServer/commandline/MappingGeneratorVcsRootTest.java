@@ -5,6 +5,7 @@ import java.util.List;
 import jetbrains.buildServer.vcs.CheckoutRules;
 import jetbrains.buildServer.vcs.VcsClientMapping;
 import jetbrains.buildServer.vcs.impl.SVcsRootImpl;
+import jetbrains.vcs.api.services.tc.VcsMappingElement;
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
 
@@ -54,7 +55,7 @@ public class MappingGeneratorVcsRootTest extends BaseMappingGeneratorTest {
     final SVcsRootImpl vcsRoot = vcsRoot();
     myBuildType.setCheckoutRules(vcsRoot, CheckoutRules.createOn(checkoutRule));
 
-    final List<MappingElement> mapping = generateMappingForBuildType();
+    final List<VcsMappingElement> mapping = generateMappingForBuildType();
 
     assertEquals(mapping.toString(), expectations.length / 2, mapping.size());
 
@@ -70,7 +71,7 @@ public class MappingGeneratorVcsRootTest extends BaseMappingGeneratorTest {
 
     myPathPrefixes.add(new VcsClientMapping("UID1|path", ""));
 
-    final List<MappingElement> mapping = generateMappingForBuildType();
+    final List<VcsMappingElement> mapping = generateMappingForBuildType();
     assertEquals(mapping.toString(), 2, mapping.size());
 
     verifyMapping(mapping.get(0), "b", "mock://UID1|path/a", vcsRoot.getDescription() + "; a=>b");

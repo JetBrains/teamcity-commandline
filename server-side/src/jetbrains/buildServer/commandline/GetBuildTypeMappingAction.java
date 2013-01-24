@@ -8,6 +8,7 @@ import jetbrains.buildServer.serverSide.SBuildType;
 import jetbrains.buildServer.util.StringUtil;
 import jetbrains.buildServer.vcs.VcsManager;
 import jetbrains.buildServer.web.openapi.ControllerAction;
+import jetbrains.vcs.api.services.tc.VcsMappingElement;
 import org.jdom.Element;
 import org.jetbrains.annotations.NonNls;
 import org.jetbrains.annotations.NotNull;
@@ -42,7 +43,7 @@ public class GetBuildTypeMappingAction implements ControllerAction {
       if (generator.getMappings().size() > 0 && ajaxResponse != null) {
         final Element mapping = new Element("mapping");
         ajaxResponse.addContent(mapping);
-        for (MappingElement mappingElement : generator.getMappings()) {
+        for (VcsMappingElement mappingElement : generator.getMappings()) {
           final Element mapElement = new Element("map");
           mapElement.setAttribute("from", mappingElement.getFrom());
           mapElement.setAttribute("to", mappingElement.getTo());

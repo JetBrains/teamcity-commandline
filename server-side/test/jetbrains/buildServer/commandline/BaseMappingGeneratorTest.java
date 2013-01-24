@@ -5,6 +5,7 @@ import java.util.List;
 import jetbrains.buildServer.serverSide.impl.BaseServerTestCase;
 import jetbrains.buildServer.vcs.VcsClientMapping;
 import jetbrains.buildServer.vcs.impl.SVcsRootImpl;
+import jetbrains.vcs.api.services.tc.VcsMappingElement;
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
 
@@ -26,7 +27,7 @@ public abstract class BaseMappingGeneratorTest extends BaseServerTestCase {
     assertEquals(0, generateMappingForBuildType().size());
   }
 
-  protected List<MappingElement> generateMappingForBuildType() {
+  protected List<VcsMappingElement> generateMappingForBuildType() {
     final MappingGenerator generator = new MappingGenerator(myFixture.getVcsManager(), myBuildType);
     generator.generateVcsMapping();
     return generator.getMappings();
@@ -37,10 +38,10 @@ public abstract class BaseMappingGeneratorTest extends BaseServerTestCase {
     final SVcsRootImpl vcsRoot = vcsRoot();
     myPathPrefixes.add(new VcsClientMapping("UID|some/path", ""));
 
-    final List<MappingElement> mapping = generateMappingForBuildType();
+    final List<VcsMappingElement> mapping = generateMappingForBuildType();
     assertEquals(mapping.toString(), 1, mapping.size());
 
-    final MappingElement theOnlyMappingElement = mapping.get(0);
+    final VcsMappingElement theOnlyMappingElement = mapping.get(0);
     verifySimpleMapping(theOnlyMappingElement, vcsRoot);
   }
 
@@ -49,7 +50,7 @@ public abstract class BaseMappingGeneratorTest extends BaseServerTestCase {
     final SVcsRootImpl vcsRoot = vcsRoot();
     myPathPrefixes.add(new VcsClientMapping("UID////some/path", ""));
 
-    final MappingElement mappingElement = generateMappingForBuildType().get(0);
+    final VcsMappingElement mappingElement = generateMappingForBuildType().get(0);
     verifyMapping(mappingElement, ".", "mock://UID////some/path", vcsRoot.getDescription());
   }
 
@@ -59,7 +60,7 @@ public abstract class BaseMappingGeneratorTest extends BaseServerTestCase {
     final SVcsRootImpl vcsRoot2 = vcsRoot();
     myPathPrefixes.add(new VcsClientMapping("UID|some/path", ""));
 
-    final List<MappingElement> mapping = generateMappingForBuildType();
+    final List<VcsMappingElement> mapping = generateMappingForBuildType();
     assertEquals(mapping.toString(), 2, mapping.size());
 
     verifySimpleMapping(mapping.get(0), vcsRoot1);
@@ -73,20 +74,20 @@ public abstract class BaseMappingGeneratorTest extends BaseServerTestCase {
     myPathPrefixes.add(new VcsClientMapping("UID|some/path", ""));
     myPathPrefixes.add(new VcsClientMapping("UID|some/path/subpath", "path3"));
 
-    final List<MappingElement> mapping = generateMappingForBuildType();
+    final List<VcsMappingElement> mapping = generateMappingForBuildType();
     assertEquals(mapping.toString(), 2, mapping.size());
 
     verifyMapping(mapping.get(0), "path3", "mock://UID|some/path/subpath", vcsRoot.getDescription());
     verifyMapping(mapping.get(1), ".", "mock://UID|some/path", vcsRoot.getDescription());
   }
 
-  protected void verifySimpleMapping(final MappingElement actual, final SVcsRootImpl vcsRoot) {
+  protected void verifySimpleMapping(final VcsMappingElement actual, final SVcsRootImpl vcsRoot) {
     verifyMapping(actual, ".", "mock://UID|some/path", vcsRoot.getDescription());
   }
 
-  protected void verifyMapping(final MappingElement actual,
+  protected void verifyMapping(final VcsMappingElement actual,
                              final String localPath, final String targetLocation, final String description) {
-    final MappingElement expected = new MappingElement(localPath, targetLocation, description);
+    final VcsMappingElement expected = new VcsMappingElement(localPath, targetLocation, description);
     assertEquals(expected, actual);
   }
 
