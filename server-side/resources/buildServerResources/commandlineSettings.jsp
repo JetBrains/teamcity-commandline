@@ -1,5 +1,5 @@
-<%@ page import="jetbrains.buildServer.web.util.WebUtil" %>
 <%@ page import="jetbrains.buildServer.web.util.SessionUser" %>
+<%@ page import="jetbrains.buildServer.web.util.WebUtil" %>
 <%@ page contentType="text/html;charset=UTF-8" language="java" session="true" errorPage="/runtimeError.jsp"
   %><%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core"
   %><%@ taglib prefix="fmt" uri="http://java.sun.com/jsp/jstl/fmt"
@@ -19,11 +19,11 @@
 <jsp:attribute name="head_include">
 
   <bs:linkCSS>
-    ${cmdPathPrefix}commandLine.css
+    ${teamcityPluginResourcesPath}commandLine.css
   </bs:linkCSS>
 
   <bs:linkScript>
-    ${cmdPathPrefix}commandLine.js
+    ${teamcityPluginResourcesPath}commandLine.js
   </bs:linkScript>
 
   <!-- ===== JS files, provided by plugins: ==== -->
