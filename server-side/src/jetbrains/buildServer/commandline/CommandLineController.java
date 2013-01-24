@@ -2,6 +2,7 @@ package jetbrains.buildServer.commandline;
 
 import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import jetbrains.buildServer.controllers.BaseController;
@@ -11,12 +12,12 @@ import jetbrains.buildServer.serverSide.auth.Permission;
 import jetbrains.buildServer.serverSide.auth.SecurityContext;
 import jetbrains.buildServer.util.CollectionsUtil;
 import jetbrains.buildServer.util.filters.Filter;
-import jetbrains.buildServer.vcs.SVcsRoot;
-import jetbrains.buildServer.vcs.VcsClientMappingProvider;
 import jetbrains.buildServer.vcs.VcsManager;
-import jetbrains.buildServer.vcs.VcsSupportContext;
+import jetbrains.buildServer.vcs.VcsManagerEx;
+import jetbrains.buildServer.vcs.VcsRootInstance;
 import jetbrains.buildServer.web.openapi.PluginDescriptor;
 import jetbrains.buildServer.web.openapi.WebControllerManager;
+import jetbrains.vcs.api.services.tc.MappingGeneratorService;
 import org.jetbrains.annotations.NonNls;
 import org.jetbrains.annotations.NotNull;
 import org.springframework.web.servlet.ModelAndView;
@@ -53,14 +54,14 @@ public class CommandLineController extends BaseController {
 
   @Override
   protected ModelAndView doHandle(@NotNull final HttpServletRequest request, @NotNull final HttpServletResponse response) throws Exception {
-    final HashMap model = new HashMap();
+    final Map<String, Object> model = new HashMap<String, Object>();
     addBuildTypes(model);
     CommandLineSection.addPathPrefix(model, request, myPluginDescriptor);
 
     return new ModelAndView(myPluginDescriptor.getPluginResourcesPath(MY_JSP), model);
   }
 
-  private void addBuildTypes(final HashMap model) {
+  private void addBuildTypes(final Map<String, Object> model) {
     final List<SBuildType> buildTypes = myProjectManager.getActiveBuildTypes();
     model.put("buildTypes", collectBuildTypesWithPersonalVcsSupport(buildTypes));
   }
@@ -80,16 +81,14 @@ public class CommandLineController extends BaseController {
   }
 
   private boolean hasRootWithVcsClientMappingProvider(final SBuildType data) {
-    final List<SVcsRoot> roots = data.getVcsRoots();
+    final List<VcsRootInstance> roots = data.getVcsRootInstances();
 
-    for (SVcsRoot root : roots) {
-      final VcsSupportContext ctx = myVcsManager.findVcsContextByName(root.getVcsName());
-      if (ctx != null) {
-        final VcsClientMappingProvider clientMappingProvider = ctx.getVcsExtension(VcsClientMappingProvider.class);
-        if (clientMappingProvider != null) {
-          return true;
-        }
-      }
+    for (VcsRootInstance entry : roots) {
+      final MappingGeneratorService service =
+        myVcsManager.getVcsService(((VcsManagerEx)myVcsManager).getVcsTeamCityAdapter().createSettings(entry),
+                                   MappingGeneratorService.class);
+
+      if (service != null) return true;
     }
     return false;
   }
