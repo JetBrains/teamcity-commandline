@@ -208,7 +208,7 @@ public class Build {
 
         <!-- unjar eclipse's plugin bundled libs -->
         <unjar dest="${plugin.build.libs}" overwrite="yes">
-            <fileset dir="${distribution.dir}/TeamCity/webapps/ROOT/update/eclipse/plugins">
+            <fileset dir="${distribution.dir}/eclipse-site">
                 <include name="**/jetbrains.teamcity.core_*.jar" />
             </fileset>
             <patternset>
