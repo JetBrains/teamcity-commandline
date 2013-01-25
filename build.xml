@@ -207,9 +207,7 @@ public class Build {
         </copy>
 
         <mkdir dir="${tmp}/eclipse-plugin" />
-        <unzip dest="${tmp}/eclipse-plugin" overwrite="yes">
-          <file name="${distribution.dir}/TeamCity/webapps/ROOT/WEB-INF/plugins/eclipse-plugin-distributor.zip"/>
-        </unzip>
+        <unzip dest="${tmp}/eclipse-plugin" overwrite="yes" src="${distribution.dir}/TeamCity/webapps/ROOT/WEB-INF/plugins/eclipse-plugin-distributor.zip"/>
 
         <!-- unjar eclipse's plugin bundled libs -->
         <unjar dest="${plugin.build.libs}" overwrite="yes">
