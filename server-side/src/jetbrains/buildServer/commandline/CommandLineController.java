@@ -12,8 +12,8 @@ import jetbrains.buildServer.serverSide.auth.Permission;
 import jetbrains.buildServer.serverSide.auth.SecurityContext;
 import jetbrains.buildServer.util.CollectionsUtil;
 import jetbrains.buildServer.util.filters.Filter;
+import jetbrains.buildServer.vcs.CheckoutRules;
 import jetbrains.buildServer.vcs.VcsManager;
-import jetbrains.buildServer.vcs.VcsManagerEx;
 import jetbrains.buildServer.vcs.VcsRootInstance;
 import jetbrains.buildServer.web.openapi.PluginDescriptor;
 import jetbrains.buildServer.web.openapi.WebControllerManager;
@@ -85,8 +85,7 @@ public class CommandLineController extends BaseController {
 
     for (VcsRootInstance entry : roots) {
       final MappingGeneratorService service =
-        myVcsManager.getVcsService(((VcsManagerEx)myVcsManager).getVcsTeamCityAdapter().createSettings(entry),
-                                   MappingGeneratorService.class);
+        myVcsManager.getVcsService(entry.createVcsSettings(CheckoutRules.DEFAULT), MappingGeneratorService.class);
 
       if (service != null) return true;
     }
