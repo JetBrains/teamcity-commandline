@@ -72,11 +72,15 @@ class Help implements ICommand {
 
     knownCommands.addAll(CommandRegistry.getInstance().commands());
     for (final ICommand command : knownCommands) {
-      buffer.append(MessageFormat.format(Messages.getString("Help.available.commands.list.pattern"), String.valueOf(command.getId()), String.valueOf(command.getCommandDescription()))); //$NON-NLS-1$
+      buffer.append(MessageFormat.format(Messages.getString("Help.available.commands.list.pattern"), prepare(String.valueOf(command.getId())), String.valueOf(command.getCommandDescription()))); //$NON-NLS-1$
     }
     buffer.append(Messages.getString("Help.command.usage.text")); //$NON-NLS-1$
     buffer.append(printGlobalOptions());
     return buffer.toString();
+  }
+
+  private static String prepare(final String s) {
+    return s.length() < 4 ? s + "\t" : s;
   }
 
   private String printGlobalOptions() {

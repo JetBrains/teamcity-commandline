@@ -15,6 +15,8 @@
  */
 package com.jetbrains.teamcity.command;
 
+import com.intellij.openapi.util.text.StringUtil;
+import com.intellij.util.Function;
 import com.jetbrains.teamcity.*;
 import com.jetbrains.teamcity.Util.IFileFilter;
 import com.jetbrains.teamcity.resources.FileBasedMatcher;
@@ -34,6 +36,8 @@ import jetbrains.buildServer.core.runtime.ProgressStatus;
 import jetbrains.buildServer.serverSide.userChanges.PersonalChangeCommitDecision;
 import jetbrains.buildServer.serverSide.userChanges.PersonalChangeDescriptor;
 import jetbrains.buildServer.serverSide.userChanges.PreTestedCommitType;
+import jetbrains.buildServer.util.filters.Filter;
+import jetbrains.buildServer.util.filters.FilterUtil;
 import jetbrains.buildServer.vcs.patches.LowLevelPatchBuilder;
 import jetbrains.buildServer.vcs.patches.LowLevelPatchBuilderImpl;
 import jetbrains.buildServer.vcs.patches.PatchBuilderImpl;
@@ -41,6 +45,7 @@ import org.apache.commons.codec.binary.Base64;
 import org.apache.commons.httpclient.*;
 import org.apache.commons.httpclient.methods.InputStreamRequestEntity;
 import org.apache.commons.httpclient.methods.PostMethod;
+import org.jetbrains.annotations.NotNull;
 
 public class RemoteRun implements ICommand {
 
@@ -66,6 +71,9 @@ public class RemoteRun implements ICommand {
 
   static final String CONFIGURATION_PARAM = Messages.getString("RemoteRun.config.runtime.param"); //$NON-NLS-1$
   static final String CONFIGURATION_PARAM_LONG = Messages.getString("RemoteRun.config.runtime.param.long"); //$NON-NLS-1$
+
+  static final String PROJECT_PARAM = Messages.getString("RemoteRun.project.runtime.param"); //$NON-NLS-1$
+  static final String PROJECT_PARAM_LONG = Messages.getString("RemoteRun.project.runtime.param.long"); //$NON-NLS-1$
 
   static final String MESSAGE_PARAM = Messages.getString("RemoteRun.message.runtime.param"); //$NON-NLS-1$
   static final String MESSAGE_PARAM_LONG = Messages.getString("RemoteRun.message.runtime.param.long"); //$NON-NLS-1$
@@ -97,6 +105,9 @@ public class RemoteRun implements ICommand {
     Args.registerArgument(CONFIGURATION_PARAM, String.format(".*%s\\s+[^\\s].*", CONFIGURATION_PARAM)); //$NON-NLS-1$
     Args.registerArgument(CONFIGURATION_PARAM_LONG, String.format(".*%s\\s+[^\\s].*", CONFIGURATION_PARAM_LONG)); //$NON-NLS-1$
 
+    Args.registerArgument(PROJECT_PARAM, String.format(".*%s\\s+[^\\s].*", PROJECT_PARAM)); //$NON-NLS-1$
+    Args.registerArgument(PROJECT_PARAM_LONG, String.format(".*%s\\s+[^\\s].*", PROJECT_PARAM_LONG)); //$NON-NLS-1$
+
     Args.registerArgument(TIMEOUT_PARAM, String.format(".*%s\\s+[0-9]+.*", TIMEOUT_PARAM)); //$NON-NLS-1$
     Args.registerArgument(TIMEOUT_PARAM_LONG, String.format(".*%s\\s+[0-9]+.*", TIMEOUT_PARAM_LONG)); //$NON-NLS-1$
 
@@ -107,7 +118,7 @@ public class RemoteRun implements ICommand {
   public void execute(final Server server, Args args, final IProgressMonitor monitor) throws EAuthorizationException, ECommunicationException, ERemoteError, InvalidAttributesException {
     myServer = server;
     // configuration
-    final String cfgId = args.getArgument(CONFIGURATION_PARAM, CONFIGURATION_PARAM_LONG);
+    final String cfgId = getConfigurations(server, args);
     // comment
     myComments = args.getArgument(MESSAGE_PARAM, MESSAGE_PARAM_LONG);
 
@@ -154,6 +165,29 @@ public class RemoteRun implements ICommand {
       final PersonalChangeDescriptor result = waitForSuccessResult(chaneListId, myTimeout, monitor);
       myResultDescription = MessageFormat.format(Messages.getString("RemoteRun.build.result.ok.pattern"), String.valueOf(chaneListId), result.getPersonalChangeStatus()); //$NON-NLS-1$
     }
+  }
+
+  private static String getConfigurations(final Server server, final Args args) throws ECommunicationException {
+    if (!args.hasArgument(CONFIGURATION_PARAM, CONFIGURATION_PARAM_LONG)) return null;
+
+    final String projectId = args.getArgument(PROJECT_PARAM, PROJECT_PARAM_LONG);
+    if (projectId != null) {
+      return StringUtil.join(
+        FilterUtil.filterAndCopy(server.getConfigurations(), new ArrayList<BuildTypeData>(), new Filter<BuildTypeData>() {
+          public boolean accept(@NotNull final BuildTypeData data) {
+            return data.getProjectId().equals(projectId);
+          }
+        }),
+        new Function<BuildTypeData, String>() {
+          public String fun(final BuildTypeData buildTypeData) {
+            return buildTypeData.getId();
+          }
+        },
+        ","
+      );
+    }
+
+    return args.getArgument(CONFIGURATION_PARAM, CONFIGURATION_PARAM_LONG);
   }
 
   Collection<ITCResource> getTCResources(final TCWorkspace workspace, final Collection<File> files, final IProgressMonitor monitor) throws IllegalArgumentException {
@@ -474,9 +508,17 @@ public class RemoteRun implements ICommand {
     while (i < elements.length) {
       final String currentToken = elements[i].toLowerCase();
       if (elements[i].startsWith("-")) { //$NON-NLS-1$
-        if (elements[i].toLowerCase().equals(NO_WAIT_SWITCH) || currentToken.equals(NO_WAIT_SWITCH_LONG) || currentToken.equals(CHECK_FOR_CHANGES_EARLY_SWITCH)) {
+        if (elements[i].toLowerCase().equals(CONFIGURATION_PARAM) || elements[i].toLowerCase().equals(CONFIGURATION_PARAM_LONG)) {
+          i++; // arg
+          if (elements[i].toLowerCase().equals(PROJECT_PARAM) || elements[i].toLowerCase().equals(PROJECT_PARAM_LONG)) {
+            i++; // arg
+          }
+          i++; // arg value
+        }
+        else if (elements[i].toLowerCase().equals(NO_WAIT_SWITCH) || currentToken.equals(NO_WAIT_SWITCH_LONG) || currentToken.equals(CHECK_FOR_CHANGES_EARLY_SWITCH)) {
           i++; // single token
-        } else {
+        }
+        else {
           i++; // arg
           i++; // args value
         }
@@ -581,8 +623,10 @@ public class RemoteRun implements ICommand {
   public String getUsageDescription() {
     return String.format(
         Messages.getString("RemoteRun.help.usage.pattern"), //$NON-NLS-1$
-        getCommandDescription(), getId(), CONFIGURATION_PARAM, CONFIGURATION_PARAM_LONG, MESSAGE_PARAM, MESSAGE_PARAM_LONG, TIMEOUT_PARAM, TIMEOUT_PARAM_LONG, NO_WAIT_SWITCH, NO_WAIT_SWITCH_LONG, CONFIGURATION_PARAM, CONFIGURATION_PARAM_LONG, MESSAGE_PARAM, MESSAGE_PARAM_LONG,
-        TIMEOUT_PARAM, TIMEOUT_PARAM_LONG, NO_WAIT_SWITCH, NO_WAIT_SWITCH_LONG, OVERRIDING_MAPPING_FILE_PARAM);
+        getCommandDescription(), getId(), CONFIGURATION_PARAM, CONFIGURATION_PARAM_LONG, CONFIGURATION_PARAM, CONFIGURATION_PARAM_LONG,
+        PROJECT_PARAM, PROJECT_PARAM_LONG, MESSAGE_PARAM, MESSAGE_PARAM_LONG, TIMEOUT_PARAM, TIMEOUT_PARAM_LONG, OVERRIDING_MAPPING_FILE_PARAM,
+        NO_WAIT_SWITCH, NO_WAIT_SWITCH_LONG
+    );
   }
 
   public String getCommandDescription() {

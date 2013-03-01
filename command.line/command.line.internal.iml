@@ -14,6 +14,7 @@
     <orderEntry type="module" module-name="patches-impl" />
     <orderEntry type="library" name="xstream" level="project" />
     <orderEntry type="module" module-name="messages" />
+    <orderEntry type="library" name="commons-beanutils-core" level="project" />
   </component>
 </module>
 
