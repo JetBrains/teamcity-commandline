@@ -238,6 +238,7 @@ public class Build {
 
         <unjar src="${plugin.build.libs}/openapi.jar" dest="${libs}" overwrite="yes" >
             <patternset>
+              <include name="com/intellij/openapi/util/io/File*.class"/>
               <include name="com/intellij/openapi/util/io/FileUtil*.class"/>
               <include name="com/intellij/openapi/util/text/StringUtil*.class"/>
               <include name="com/intellij/util/Function.class"/>
