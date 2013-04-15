@@ -15,8 +15,6 @@
  */
 package com.jetbrains.teamcity.command;
 
-import com.intellij.openapi.util.text.StringUtil;
-import com.intellij.util.Function;
 import com.jetbrains.teamcity.*;
 import com.jetbrains.teamcity.Util.IFileFilter;
 import com.jetbrains.teamcity.resources.FileBasedMatcher;
@@ -36,8 +34,9 @@ import jetbrains.buildServer.core.runtime.ProgressStatus;
 import jetbrains.buildServer.serverSide.userChanges.PersonalChangeCommitDecision;
 import jetbrains.buildServer.serverSide.userChanges.PersonalChangeDescriptor;
 import jetbrains.buildServer.serverSide.userChanges.PreTestedCommitType;
+import jetbrains.buildServer.util.Converter;
+import jetbrains.buildServer.util.StringUtil;
 import jetbrains.buildServer.util.filters.Filter;
-import jetbrains.buildServer.util.filters.FilterUtil;
 import jetbrains.buildServer.vcs.patches.LowLevelPatchBuilder;
 import jetbrains.buildServer.vcs.patches.LowLevelPatchBuilderImpl;
 import jetbrains.buildServer.vcs.patches.PatchBuilderImpl;
@@ -46,6 +45,8 @@ import org.apache.commons.httpclient.*;
 import org.apache.commons.httpclient.methods.InputStreamRequestEntity;
 import org.apache.commons.httpclient.methods.PostMethod;
 import org.jetbrains.annotations.NotNull;
+
+import static jetbrains.buildServer.util.CollectionsUtil.filterAndConvertCollection;
 
 public class RemoteRun implements ICommand {
 
@@ -172,19 +173,16 @@ public class RemoteRun implements ICommand {
 
     final String projectId = args.getArgument(PROJECT_PARAM, PROJECT_PARAM_LONG);
     if (projectId != null) {
-      return StringUtil.join(
-        FilterUtil.filterAndCopy(server.getConfigurations(), new ArrayList<BuildTypeData>(), new Filter<BuildTypeData>() {
-          public boolean accept(@NotNull final BuildTypeData data) {
-            return data.getProjectId().equals(projectId);
-          }
-        }),
-        new Function<BuildTypeData, String>() {
-          public String fun(final BuildTypeData buildTypeData) {
-            return buildTypeData.getId();
-          }
-        },
-        ","
-      );
+      return StringUtil.join(",", filterAndConvertCollection(server.getConfigurations(), new Converter<String, BuildTypeData>() {
+                                                               public String createFrom(@NotNull final BuildTypeData source) {
+                                                                 return source.getId();
+                                                               }
+                                                             }, new Filter<BuildTypeData>() {
+                                                               public boolean accept(@NotNull final BuildTypeData data) {
+                                                                 return data.getProjectId().equals(projectId);
+                                                               }
+                                                             }
+      ));
     }
 
     return args.getArgument(CONFIGURATION_PARAM, CONFIGURATION_PARAM_LONG);

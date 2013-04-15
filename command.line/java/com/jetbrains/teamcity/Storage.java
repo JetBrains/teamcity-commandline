@@ -171,7 +171,7 @@ public class Storage {
     public Map<Object, Serializable> load(HashMap<Object, Serializable> storage) {
       try {
         storage.clear();
-        final String content = FileUtil.loadTextAndClose(new FileReader(getStorageFile()));
+        final String content = FileUtil.readText(new File(getStorageFile()));
         storage.putAll((Map<? extends Object, ? extends Serializable>) deserializeObject(content));
       } catch (FileNotFoundException e) {
         // do nothing
