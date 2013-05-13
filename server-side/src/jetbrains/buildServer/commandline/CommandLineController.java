@@ -12,11 +12,11 @@ import jetbrains.buildServer.serverSide.auth.Permission;
 import jetbrains.buildServer.serverSide.auth.SecurityContext;
 import jetbrains.buildServer.util.CollectionsUtil;
 import jetbrains.buildServer.util.filters.Filter;
-import jetbrains.buildServer.vcs.CheckoutRules;
 import jetbrains.buildServer.vcs.VcsManager;
 import jetbrains.buildServer.vcs.VcsRootInstance;
 import jetbrains.buildServer.web.openapi.PluginDescriptor;
 import jetbrains.buildServer.web.openapi.WebControllerManager;
+import jetbrains.vcs.api.VcsSettings;
 import jetbrains.vcs.api.services.tc.MappingGeneratorService;
 import org.jetbrains.annotations.NonNls;
 import org.jetbrains.annotations.NotNull;
@@ -84,8 +84,7 @@ public class CommandLineController extends BaseController {
     final List<VcsRootInstance> roots = data.getVcsRootInstances();
 
     for (VcsRootInstance entry : roots) {
-      final MappingGeneratorService service =
-        myVcsManager.getVcsService(entry.createVcsSettings(CheckoutRules.DEFAULT), MappingGeneratorService.class);
+      final MappingGeneratorService service = myVcsManager.getVcsService(new VcsSettings(entry, ""), MappingGeneratorService.class);
 
       if (service != null) return true;
     }
