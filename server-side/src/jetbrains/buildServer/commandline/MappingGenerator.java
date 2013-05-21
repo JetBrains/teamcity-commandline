@@ -28,7 +28,7 @@ public class MappingGenerator {
 
   public void generateVcsMapping() {
 
-    for (VcsRootEntry entry : myBuildType.getVcsRootEntries()) {
+    for (VcsRootEntry entry : myBuildType.getVcsRootInstanceEntries()) {
       myCurrentEntry = entry;
       generateMappingForEntry();
     }
