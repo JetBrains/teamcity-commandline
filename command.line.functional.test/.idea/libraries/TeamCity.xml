@@ -1,0 +1,13 @@
+<component name="libraryTable">
+  <library name="TeamCity">
+    <CLASSES>
+      <root url="file://$PROJECT_DIR$/../teamcity_distr/TeamCity/devPackage/tests" />
+      <root url="file://$PROJECT_DIR$/../teamcity_distr/TeamCity/webapps/ROOT/WEB-INF/lib" />
+      <root url="jar://$PROJECT_DIR$/../teamcity_distr/TeamCity/webapps/ROOT/WEB-INF/plugins/ant/server/ant-runner-server.jar!/" />
+    </CLASSES>
+    <JAVADOC />
+    <SOURCES />
+    <jarDirectory url="file://$PROJECT_DIR$/../teamcity_distr/TeamCity/devPackage/tests" recursive="false" />
+    <jarDirectory url="file://$PROJECT_DIR$/../teamcity_distr/TeamCity/webapps/ROOT/WEB-INF/lib" recursive="false" />
+  </library>
+</component>
