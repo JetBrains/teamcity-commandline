@@ -240,7 +240,7 @@ public class Build {
             <patternset>
               <include name="com/intellij/openapi/diagnostic/*.class"/>
               <include name="com/intellij/openapi/util/**/*.class"/>
-              <include name="com/intellij/util/Function.class"/>
+              <include name="com/intellij/util/*.class"/>
             </patternset>
         </unjar>
 
