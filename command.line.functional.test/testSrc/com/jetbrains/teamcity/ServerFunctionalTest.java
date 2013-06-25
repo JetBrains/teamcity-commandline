@@ -48,6 +48,7 @@ public class ServerFunctionalTest extends BaseServerTestCase {
   @Override
   @AfterMethod
   public void tearDown() throws Exception {
+    myServerFacade.dispose();
     myWebServer.shutdown();
     super.tearDown();
   }

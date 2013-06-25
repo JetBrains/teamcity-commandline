@@ -63,6 +63,10 @@ public class ServerFacadeWrapper {
     });
   }
 
+  public void dispose() {
+    myExecutor.shutdown();
+  }
+
   /*****************************************************************************************************************/
 
   private void run(@NotNull final ThrowableRunnable<Exception> action) throws Exception {
