@@ -105,7 +105,7 @@
       <li>Copy contents of the configuration file (above) to <code>${mappingsFile}</code> in your root project directory (you may decide to add this file under the version control)</li>
       <li>Login to TeamCity with command line runner tool:<pre>${loginLine}</pre> </li>
       <li>Run remote build for contents of a directory with selected build configuration: <pre>${remoteRunLine}</pre>
-      <br/>To learn more about the tool options, please see <a href="http://svn.jetbrains.org/teamcity/plugins/commandline/trunk/command.line/HOWTO">documentation</a></li>
+      <br/>To learn more about the tool options, see <a href="http://svn.jetbrains.org/teamcity/plugins/commandline/trunk/command.line/HOWTO">documentation</a></li>
     </ol>
 
   </div>
