@@ -32,7 +32,7 @@ import org.jetbrains.annotations.NotNull;
 
 public class Server {
 
-  private URL myUrl;
+  private final URL myUrl;
   private SessionXmlRpcTarget mySession;
   private RemoteServerFacade myServerFacade;
   private List<ProjectData> myProjects;
@@ -94,7 +94,8 @@ public class Server {
   }
 
   public int getCurrentUser() {
-    return mySession.getUserId();
+    final Integer userId = mySession.getUserId();
+    return userId != null ? userId : -1;
   }
 
   @SuppressWarnings("rawtypes")
@@ -130,7 +131,6 @@ public class Server {
     return getServerFacade().addToQueue(batch, builder.toString());
   }
 
-  @SuppressWarnings("rawtypes")
   public Collection<String> getApplicableConfigurations(final Collection<String> urls) throws ECommunicationException {
     return getServerFacade().getSuitableConfigurations(urls);
   }

@@ -36,7 +36,7 @@ public class GetBuildTypeMappingAction implements ControllerAction {
   public void process(@NotNull final HttpServletRequest request,
                       @NotNull final HttpServletResponse response,
                       @Nullable final Element ajaxResponse) {
-    final SBuildType buildTypeById = myProjectManager.findBuildTypeById(btId(request));
+    final SBuildType buildTypeById = myProjectManager.findBuildTypeByExternalId(btId(request));
     if (buildTypeById != null) {
       final MappingGenerator generator = new MappingGenerator(myVcsManager, buildTypeById);
       generator.generateVcsMapping();

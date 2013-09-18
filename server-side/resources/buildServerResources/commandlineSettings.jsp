@@ -43,7 +43,7 @@
     <jsp:useBean id="buildTypes" type="java.util.List<jetbrains.buildServer.serverSide.SBuildType>" scope="request"/>
     BS.BuildTypes = [
       <c:forEach items="${buildTypes}" var="buildType">
-      {id: "${buildType.id}", fullName: '<bs:escapeForJs text="${buildType.fullName}"/>'},</c:forEach>
+      {id: "${buildType.id}", externalId: "${buildType.externalId}", fullName: '<bs:escapeForJs text="${buildType.fullName}"/>'},</c:forEach>
       {}
     ];
   </script>

@@ -76,7 +76,7 @@ public class List implements ICommand {
     // cache projects
     final HashMap<String, String> prjMap = new HashMap<String, String>();
     for (final ProjectData prj : server.getProjects()) {
-      prjMap.put(prj.getProjectId(), prj.getName());
+      prjMap.put(prj.getExternalId(), prj.getName());
     }
     final ArrayList<BuildTypeData> configurations = new ArrayList<BuildTypeData>(server.getConfigurations());
     Collections.sort(configurations, new Comparator<BuildTypeData>() {
@@ -84,8 +84,8 @@ public class List implements ICommand {
         if (filterByProject != null) {
           return o1.getName().compareTo(o2.getName());
         }
-        final String prj1name = prjMap.get(o1.getProjectId());
-        final String prj2name = prjMap.get(o2.getProjectId());
+        final String prj1name = prjMap.get(o1.getExternalId());
+        final String prj2name = prjMap.get(o2.getExternalId());
         return (prj1name + " " + o1.getName()).compareTo(prj2name + " " + o2.getName());
       }
     });
@@ -93,10 +93,10 @@ public class List implements ICommand {
     final StringTable table = new Util.StringTable(Messages.getString("List.config.list.header")); //$NON-NLS-1$
     for (final BuildTypeData config : configurations) {
       // check
-      if ((filterByProject == null) || (filterByProject != null && config.getProjectId().equals(filterByProject))) {
+      if ((filterByProject == null) || config.getProjectExternalId().equals(filterByProject)) {
         final String description = config.getDescription() == null ? EMPTY : config.getDescription();
-        final String prjName = prjMap.get(config.getProjectId());
-        table.addRow(MessageFormat.format(Messages.getString("List.config.list.pattern"), config.getId(), prjName, config.getName(), config.getStatus(), description)); //$NON-NLS-1$
+        final String prjName = prjMap.get(config.getProjectExternalId());
+        table.addRow(MessageFormat.format(Messages.getString("List.config.list.pattern"), config.getExternalId(), prjName, config.getName(), config.getStatus(), description)); //$NON-NLS-1$
       }
     }
     return table.toString();
@@ -115,7 +115,7 @@ public class List implements ICommand {
     final StringTable table = new Util.StringTable(Messages.getString("List.project.list.header")); //$NON-NLS-1$
     for (final ProjectData project : projects) {
       final String description = project.getDescription() == null ? EMPTY : project.getDescription();
-      table.addRow(MessageFormat.format(Messages.getString("List.project.list.pattern"), project.getProjectId(), project.getName(), project.getStatus(), description)); //$NON-NLS-1$
+      table.addRow(MessageFormat.format(Messages.getString("List.project.list.pattern"), project.getExternalId(), project.getName(), project.getStatus(), description)); //$NON-NLS-1$
     }
     return table.toString();
   }

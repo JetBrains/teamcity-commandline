@@ -22,7 +22,7 @@ import org.apache.log4j.Logger;
 
 public class Debug {
 
-  private static Map<String, Logger> ourLoggers = new HashMap<String, Logger>();
+  private static final Map<String, Logger> ourLoggers = new HashMap<String, Logger>();
 
   private boolean debugMode = false;
 

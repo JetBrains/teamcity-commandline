@@ -26,6 +26,7 @@ import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.text.MessageFormat;
 import java.util.*;
+import java.util.List;
 import javax.naming.directory.InvalidAttributesException;
 import jetbrains.buildServer.*;
 import jetbrains.buildServer.core.runtime.IProgressMonitor;
@@ -66,28 +67,28 @@ public class RemoteRun implements ICommand {
   static final int SLEEP_INTERVAL = 1000 * 5;
   static final int DEFAULT_TIMEOUT = 1000 * 60 * 60;
 
-  static final String ID = Messages.getString("RemoteRun.command.id"); //$NON-NLS-1$
+  static final String ID = Messages.getString("RemoteRun.command.id"); 
 
-  static final String OVERRIDING_MAPPING_FILE_PARAM = Messages.getString("RemoteRun.overriding.config.file.argument"); //$NON-NLS-1$
+  static final String OVERRIDING_MAPPING_FILE_PARAM = Messages.getString("RemoteRun.overriding.config.file.argument"); 
 
-  static final String CONFIGURATION_PARAM = Messages.getString("RemoteRun.config.runtime.param"); //$NON-NLS-1$
-  static final String CONFIGURATION_PARAM_LONG = Messages.getString("RemoteRun.config.runtime.param.long"); //$NON-NLS-1$
+  static final String CONFIGURATION_PARAM = Messages.getString("RemoteRun.config.runtime.param"); 
+  static final String CONFIGURATION_PARAM_LONG = Messages.getString("RemoteRun.config.runtime.param.long"); 
 
-  static final String PROJECT_PARAM = Messages.getString("RemoteRun.project.runtime.param"); //$NON-NLS-1$
-  static final String PROJECT_PARAM_LONG = Messages.getString("RemoteRun.project.runtime.param.long"); //$NON-NLS-1$
+  static final String PROJECT_PARAM = Messages.getString("RemoteRun.project.runtime.param"); 
+  static final String PROJECT_PARAM_LONG = Messages.getString("RemoteRun.project.runtime.param.long"); 
 
-  static final String MESSAGE_PARAM = Messages.getString("RemoteRun.message.runtime.param"); //$NON-NLS-1$
-  static final String MESSAGE_PARAM_LONG = Messages.getString("RemoteRun.message.runtime.param.long"); //$NON-NLS-1$
+  static final String MESSAGE_PARAM = Messages.getString("RemoteRun.message.runtime.param"); 
+  static final String MESSAGE_PARAM_LONG = Messages.getString("RemoteRun.message.runtime.param.long"); 
 
-  static final String TIMEOUT_PARAM = Messages.getString("RemoteRun.timeout.runtime.param"); //$NON-NLS-1$
-  static final String TIMEOUT_PARAM_LONG = Messages.getString("RemoteRun.timeout.runtime.param.long"); //$NON-NLS-1$
+  static final String TIMEOUT_PARAM = Messages.getString("RemoteRun.timeout.runtime.param"); 
+  static final String TIMEOUT_PARAM_LONG = Messages.getString("RemoteRun.timeout.runtime.param.long"); 
 
-  static final String NO_WAIT_SWITCH = Messages.getString("RemoteRun.nowait.runtime.param"); //$NON-NLS-1$
-  static final String NO_WAIT_SWITCH_LONG = Messages.getString("RemoteRun.nowait.runtime.param.long"); //$NON-NLS-1$
+  static final String NO_WAIT_SWITCH = Messages.getString("RemoteRun.nowait.runtime.param"); 
+  static final String NO_WAIT_SWITCH_LONG = Messages.getString("RemoteRun.nowait.runtime.param.long"); 
 
-  static final String PATCHES_FOLDER = System.getProperty("java.io.tmpdir"); //$NON-NLS-1$
+  static final String PATCHES_FOLDER = System.getProperty("java.io.tmpdir"); 
 
-  static final String CHECK_FOR_CHANGES_EARLY_SWITCH = Messages.getString("RemoteRun.checkforchangesearly.runtime.param.long"); //$NON-NLS-1$
+  static final String CHECK_FOR_CHANGES_EARLY_SWITCH = Messages.getString("RemoteRun.checkforchangesearly.runtime.param.long"); 
 
   private Server myServer;
   private String myComments;
@@ -100,26 +101,27 @@ public class RemoteRun implements ICommand {
   private boolean myCleanoff;
 
   static {
-    Args.registerArgument(MESSAGE_PARAM, String.format(".*%s\\s+[^\\s].*", MESSAGE_PARAM)); //$NON-NLS-1$
-    Args.registerArgument(MESSAGE_PARAM_LONG, String.format(".*%s\\s+[^\\s].*", MESSAGE_PARAM_LONG)); //$NON-NLS-1$
+    Args.registerArgument(MESSAGE_PARAM, String.format(".*%s\\s+\\S.*", MESSAGE_PARAM)); 
+    Args.registerArgument(MESSAGE_PARAM_LONG, String.format(".*%s\\s+\\S.*", MESSAGE_PARAM_LONG)); 
 
-    Args.registerArgument(CONFIGURATION_PARAM, String.format(".*%s\\s+[^\\s].*", CONFIGURATION_PARAM)); //$NON-NLS-1$
-    Args.registerArgument(CONFIGURATION_PARAM_LONG, String.format(".*%s\\s+[^\\s].*", CONFIGURATION_PARAM_LONG)); //$NON-NLS-1$
+    Args.registerArgument(CONFIGURATION_PARAM, String.format(".*%s\\s+\\S.*", CONFIGURATION_PARAM)); 
+    Args.registerArgument(CONFIGURATION_PARAM_LONG, String.format(".*%s\\s+\\S.*", CONFIGURATION_PARAM_LONG)); 
 
-    Args.registerArgument(PROJECT_PARAM, String.format(".*%s\\s+[^\\s].*", PROJECT_PARAM)); //$NON-NLS-1$
-    Args.registerArgument(PROJECT_PARAM_LONG, String.format(".*%s\\s+[^\\s].*", PROJECT_PARAM_LONG)); //$NON-NLS-1$
+    Args.registerArgument(PROJECT_PARAM, String.format(".*%s\\s?\\S*", PROJECT_PARAM)); 
+    Args.registerArgument(PROJECT_PARAM_LONG, String.format(".*%s\\s?\\S*", PROJECT_PARAM_LONG)); 
 
-    Args.registerArgument(TIMEOUT_PARAM, String.format(".*%s\\s+[0-9]+.*", TIMEOUT_PARAM)); //$NON-NLS-1$
-    Args.registerArgument(TIMEOUT_PARAM_LONG, String.format(".*%s\\s+[0-9]+.*", TIMEOUT_PARAM_LONG)); //$NON-NLS-1$
+    Args.registerArgument(TIMEOUT_PARAM, String.format(".*%s\\s+\\d+.*", TIMEOUT_PARAM)); 
+    Args.registerArgument(TIMEOUT_PARAM_LONG, String.format(".*%s\\s+\\d+.*", TIMEOUT_PARAM_LONG)); 
 
-    Args.registerArgument(OVERRIDING_MAPPING_FILE_PARAM, String.format(".*%s\\s+[^\\s].*", OVERRIDING_MAPPING_FILE_PARAM)); //$NON-NLS-1$
+    Args.registerArgument(OVERRIDING_MAPPING_FILE_PARAM, String.format(".*%s\\s+\\S.*", OVERRIDING_MAPPING_FILE_PARAM)); 
 
   }
 
+  private Map<String, String> myConfigExternal2InternalMap;
+
   public void execute(final Server server, Args args, final IProgressMonitor monitor) throws EAuthorizationException, ECommunicationException, ERemoteError, InvalidAttributesException {
     myServer = server;
-    // configuration
-    final String cfgId = getConfigurations(server, args);
+
     // comment
     myComments = args.getArgument(MESSAGE_PARAM, MESSAGE_PARAM_LONG);
 
@@ -148,64 +150,115 @@ public class RemoteRun implements ICommand {
     final File patchFile = createPatch(myServer.getURL(), tcResources, monitor);
 
     // collect configurations for running
-    final Collection<String> configurations = getApplicableConfigurations(cfgId, tcResources, monitor);
-    if (configurations.isEmpty()) {
-      throw new IllegalArgumentException(String.format("No one of [%s] configurations affected by collected changes", cfgId));
+    final Collection<String> requestedInternalIds = getRequestedConfigurations(args);
+    final Collection<String> internalIds = getApplicableConfigurations(requestedInternalIds, tcResources, monitor);
+    if (internalIds.isEmpty()) {
+      throw new IllegalArgumentException(String.format("No one of [%s] configurations affected by collected changes",
+                                                       StringUtil.join(",", requestedInternalIds)));
     }
     // prepare changes list
     final long chaneListId = createChangeList(myServer.getURL(), myServer.getCurrentUser(), patchFile, monitor);
 
     // fire RR
-    scheduleRemoteRun(configurations, chaneListId, args.hasArgument(CHECK_FOR_CHANGES_EARLY_SWITCH), monitor);
+    scheduleRemoteRun(internalIds, chaneListId, args.hasArgument(CHECK_FOR_CHANGES_EARLY_SWITCH), monitor);
 
     // process result
     if (isNoWait) {
-      myResultDescription = MessageFormat.format(Messages.getString("RemoteRun.schedule.result.ok.pattern"), String.valueOf(chaneListId)); //$NON-NLS-1$
+      myResultDescription = MessageFormat.format(Messages.getString("RemoteRun.schedule.result.ok.pattern"), String.valueOf(chaneListId)); 
 
     } else {
       final PersonalChangeDescriptor result = waitForSuccessResult(chaneListId, myTimeout, monitor);
-      myResultDescription = MessageFormat.format(Messages.getString("RemoteRun.build.result.ok.pattern"), String.valueOf(chaneListId), result.getPersonalChangeStatus()); //$NON-NLS-1$
+      myResultDescription = MessageFormat.format(Messages.getString("RemoteRun.build.result.ok.pattern"), String.valueOf(chaneListId), result.getPersonalChangeStatus()); 
     }
   }
 
-  private static String getConfigurations(final Server server, final Args args) throws ECommunicationException {
-    if (!args.hasArgument(CONFIGURATION_PARAM, CONFIGURATION_PARAM_LONG)) return null;
+  /**
+   * @return A string of joined build configuration internal IDs which should be used to start the build
+   */
+  private Collection<String> getRequestedConfigurations(final Args args) throws ECommunicationException {
 
     final String projectId = args.getArgument(PROJECT_PARAM, PROJECT_PARAM_LONG);
     if (projectId != null) {
-      return StringUtil.join(",", filterAndConvertCollection(server.getConfigurations(), new Converter<String, BuildTypeData>() {
-                                                               public String createFrom(@NotNull final BuildTypeData source) {
-                                                                 return source.getId();
-                                                               }
-                                                             }, new Filter<BuildTypeData>() {
-                                                               public boolean accept(@NotNull final BuildTypeData data) {
-                                                                 return data.getProjectId().equals(projectId);
-                                                               }
-                                                             }
-      ));
+      return getBuildTypeInternalIds(projectId);
     }
 
-    return args.getArgument(CONFIGURATION_PARAM, CONFIGURATION_PARAM_LONG);
+    final String buildTypeIds = args.getArgument(CONFIGURATION_PARAM, CONFIGURATION_PARAM_LONG);
+    return convertExternalId2InternalId(buildTypeIds);
   }
 
+  /**
+   * @param projectId Could be internal or external ID
+   */
+  private List<String> getBuildTypeInternalIds(final String projectId) throws ECommunicationException {
+    final List<String> result = filterAndConvertCollection(myServer.getConfigurations(), new Converter<String, BuildTypeData>() {
+                                                             public String createFrom(@NotNull final BuildTypeData source) {
+                                                               return source.getId();
+                                                             }
+                                                           }, new Filter<BuildTypeData>() {
+                                                             public boolean accept(@NotNull final BuildTypeData data) {
+                                                               return projectId.equals(data.getProjectId()) || projectId.equals(data.getProjectExternalId());
+                                                             }
+                                                           }
+    );
+
+    if (result.size() == 0 && StringUtil.isNotEmpty(projectId)) {
+      throw new IllegalArgumentException(String.format("Cannot find any relevant configurations for project with id [%s]", projectId));
+    }
+
+    return result;
+  }
+
+  private List<String> convertExternalId2InternalId(final String buildTypeIds) throws ECommunicationException {
+    final Collection<String> ids = parseConfigurations(buildTypeIds);
+    final ArrayList<String> result = new ArrayList<String>();
+    for (String id : ids) {
+      if (id.matches("bt\\d+")) {
+        result.add(id);
+      }
+      else {
+        final String internalId = getExternal2InternalMap().get(id);
+        if (internalId != null) {
+          result.add(internalId);
+        }
+      }
+    }
+
+    if (ids.size() > 0 && result.size() == 0) {
+      throw new IllegalArgumentException(String.format("Cannot find any relevant configuration ids for [%s]", buildTypeIds));
+    }
+
+    return result;
+  }
+
+  private Map<String, String> getExternal2InternalMap() throws ECommunicationException {
+    if (myConfigExternal2InternalMap == null) {
+      myConfigExternal2InternalMap = new HashMap<String, String>();
+      for (BuildTypeData configuration : myServer.getConfigurations()) {
+        myConfigExternal2InternalMap.put(configuration.getExternalId(), configuration.getId());
+      }
+    }
+    return myConfigExternal2InternalMap;
+  }
+
+
   Collection<ITCResource> getTCResources(final TCWorkspace workspace, final Collection<File> files, final IProgressMonitor monitor) throws IllegalArgumentException {
-    monitor.beginTask(Messages.getString("RemoteRun.mapping.step.name")); //$NON-NLS-1$
+    monitor.beginTask(Messages.getString("RemoteRun.mapping.step.name")); 
     final HashSet<ITCResource> out = new HashSet<ITCResource>(files.size());
     for (final File file : files) {
       final ITCResource resource = workspace.getTCResource(file);
       if (resource != null && resource.getRepositoryPath() != null) {
         out.add(resource);
       } else {
-        Debug.getInstance().debug(RemoteRun.class, String.format("? \"%s\" has not associated ITCResource(%s) or empty RepositoryPath(%s)", //$NON-NLS-1$
+        Debug.getInstance().debug(RemoteRun.class, String.format("? \"%s\" has not associated ITCResource(%s) or empty RepositoryPath(%s)", 
             file, resource, resource != null ? resource.getRepositoryPath() : null));
       }
     }
     // fire exception if nothing found
     if (out.isEmpty()) {
-      throw new IllegalArgumentException(String.format(Messages.getString("RemoteRun.no.one.mappings.found.error.message"), files.size())); //$NON-NLS-1$
+      throw new IllegalArgumentException(String.format(Messages.getString("RemoteRun.no.one.mappings.found.error.message"), files.size())); 
     }
     monitor.status(new ProgressStatus(IProgressStatus.INFO, String.format(Messages.getString("RemoteRun.mapping.step.done.message"), out.size(), files.size())));
-    monitor.done(); //$NON-NLS-1$
+    monitor.done(); 
     return out;
   }
 
@@ -216,7 +269,7 @@ public class RemoteRun implements ICommand {
       if (!myCleanoff) {
         patch.deleteOnExit();
       }
-      Debug.getInstance().debug(this.getClass(), String.format("Patch %s filled with %d bytes", patch.getAbsolutePath(), patch.length())); //$NON-NLS-1$
+      Debug.getInstance().debug(this.getClass(), String.format("Patch %s filled with %d bytes", patch.getAbsolutePath(), patch.length())); 
       return patch;
 
     } catch (IOException e) {
@@ -232,38 +285,39 @@ public class RemoteRun implements ICommand {
     return null;
   }
 
-  Collection<String> getApplicableConfigurations(final String cfgId, final Collection<ITCResource> files, final IProgressMonitor monitor) throws ECommunicationException {
+  Collection<String> getApplicableConfigurations(final Collection<String> requestedIDs, final Collection<ITCResource> files, final IProgressMonitor monitor) throws ECommunicationException {
     // get all configurations affected by URLs
     final HashSet<String> buffer = new HashSet<String>();
-    monitor.beginTask("Collecting configurations for running"); //$NON-NLS-1$
+    monitor.beginTask("Collecting configurations for running"); 
     final HashSet<String> urls = new HashSet<String>();
     for (ITCResource file : files) {
       urls.add(file.getRepositoryPath());
     }
-    final Collection<String> applicableConfigurations = myServer.getApplicableConfigurations(urls);
-    Debug.getInstance().debug(this.getClass(), String.format("All applicable configurations: %s", applicableConfigurations));
+
+    final Collection<String> applicableInternalIDs = myServer.getApplicableConfigurations(urls);
+
+    Debug.getInstance().debug(this.getClass(), String.format("All applicable configurations: %s", applicableInternalIDs));
     // make intersection of passed and applicable
-    if (cfgId != null) {
-      final Collection<String> requestedConfigurations = parseConfigurations(cfgId);
-      Debug.getInstance().debug(this.getClass(), String.format("Requested configurations for running: %s", requestedConfigurations));
-      if (!requestedConfigurations.isEmpty()) {
-        final Collection<String> intersection = Util.intersect(applicableConfigurations, requestedConfigurations);
+    if (!requestedIDs.isEmpty()) {
+      Debug.getInstance().debug(this.getClass(), String.format("Requested configurations for running: %s", requestedIDs));
+      if (!requestedIDs.isEmpty()) {
+        final Collection<String> intersection = Util.intersect(applicableInternalIDs, requestedIDs);
         Debug.getInstance().debug(this.getClass(), String.format("Use configurations for running: %s", intersection));
         return intersection;
       }
-      return requestedConfigurations;
+      return requestedIDs;
     }
     // if nothing passed run on all applicable
     Debug.getInstance().debug(this.getClass(), String.format("Using all applicable configurations for running", ""));
-    buffer.addAll(applicableConfigurations);
-    monitor.status(new ProgressStatus(IProgressStatus.INFO, MessageFormat.format(Messages.getString("RemoteRun.collected.configuration.done.pattern"), buffer.size(), buffer))); //$NON-NLS-1$
+    buffer.addAll(applicableInternalIDs);
+    monitor.status(new ProgressStatus(IProgressStatus.INFO, MessageFormat.format(Messages.getString("RemoteRun.collected.configuration.done.pattern"), buffer.size(), buffer))); 
     monitor.done();
     return buffer;
   }
 
   static Collection<String> parseConfigurations(final String cfgId) {
     if (cfgId == null) {
-      return Collections.<String> emptyList();
+      return Collections.emptyList();
     }
     final String[] configs = cfgId.trim().split(",");
     final HashSet<String> out = new HashSet<String>(configs.length);
@@ -273,12 +327,12 @@ public class RemoteRun implements ICommand {
         out.add(trimed);
       }
     }
-    return Collections.<String> unmodifiableSet(out);
+    return Collections.unmodifiableSet(out);
   }
 
   PersonalChangeDescriptor waitForSuccessResult(final long changeListId, final long timeOut, IProgressMonitor monitor) throws ECommunicationException, ERemoteError {
     sleep(3000);
-    monitor.beginTask(Messages.getString("RemoteRun.wait.for.build.step.name")); //$NON-NLS-1$
+    monitor.beginTask(Messages.getString("RemoteRun.wait.for.build.step.name")); 
     final long startTime = System.currentTimeMillis();
     UserChangeStatus prevCurrentStatus = null;
     while ((System.currentTimeMillis() - startTime) < timeOut) {
@@ -290,12 +344,12 @@ public class RemoteRun implements ICommand {
           if (!currentStatus.equals(prevCurrentStatus)) {
             prevCurrentStatus = currentStatus;
             System.out.print(MessageFormat.format(Messages.getString("RemoteRun.wait.for.build.statuschanged.step.name"), getBuildStatusDescription(currentStatus)));
-//            monitor.status(new ProgressStatus(IProgressStatus.INFO, MessageFormat.format(Messages.getString("RemoteRun.wait.for.build.statuschanged.step.name"), getBuildStatusDescription(currentStatus)))); //$NON-NLS-1$
-//            monitor.worked(); //$NON-NLS-1$
+//            monitor.status(new ProgressStatus(IProgressStatus.INFO, MessageFormat.format(Messages.getString("RemoteRun.wait.for.build.statuschanged.step.name"), getBuildStatusDescription(currentStatus)))); 
+//            monitor.worked(); 
           }
           if (UserChangeStatus.FAILED_WITH_RESPONSIBLE == currentStatus || UserChangeStatus.FAILED == currentStatus || UserChangeStatus.CANCELED == currentStatus) {
             System.out.println();
-            throw new ERemoteError(MessageFormat.format(Messages.getString("RemoteRun.build.failed.error.pattern"), getBuildStatusDescription(currentStatus))); //$NON-NLS-1$
+            throw new ERemoteError(MessageFormat.format(Messages.getString("RemoteRun.build.failed.error.pattern"), getBuildStatusDescription(currentStatus))); 
           }
           // check commit status
           final PersonalChangeDescriptor descriptor = data.getPersonalDesc();
@@ -309,7 +363,7 @@ public class RemoteRun implements ICommand {
           } else if (PersonalChangeCommitDecision.DO_NOT_COMMIT == commitStatus) {
             System.out.println();            
             // build is OK, but commit is not allowed
-            throw new ERemoteError(MessageFormat.format(Messages.getString("RemoteRun.build.ok.commit.rejected.error.pattern"), getCommitStatusDescription(commitStatus))); //$NON-NLS-1$
+            throw new ERemoteError(MessageFormat.format(Messages.getString("RemoteRun.build.ok.commit.rejected.error.pattern"), getCommitStatusDescription(commitStatus))); 
           }
         }
       }
@@ -321,7 +375,7 @@ public class RemoteRun implements ICommand {
       }
     }
     // so, timeout exceed
-    throw new RuntimeException(MessageFormat.format(Messages.getString("RemoteRun.wait.for.build.timeout.exceed.error"), myTimeout, changeListId)); //$NON-NLS-1$
+    throw new RuntimeException(MessageFormat.format(Messages.getString("RemoteRun.wait.for.build.timeout.exceed.error"), myTimeout, changeListId)); 
   }
 
   private void sleep(int millis) {
@@ -341,40 +395,40 @@ public class RemoteRun implements ICommand {
   private Object getBuildStatusDescription(final UserChangeStatus currentStatus) {
 
     if (UserChangeStatus.CANCELED == currentStatus) {
-      return Messages.getString("RemoteRun.UserChangeStatus.CANCELED"); //$NON-NLS-1$
+      return Messages.getString("RemoteRun.UserChangeStatus.CANCELED"); 
 
     } else if (UserChangeStatus.CHECKED == currentStatus) {
-      return Messages.getString("RemoteRun.UserChangeStatus.CHECKED"); //$NON-NLS-1$
+      return Messages.getString("RemoteRun.UserChangeStatus.CHECKED"); 
 
     } else if (UserChangeStatus.FAILED == currentStatus) {
-      return Messages.getString("RemoteRun.UserChangeStatus.FAILED"); //$NON-NLS-1$
+      return Messages.getString("RemoteRun.UserChangeStatus.FAILED"); 
 
     } else if (UserChangeStatus.FAILED_WITH_RESPONSIBLE == currentStatus) {
-      return Messages.getString("RemoteRun.UserChangeStatus.FAILED_WITH_RESPONSIBLE"); //$NON-NLS-1$
+      return Messages.getString("RemoteRun.UserChangeStatus.FAILED_WITH_RESPONSIBLE"); 
 
     } else if (UserChangeStatus.PENDING == currentStatus) {
-      return Messages.getString("RemoteRun.UserChangeStatus.PENDING"); //$NON-NLS-1$
+      return Messages.getString("RemoteRun.UserChangeStatus.PENDING"); 
 
     } else if (UserChangeStatus.RUNNING_FAILED == currentStatus) {
-      return Messages.getString("RemoteRun.UserChangeStatus.RUNNING_FAILED"); //$NON-NLS-1$
+      return Messages.getString("RemoteRun.UserChangeStatus.RUNNING_FAILED"); 
 
     } else if (UserChangeStatus.RUNNING_SUCCESSFULY == currentStatus) {
-      return Messages.getString("RemoteRun.UserChangeStatus.RUNNING_SUCCESSFULLY"); //$NON-NLS-1$
+      return Messages.getString("RemoteRun.UserChangeStatus.RUNNING_SUCCESSFULLY"); 
 
     }
     return currentStatus;
   }
 
-  long scheduleRemoteRun(final Collection<String> configurations, final long changeId, boolean checkForChangesEarly, final IProgressMonitor monitor) throws ECommunicationException, ERemoteError {
+  long scheduleRemoteRun(final Collection<String> internalBtIds, final long changeId, boolean checkForChangesEarly, final IProgressMonitor monitor) throws ECommunicationException, ERemoteError {
     final ArrayList<AddToQueueRequest> batch = new ArrayList<AddToQueueRequest>();
-    for (final String cfgId : configurations) {
-      final AddToQueueRequest request = new AddToQueueRequest(cfgId, changeId);
+    for (final String internalBtId : internalBtIds) {
+      final AddToQueueRequest request = new AddToQueueRequest(internalBtId, changeId);
       request.setCheckForChangesEarly(checkForChangesEarly);
       batch.add(request);
-      final String debugMessage = String.format("Created build request for \"%s\" configuration of changeId=%s, checkForChangesEarly=%s", cfgId, changeId, checkForChangesEarly);
-      Debug.getInstance().debug(RemoteRun.class, debugMessage); //$NON-NLS-1$			
+      final String debugMessage = String.format("Created build request for \"%s\" configuration of changeId=%s, checkForChangesEarly=%s", internalBtId, changeId, checkForChangesEarly);
+      Debug.getInstance().debug(RemoteRun.class, debugMessage); 			
     }
-    monitor.beginTask(Messages.getString("RemoteRun.scheduling.build.step.name")); //$NON-NLS-1$
+    monitor.beginTask(Messages.getString("RemoteRun.scheduling.build.step.name")); 
     final AddToQueueResult result = myServer.addRemoteRunToQueue(batch);// TODO:
                                                                                     // process
                                                                                     // Result
@@ -382,13 +436,13 @@ public class RemoteRun implements ICommand {
 
     if (result.hasFailures()) {
       final StringBuilder errors = new StringBuilder();
-      for (final String cfgId : configurations) {
-        errors.append(result.getFailureReason(cfgId)).append("\n"); //$NON-NLS-1$
+      for (final String cfgId : internalBtIds) {
+        errors.append(result.getFailureReason(cfgId)).append("\n"); 
       }
-      Debug.getInstance().debug(RemoteRun.class, String.format("Remote Run scheduling failed: %s", errors.toString())); //$NON-NLS-1$			
+      Debug.getInstance().debug(RemoteRun.class, String.format("Remote Run scheduling failed: %s", errors.toString())); 			
       throw new ERemoteError(errors.toString());
     } else {
-      Debug.getInstance().debug(RemoteRun.class, String.format("Remote Run scheduled successfully.")); //$NON-NLS-1$
+      Debug.getInstance().debug(RemoteRun.class, String.format("Remote Run scheduled successfully.")); 
     }
 
     monitor.done();
@@ -397,7 +451,7 @@ public class RemoteRun implements ICommand {
 
   long createChangeList(String serverURL, int userId, final File patchFile, final IProgressMonitor monitor) throws ECommunicationException {
     try {
-      monitor.beginTask(Messages.getString("RemoteRun.send.patch.step.name")); //$NON-NLS-1$
+      monitor.beginTask(Messages.getString("RemoteRun.send.patch.step.name")); 
       final SimpleHttpConnectionManager manager = new SimpleHttpConnectionManager();
       HostConfiguration hostConfiguration = new HostConfiguration();
       hostConfiguration.setHost(new URI(serverURL, false));
@@ -407,25 +461,25 @@ public class RemoteRun implements ICommand {
         connection.open();
       }
       String _uri = serverURL;
-      if (!serverURL.endsWith("/")) { //$NON-NLS-1$
-        _uri += "/"; //$NON-NLS-1$
+      if (!serverURL.endsWith("/")) { 
+        _uri += "/"; 
       }
-      _uri += "uploadChanges.html"; //$NON-NLS-1$
+      _uri += "uploadChanges.html"; 
       final PostMethod postMethod = new PostMethod(_uri);
       final BufferedInputStream content = new BufferedInputStream(new FileInputStream(patchFile));
       try {
         postMethod.setRequestEntity(new InputStreamRequestEntity(content, patchFile.length()));
-        postMethod.setQueryString(new NameValuePair[] { new NameValuePair("userId", String.valueOf(userId)), //$NON-NLS-1$
-            new NameValuePair("description", myComments), //$NON-NLS-1$
-            new NameValuePair("date", String.valueOf(System.currentTimeMillis())), //$NON-NLS-1$
-            new NameValuePair("commitType", String.valueOf(PreTestedCommitType.COMMIT_IF_SUCCESSFUL.getId())), });//TODO: make argument //$NON-NLS-1$
+        postMethod.setQueryString(new NameValuePair[] { new NameValuePair("userId", String.valueOf(userId)), 
+            new NameValuePair("description", myComments), 
+            new NameValuePair("date", String.valueOf(System.currentTimeMillis())), 
+            new NameValuePair("commitType", String.valueOf(PreTestedCommitType.COMMIT_IF_SUCCESSFUL.getId())), });//TODO: make argument 
         postMethod.execute(new HttpState(), connection);
       } finally {
         content.close();
       }
       // post requests to queue
       final String response = postMethod.getResponseBodyAsString();
-      monitor.status(new ProgressStatus(IProgressStatus.INFO, String.format("sent %d bytes", patchFile.length()))); //$NON-NLS-1$      
+      monitor.status(new ProgressStatus(IProgressStatus.INFO, String.format("sent %d bytes", patchFile.length())));       
       monitor.done();
       return Long.parseLong(response);
 
@@ -440,19 +494,19 @@ public class RemoteRun implements ICommand {
     final HashSet<String> modifiedResources = new HashSet<String>();
     final HashSet<String> deletedResources = new HashSet<String>();
     try {
-      monitor.beginTask(Messages.getString("RemoteRun.preparing.patch.step.name")); //$NON-NLS-1$
+      monitor.beginTask(Messages.getString("RemoteRun.preparing.patch.step.name")); 
       os = new DataOutputStream(new BufferedOutputStream(new FileOutputStream(patchFile)));
       patcher = new LowLevelPatchBuilderImpl(os);
       for (final ITCResource resource : resources) {
         // threat file which is not exist as deleted
         if (resource.getLocal().exists()) {
-          Debug.getInstance().debug(RemoteRun.class, String.format("+ %s", resource.getRepositoryPath())); //$NON-NLS-1$
+          Debug.getInstance().debug(RemoteRun.class, String.format("+ %s", resource.getRepositoryPath())); 
           final LowLevelPatchBuilder.WriteFileContent content = new PatchBuilderImpl.StreamWriteFileContent(new BufferedInputStream(new FileInputStream(resource.getLocal())), resource.getLocal().length());
           patcher.changeBinary(resource.getRepositoryPath(), (int) resource.getLocal().length(), content, false);
           modifiedResources.add(resource.getLocal().getPath());
 
         } else {
-          Debug.getInstance().debug(RemoteRun.class, String.format("- %s", resource.getRepositoryPath())); //$NON-NLS-1$
+          Debug.getInstance().debug(RemoteRun.class, String.format("- %s", resource.getRepositoryPath())); 
           patcher.delete(resource.getRepositoryPath(), true, false);
           deletedResources.add(resource.getLocal().getPath());
 
@@ -461,13 +515,14 @@ public class RemoteRun implements ICommand {
 
     } finally {// finalize patching
       if (patcher != null) {
-        patcher.exit(""); //$NON-NLS-1$
+        patcher.exit(""); 
         patcher.close();
       }
       if (os != null) {
         try {
           os.close();
         } catch (IOException e) {
+          //
         }
       }
       final StringBuilder patchingResult = new StringBuilder();
@@ -480,7 +535,7 @@ public class RemoteRun implements ICommand {
       if (!deletedResources.isEmpty()) {
         patchingResult.append(String.format("%d deleted file(s): %s", deletedResources.size(), deletedResources));
       }
-      monitor.status(new ProgressStatus(IProgressStatus.INFO, patchingResult.toString())); //$NON-NLS-1$
+      monitor.status(new ProgressStatus(IProgressStatus.INFO, patchingResult.toString())); 
       monitor.done();
     }
     return patchFile;
@@ -488,24 +543,24 @@ public class RemoteRun implements ICommand {
   }
 
   static File createPatchFile(String url) {
-    File stateLocation = new File(PATCHES_FOLDER == null ? "." : PATCHES_FOLDER); //$NON-NLS-1$
+    File stateLocation = new File(PATCHES_FOLDER == null ? "." : PATCHES_FOLDER); 
     try {
-      url = new String(Base64.encodeBase64(MessageDigest.getInstance("MD5").digest(url.getBytes()))); //$NON-NLS-1$
+      url = new String(Base64.encodeBase64(MessageDigest.getInstance("MD5").digest(url.getBytes()))); 
     } catch (NoSuchAlgorithmException e) {
       //
     }
-    File file = new File(stateLocation, url + ".patch"); //$NON-NLS-1$
+    File file = new File(stateLocation, url + ".patch"); 
     file.getParentFile().mkdirs();
     return file;
   }
 
   Collection<File> getFiles(Args args, IProgressMonitor monitor) throws IllegalArgumentException {
-    monitor.beginTask(Messages.getString("RemoteRun.collect.changes.step.name")); //$NON-NLS-1$
+    monitor.beginTask(Messages.getString("RemoteRun.collect.changes.step.name")); 
     final String[] elements = args.getArguments();
     int i = 0;// skip command
     while (i < elements.length) {
       final String currentToken = elements[i].toLowerCase();
-      if (elements[i].startsWith("-")) { //$NON-NLS-1$
+      if (elements[i].startsWith("-")) { 
         if (elements[i].toLowerCase().equals(CONFIGURATION_PARAM) || elements[i].toLowerCase().equals(CONFIGURATION_PARAM_LONG)) {
           i++; // arg
           if (elements[i].toLowerCase().equals(PROJECT_PARAM) || elements[i].toLowerCase().equals(PROJECT_PARAM_LONG)) {
@@ -535,33 +590,33 @@ public class RemoteRun implements ICommand {
     if (elements.length > i) {// file's part existing
       final String[] buffer = new String[elements.length - i];
       System.arraycopy(elements, i, buffer, 0, buffer.length);
-      Debug.getInstance().debug(RemoteRun.class, String.format("Read from arguments: %s", Arrays.toString(buffer))); //$NON-NLS-1$
+      Debug.getInstance().debug(RemoteRun.class, String.format("Read from arguments: %s", Arrays.toString(buffer))); 
       final Collection<File> files = collectFiles(buffer);
       result.addAll(traverse(files));
 
     } else {
       // try read from stdin
-      Debug.getInstance().debug(RemoteRun.class, "Trying stdin..."); //$NON-NLS-1$
+      Debug.getInstance().debug(RemoteRun.class, "Trying stdin..."); 
       final String input = readFromStream(System.in);
       if (input != null && input.trim().length() > 0) {
-        final String[] buffer = input.split("[\n\r]"); //$NON-NLS-1$
-        Debug.getInstance().debug(RemoteRun.class, String.format("Read from stdin: %s", Arrays.toString(buffer))); //$NON-NLS-1$
+        final String[] buffer = input.split("[\n\r]"); 
+        Debug.getInstance().debug(RemoteRun.class, String.format("Read from stdin: %s", Arrays.toString(buffer))); 
         final Collection<File> files = collectFiles(buffer);
         result.addAll(traverse(files));
 
       } else { // let's use current directory as root if nothing passed
-        Debug.getInstance().debug(RemoteRun.class, String.format("Stdin is empty. Will use current (%s) folder as root", new File("."))); //$NON-NLS-1$ //$NON-NLS-2$
-        result.addAll(traverse(TCC_FILTER.accept(Util.SVN_FILES_FILTER.accept(Util.CVS_FILES_FILTER.accept(Util.getFiles(".")))))); //$NON-NLS-1$
+        Debug.getInstance().debug(RemoteRun.class, String.format("Stdin is empty. Will use current (%s) folder as root", new File(".")));  //$NON-NLS-2$
+        result.addAll(traverse(TCC_FILTER.accept(Util.SVN_FILES_FILTER.accept(Util.CVS_FILES_FILTER.accept(Util.getFiles(".")))))); 
 
       }
     }
     if (result.size() == 0) {
-      throw new IllegalArgumentException(Messages.getString("RemoteRun.no.files.collected.for.remoterun.error.message")); //$NON-NLS-1$
+      throw new IllegalArgumentException(Messages.getString("RemoteRun.no.files.collected.for.remoterun.error.message")); 
     }
-    monitor.status(new ProgressStatus(IProgressStatus.INFO, MessageFormat.format(Messages.getString("RemoteRun.collect.changes.step.result.pattern"), result.size()))); //$NON-NLS-1$
-    monitor.done(); //$NON-NLS-1$
+    monitor.status(new ProgressStatus(IProgressStatus.INFO, MessageFormat.format(Messages.getString("RemoteRun.collect.changes.step.result.pattern"), result.size()))); 
+    monitor.done(); 
     for (final File collected : result) {
-      Debug.getInstance().debug(RemoteRun.class, String.format("%s", collected)); //$NON-NLS-1$ //$NON-NLS-2$
+      Debug.getInstance().debug(RemoteRun.class, String.format("%s", collected));  //$NON-NLS-2$
     }
     return result;
   }
@@ -583,7 +638,7 @@ public class RemoteRun implements ICommand {
     final HashSet<File> out = new HashSet<File>();
     for (final String path : elements) {
       final Collection<File> files;
-      if (!path.startsWith("@")) { //$NON-NLS-1$
+      if (!path.startsWith("@")) { 
         files = Util.getFiles(path);
       } else {
         files = Util.getFiles(new File(path.substring(1, path.length())));
@@ -620,7 +675,7 @@ public class RemoteRun implements ICommand {
 
   public String getUsageDescription() {
     return String.format(
-        Messages.getString("RemoteRun.help.usage.pattern"), //$NON-NLS-1$
+        Messages.getString("RemoteRun.help.usage.pattern"), 
         getCommandDescription(), getId(), CONFIGURATION_PARAM, CONFIGURATION_PARAM_LONG, CONFIGURATION_PARAM, CONFIGURATION_PARAM_LONG,
         PROJECT_PARAM, PROJECT_PARAM_LONG, MESSAGE_PARAM, MESSAGE_PARAM_LONG, TIMEOUT_PARAM, TIMEOUT_PARAM_LONG, OVERRIDING_MAPPING_FILE_PARAM,
         NO_WAIT_SWITCH, NO_WAIT_SWITCH_LONG
@@ -628,7 +683,7 @@ public class RemoteRun implements ICommand {
   }
 
   public String getCommandDescription() {
-    return Messages.getString("RemoteRun.help.description"); //$NON-NLS-1$
+    return Messages.getString("RemoteRun.help.description"); 
   }
 
   public String getResultDescription() {
@@ -637,7 +692,7 @@ public class RemoteRun implements ICommand {
 
   public void validate(Args args) throws IllegalArgumentException {
     if (args == null || !args.hasArgument(MESSAGE_PARAM, MESSAGE_PARAM_LONG)) {
-      throw new IllegalArgumentException(MessageFormat.format(Messages.getString("RemoteRun.missing.message.para.error.pattern"), MESSAGE_PARAM, MESSAGE_PARAM_LONG)); //$NON-NLS-1$
+      throw new IllegalArgumentException(MessageFormat.format(Messages.getString("RemoteRun.missing.message.para.error.pattern"), MESSAGE_PARAM, MESSAGE_PARAM_LONG)); 
     }
   }
 

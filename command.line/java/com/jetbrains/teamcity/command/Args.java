@@ -31,7 +31,7 @@ public class Args {
 
   static HashMap<String, Pattern> ourRegisteredArgs = new HashMap<String, Pattern>();
 
-  private String[] myArgs;
+  private final String[] myArgs;
 
   private String myArgsLine = "";
 
@@ -94,7 +94,7 @@ public class Args {
       if (ourRegisteredArgs.containsKey(arg)) {
         registeredFound = true;
         final Pattern pattern = ourRegisteredArgs.get(arg);
-        match |= pattern.matcher(myArgsLine).matches();
+        match |= pattern.matcher(myArgsLine).find();
       }
     }
     if (registeredFound) {

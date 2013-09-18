@@ -30,7 +30,7 @@ public class GetBuildTypeMappingActionTest extends BaseWebTestCase {
 
   private Element runActionForBuildType() {
     final Element response = new Element("response");
-    myAction.process(new MockRequest("mappingFor", myBuildType.getId()), new MockResponse(), response);
+    myAction.process(new MockRequest("mappingFor", myBuildType.getExternalId()), new MockResponse(), response);
     return response;
   }
 

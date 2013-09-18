@@ -15,6 +15,7 @@ BS.CommandLine = {
   fillBuildTypesList: function() {
     this.removeAllButFirst();
     this.addOptionsFromModel();
+    BS.jQueryDropdown(this.selectElement());
   },
 
   removeAllButFirst: function() {
@@ -25,22 +26,25 @@ BS.CommandLine = {
   },
 
   addOptionsFromModel: function() {
-    var selectElement = this.selectElement();
-    for (var i = 0; i < BS.BuildTypes.length; i ++) {
+    var selectOptions = [], i;
+    for (i = 0; i < BS.BuildTypes.length; i ++) {
       var buildType = BS.BuildTypes[i];
 
       if (buildType.id) {
-        var option = document.createElement("option");
-        option.value = buildType.id;
-        option.text = "[" + buildType.id + "] " + buildType.fullName;
-        try {
-          selectElement.add(option, null);
-        }
-        catch(e) {
-          selectElement.add(option);
-        }
+        var text = buildType.fullName + " [" + buildType.externalId + "]";
+        selectOptions.push({id: buildType.externalId, text: text})
       }
     }
+
+    selectOptions.sort(function(a, b) {
+      return a.text.localeCompare(b.text);
+    });
+
+    var innerText = "";
+    for(i = 0; i < selectOptions.length; i ++) {
+      innerText += "<option value='" + selectOptions[i].id + "'>" + selectOptions[i].text + "</option>"
+    }
+    this.selectElement().innerHTML += innerText;
   },
 
   installControlHandlers: function() {
