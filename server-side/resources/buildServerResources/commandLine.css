@@ -61,3 +61,7 @@ input.duplicated {
 input.duplicate {
   background-color: #ffdddd; 
 }
+
+h3.header {
+  font-size: 1.3em;
+}
