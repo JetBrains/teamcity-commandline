@@ -172,7 +172,7 @@ public class Storage {
       try {
         storage.clear();
         final String content = FileUtil.readText(new File(getStorageFile()));
-        storage.putAll((Map<? extends Object, ? extends Serializable>) deserializeObject(content));
+        storage.putAll((Map<?, ? extends Serializable>) deserializeObject(content));
       } catch (FileNotFoundException e) {
         // do nothing
       } catch (Exception e) {
