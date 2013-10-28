@@ -29,7 +29,7 @@ public class ProgressStatus implements IProgressStatus {
 
   private Throwable exception = null;
 
-  private LinkedList<IProgressStatus> myChildren = new LinkedList<IProgressStatus>();
+  private final LinkedList<IProgressStatus> myChildren = new LinkedList<IProgressStatus>();
 
   public ProgressStatus(int severity, String message, Throwable exception) {
     setSeverity(severity);

@@ -37,7 +37,7 @@ class CommandRegistry {
 
   private static CommandRegistry ourInstance;
 
-  private HashMap<String, ICommand> ourRegistry = new HashMap<String, ICommand>();
+  private final HashMap<String, ICommand> ourRegistry = new HashMap<String, ICommand>();
 
   private CommandRegistry() {
     // try to find any ICommand and register

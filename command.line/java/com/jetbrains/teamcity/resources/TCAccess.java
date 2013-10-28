@@ -50,7 +50,7 @@ public class TCAccess {
 
   private static TCAccess ourInstance;
 
-  private ArrayList<ICredential> myCredentials;
+  private final ArrayList<ICredential> myCredentials;
 
   public static synchronized TCAccess getInstance() {
     if (ourInstance == null) {
@@ -86,10 +86,10 @@ public class TCAccess {
 
     private static final long serialVersionUID = 468772737075052773L;
 
-    private String myPassword;
-    private String myServer;
-    private String myUser;
-    private long myTs;
+    private final String myPassword;
+    private final String myServer;
+    private final String myUser;
+    private final long myTs;
 
     TeamCityCredential(final String url, final String user, final String password) {
       myPassword = password;// TODO: crypt it

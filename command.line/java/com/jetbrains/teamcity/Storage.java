@@ -36,9 +36,9 @@ public class Storage {
 
   private static IStorageFS ourStorageFS;
 
-  private HashMap<Object, Serializable> myStorage = new HashMap<Object, Serializable>();
+  private final HashMap<Object, Serializable> myStorage = new HashMap<Object, Serializable>();
 
-  private String myStorageFile;
+  private final String myStorageFile;
 
   private Storage() {
     // init storage
@@ -112,7 +112,7 @@ public class Storage {
       this.myStorageFile = myStorageFile;
     }
 
-    private String myStorageFile;
+    private final String myStorageFile;
 
     public Map<Object, Serializable> load(HashMap<Object, Serializable> storage) {
       try {
@@ -145,7 +145,7 @@ public class Storage {
 
   private static class XMLStorageFS implements IStorageFS {
 
-    private String myStorageFile;
+    private final String myStorageFile;
 
     public XMLStorageFS(final String myStorageFile) {
       this.myStorageFile = myStorageFile + ".xml"; //$NON-NLS-1$
@@ -162,7 +162,7 @@ public class Storage {
     }
 
     // TODO: move to utils
-    private static XStreamHolder ourXStreamHolder = new XStreamHolder() {
+    private static final XStreamHolder ourXStreamHolder = new XStreamHolder() {
       protected void configureXStream(XStream xStream) {
         ServerXStreamFormat.formatXStream(xStream);
       }

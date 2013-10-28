@@ -42,7 +42,7 @@ public class CommandRunner {
   static final String PASSWORD_ARG = Messages.getString("CommandRunner.global.runtime.param.password"); //$NON-NLS-1$
   static final String HOST_ARG = Messages.getString("CommandRunner.global.runtime.param.host"); //$NON-NLS-1$
 
-  private static Comparator<ICredential> ourCredentialComaparator = new Comparator<ICredential>() {
+  private static final Comparator<ICredential> ourCredentialComaparator = new Comparator<ICredential>() {
     public int compare(ICredential o1, ICredential o2) {
       if (o1.getCreationTimestamp() > o2.getCreationTimestamp()) {
         return -1;

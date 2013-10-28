@@ -52,9 +52,9 @@ public class Platform {
 
   public static Platform UNKNOWN = getPlatform("unknown");
 
-  private String myOs;
+  private final String myOs;
 
-  private String myArch;
+  private final String myArch;
 
   private Platform(final String platform, final String arch) {
     myOs = platform;

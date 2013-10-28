@@ -32,7 +32,7 @@ public class Util {
 
   public static IFileFilter SVN_FILES_FILTER = new SVNFilter();
 
-  private static Pattern ASTERISK_PATTERN = Pattern.compile(".*"); //$NON-NLS-1$
+  private static final Pattern ASTERISK_PATTERN = Pattern.compile(".*"); //$NON-NLS-1$
 
   public static String getArgumentValue(final String[] args, final String... arguments) {
     for (int i = 0; i < args.length; i++) {
@@ -217,8 +217,8 @@ public class Util {
   public static class StringTable {
 
     private String[] myHeader;
-    private LinkedList<String[]> rows = new LinkedList<String[]>();
-    private int myNumColumns;
+    private final LinkedList<String[]> rows = new LinkedList<String[]>();
+    private final int myNumColumns;
 
     public StringTable(final String[] header) {
       if (header == null || header.length == 0) {

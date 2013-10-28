@@ -28,11 +28,11 @@ public class TCWorkspace {
 
   public static final String TCC_GLOBAL_ADMIN_FILE = new File(System.getProperty("user.home"), Storage.TC_CLI_HOME + File.separator + Messages.getString("TCWorkspace.global.admin.file")).getAbsolutePath();
 
-  private HashMap<File, ITCResourceMatcher> myCache = new HashMap<File, ITCResourceMatcher>();
+  private final HashMap<File, ITCResourceMatcher> myCache = new HashMap<File, ITCResourceMatcher>();
 
-  private File myRootFolder;
+  private final File myRootFolder;
 
-  private ITCResourceMatcher myGlobalMatcher;
+  @SuppressWarnings("FieldMayBeFinal") private ITCResourceMatcher myGlobalMatcher;
 
   private ITCResourceMatcher myOverridingMatcher;
 
@@ -145,8 +145,8 @@ public class TCWorkspace {
 
   static class TCResource implements ITCResource {
 
-    private File myLocal;
-    private String myRepositoryPath;
+    private final File myLocal;
+    private final String myRepositoryPath;
 
     TCResource(File local, String repositoryPath) {
       myLocal = local;

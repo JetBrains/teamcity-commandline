@@ -27,7 +27,7 @@ import jetbrains.buildServer.xmlrpc.XmlRpcTarget;
 import org.jetbrains.annotations.NotNull;
 
 public class RemoteServerFacadeImpl extends RemoteBuildServerImpl implements RemoteServerFacade {
-  private SessionXmlRpcTarget mySession;
+  private final SessionXmlRpcTarget mySession;
 
   public RemoteServerFacadeImpl(SessionXmlRpcTarget target) {
     super(target, new ApplicationFacadeStub(), new VersionCheckerStub());
@@ -114,7 +114,7 @@ public class RemoteServerFacadeImpl extends RemoteBuildServerImpl implements Rem
     }
   }
   
-  private Map<String, RemoteHandlerFacade> myRemoteFacades = new HashMap<String, RemoteHandlerFacade>();
+  private final Map<String, RemoteHandlerFacade> myRemoteFacades = new HashMap<String, RemoteHandlerFacade>();
   
   @NotNull
   private synchronized RemoteHandlerFacade getRemoteHandlerFacade(@NotNull String handlerName) {

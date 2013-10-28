@@ -36,8 +36,8 @@ public class FileBasedMatcher implements ITCResourceMatcher {
   };
 
   File myFile;
-  private List<String> myItems;
-  private TreeMap<String, String> myRulesMap = new TreeMap<String, String>(PATH_SORTER);
+  private final List<String> myItems;
+  private final TreeMap<String, String> myRulesMap = new TreeMap<String, String>(PATH_SORTER);
 
   public static FileBasedMatcher create(final File rootFolder, final Map<File, String> localToRepo) throws IllegalArgumentException {
     // check arguments
@@ -142,8 +142,8 @@ public class FileBasedMatcher implements ITCResourceMatcher {
   }
 
   static class MatchingImpl implements ITCResourceMatcher.Matching {
-    private String myPrefix;
-    private String myRelativePath;
+    private final String myPrefix;
+    private final String myRelativePath;
 
     MatchingImpl(final String prefix, final String relativePath) {
       myPrefix = prefix;
