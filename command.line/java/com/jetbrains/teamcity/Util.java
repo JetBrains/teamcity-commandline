@@ -250,19 +250,16 @@ public class Util {
       final String[] splited = tabbedRow.split("\t");
       if (splited.length == myNumColumns) {
         addRow(splited);
-
-      } else if (splited.length < myNumColumns) {
+      }
+      else if (splited.length < myNumColumns) {
         final String[] paddedRow = new String[myNumColumns];
         Arrays.fill(paddedRow, "");
-        for (int i = 0; i < splited.length; i++) {
-          paddedRow[i] = splited[i];
-        }
+        System.arraycopy(splited, 0, paddedRow, 0, splited.length);
         addRow(paddedRow);
-      } else {
+      }
+      else {
         final String[] trimmedRow = new String[myNumColumns];
-        for (int i = 0; i < myNumColumns; i++) {
-          trimmedRow[i] = splited[i];
-        }
+        System.arraycopy(splited, 0, trimmedRow, 0, myNumColumns);
         addRow(trimmedRow);
       }
     }
