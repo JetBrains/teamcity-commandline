@@ -129,7 +129,7 @@ public class Util {
     try {
       final File simpleFile = new File(path).getCanonicalFile().getAbsoluteFile();
       if (simpleFile.exists() && simpleFile.isFile()) {
-        return Collections.<File> singletonList(simpleFile);
+        return Collections.singletonList(simpleFile);
       } else if (simpleFile.exists() && simpleFile.isDirectory()) {
         final ArrayList<File> list = new ArrayList<File>();
         FileUtil.collectMatchedFiles(simpleFile, ASTERISK_PATTERN, list);

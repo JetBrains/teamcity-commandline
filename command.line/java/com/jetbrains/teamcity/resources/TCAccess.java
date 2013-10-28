@@ -164,7 +164,7 @@ public class TCAccess {
   }
 
   public Collection<ICredential> credentials() {
-    return Collections.<ICredential> unmodifiableCollection(myCredentials); // do
+    return Collections.unmodifiableCollection(myCredentials); // do
                                                                             // not
                                                                             // allow
                                                                             // modification

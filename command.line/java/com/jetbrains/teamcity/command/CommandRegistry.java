@@ -61,7 +61,7 @@ class CommandRegistry {
   }
 
   Collection<ICommand> commands() {
-    return Collections.<ICommand> unmodifiableCollection(ourRegistry.values());
+    return Collections.unmodifiableCollection(ourRegistry.values());
   }
 
   private Collection<ICommand> findCommand() {
