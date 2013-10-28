@@ -239,7 +239,7 @@ public class RuntimeUtil {
       monitor.status(new ProgressStatus(ProgressStatus.OK, new StringBuilder("Downloading object from ").append(source).append(" to ").append(dest.getAbsolutePath()).append("...").toString()));
       HttpURLConnection connection = (HttpURLConnection) source.openConnection();
       final int totalContentLength = connection.getContentLength();
-      final int uiStepTick = (int) totalContentLength / UI_STEPS_COUNT;
+      final int uiStepTick = totalContentLength / UI_STEPS_COUNT;
       monitor.beginTask(String.format("Download"));
       monitor.status(new ProgressStatus(ProgressStatus.INFO, String.format("Loading artifact(s) from '%s'", source)));
       monitor.status(new ProgressStatus(ProgressStatus.INFO, String.format("Size reported: %s bytes", totalContentLength)));

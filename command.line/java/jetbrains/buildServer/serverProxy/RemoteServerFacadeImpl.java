@@ -47,7 +47,7 @@ public class RemoteServerFacadeImpl extends RemoteBuildServerImpl implements Rem
     });
     List<ProjectData> projectsData = new ArrayList<ProjectData>(projects.size());
     for (Object typeData : projects) {
-      final ProjectData projectData = (ProjectData) XStreamUtil.deserializeObject(typeData);
+      final ProjectData projectData = XStreamUtil.deserializeObject(typeData);
       projectsData.add(projectData);
     }
     return projectsData;

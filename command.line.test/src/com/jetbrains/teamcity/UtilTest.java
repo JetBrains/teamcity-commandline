@@ -45,14 +45,14 @@ public class UtilTest {
 		assertTrue(Util.hasArgument(new String[] {"-one", "-two"}, "-one", "-two", "-three"));
 		assertFalse(Util.hasArgument(new String[] {"-one", "-two"}, "-tree"));
 		assertFalse(Util.hasArgument(new String[] {"-one", "-two"}, (String)null));
-		assertTrue(Util.hasArgument(new String[] {"-one", "-two"}, (String)null, "-one"));
+		assertTrue(Util.hasArgument(new String[] {"-one", "-two"}, null, "-one"));
 	}
 	
 	@Test
 	public void getArgument() throws Exception {
 		assertEquals("one", Util.getArgumentValue(new String[] {"-one", "one", "-two", "two"}, "-one"));
 		assertEquals("one", Util.getArgumentValue(new String[] {" -one", " one ", "-two", "two"}, "-one "));
-		assertEquals("one", Util.getArgumentValue(new String[] {" -one", " one ", "-two", "two"}, (String)null, "-One"));
+		assertEquals("one", Util.getArgumentValue(new String[] {" -one", " one ", "-two", "two"}, null, "-One"));
 		assertEquals(null, Util.getArgumentValue(new String[] {" -one", " one ", "-two", "two"}, (String)null));
 	}
 	
