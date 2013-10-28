@@ -330,7 +330,7 @@ public class Util {
       if (method != null) {
         final Object consoleObj = method.invoke(null);
         if (consoleObj != null) {
-          final Method passwdMthd = consoleObj.getClass().getMethod("readPassword", String.class, new Object[0].getClass());
+          final Method passwdMthd = consoleObj.getClass().getMethod("readPassword", String.class, Object[].class);
           if (passwdMthd != null) {
             final char[] passwd = (char[]) passwdMthd.invoke(consoleObj, "%s", new Object[] { prompt });
             return new String(passwd);
