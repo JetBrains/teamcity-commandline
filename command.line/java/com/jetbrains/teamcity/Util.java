@@ -110,8 +110,7 @@ public class Util {
   public static String getRelativePathImpl(File home, File f) {
     final List<String> homelist = getPathList(home);
     final List<String> filelist = getPathList(f);
-    final String s = matchPathLists(homelist, filelist);
-    return s;
+    return matchPathLists(homelist, filelist);
   }
 
   public static String getRelativePath(final File root, final File to) throws IOException, IllegalArgumentException {
@@ -309,8 +308,7 @@ public class Util {
         System.out.print(prompt);
       }
       final Scanner scanner = new Scanner(System.in);
-      String line = scanner.nextLine();
-      return line;
+      return scanner.nextLine();
 
     } else {
       return readPassword(prompt);
