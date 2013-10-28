@@ -72,7 +72,7 @@ public class RemoteRunTest {
   @Test
   public void TW_9694() throws Exception {
     final File configFile = new File(ourRootFolder + File.separator + "java" + File.separator + "resources", TCWorkspace.TCC_ADMIN_FILE);
-    FileUtil.writeFile(configFile, ".=//depo/test/resources\n");
+    FileUtil.writeFileAndReportErrors(configFile, ".=//depo/test/resources\n");
     final File patchFile = new File("./test.patch");
     patchFile.createNewFile();
 
@@ -214,7 +214,7 @@ public class RemoteRunTest {
     // all ok
     configFile = new File(ourCurrentDirectory, "global_config");
     try {
-      FileUtil.writeFile(configFile, ".=//depo/test/\n");
+      FileUtil.writeFileAndReportErrors(configFile, ".=//depo/test/\n");
       config = ourCommand.getOverridingMatcher(new Args(new String[] { RemoteRun.ID, RemoteRun.OVERRIDING_MAPPING_FILE_PARAM, configFile.getAbsolutePath() }));
       assertNotNull(config);
     } finally {

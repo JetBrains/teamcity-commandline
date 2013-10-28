@@ -130,10 +130,10 @@ public class UtilTest {
 		try{
 			final String content = MessageFormat.format("{0}{1}{2}{3}{4}", "rootTestFolder", File.separator, "java", File.separator, "1.java") + "\n" +
 				MessageFormat.format("{0}{1}{2}{3}{4}{5}{6}", "rootTestFolder", File.separator, "java", File.separator, "resources", File.separator, "1.resources");
-			
-			FileUtil.writeFile(contentFile, content);
-			
-			final Collection<File> files = Util.getFiles(contentFile);
+
+          FileUtil.writeFileAndReportErrors(contentFile, content);
+
+          final Collection<File> files = Util.getFiles(contentFile);
 			assertEquals(2, files.size());
 			
 		} finally {
@@ -148,10 +148,10 @@ public class UtilTest {
 		contentFile.createNewFile();
 		try{
 			final String content = MessageFormat.format("{0}{1}{2}", "rootTestFolder", File.separator, "java");
-			
-			FileUtil.writeFile(contentFile, content);
-			
-			final Collection<File> files = Util.getFiles(contentFile);
+
+          FileUtil.writeFileAndReportErrors(contentFile, content);
+
+          final Collection<File> files = Util.getFiles(contentFile);
 			assertEquals(3, files.size());
 			
 		} finally {
