@@ -93,7 +93,7 @@ public class RemoteRunTest {
           protected File getGlobalAdminFile() {
             return null;
           }
-        }, Arrays.asList(new File[] { controlledFile, uncontrolledFile }), RuntimeUtil.NULL_MONITOR);
+        }, Arrays.asList(controlledFile, uncontrolledFile), RuntimeUtil.NULL_MONITOR);
         System.out.println(String.format("TW_9694(): Collected resources: %s", resources));
         File patch = ourCommand.createPatch("http://any.com", resources, RuntimeUtil.NULL_MONITOR);
         System.out.println(String.format("TW_9694(): Patch size = %s", patch.length()));
