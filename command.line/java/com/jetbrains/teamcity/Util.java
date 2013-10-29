@@ -375,7 +375,7 @@ public class Util {
     }
     try {
       return new String(bos.toByteArray(), "UTF-8"); //$NON-NLS-1$
-    } catch (UnsupportedEncodingException e) {
+    } catch (UnsupportedEncodingException ignored) {
     }
     return src;
   }
