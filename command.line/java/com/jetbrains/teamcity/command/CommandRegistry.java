@@ -139,10 +139,8 @@ class CommandRegistry {
   }
 
   private boolean isIgnored(final String className) {
-    if (getClass().getName().equals(className) || TCAccess.class.getName().equals(className) || Storage.class.getName().equals(className) || Server.class.getName().equals(className) || CommandRunner.class.getName().equals(className)) {
-      return true;
-    }
-    return false;
+    return getClass().getName().equals(className) || TCAccess.class.getName().equals(className) || Storage.class.getName().equals(className) ||
+           Server.class.getName().equals(className) || CommandRunner.class.getName().equals(className);
   }
 
   public static synchronized CommandRegistry getInstance() {
