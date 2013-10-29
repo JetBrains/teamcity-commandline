@@ -49,12 +49,10 @@ class Help implements ICommand {
                                                                                           // used
       buffer.append(printDescription(args.getCommandId()));
       myResultDescription = buffer.toString();
-      return;
 
     } else {// nothing passed
       buffer.append(printDefault());
       myResultDescription = buffer.toString();
-      return;
     }
 
   }

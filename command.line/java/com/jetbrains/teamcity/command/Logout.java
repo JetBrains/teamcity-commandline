@@ -34,7 +34,6 @@ public class Logout implements ICommand {
     final String url = args.getArgument(CommandRunner.HOST_ARG);
     TCAccess.getInstance().removeCredential(url);
     myResultDescription = MessageFormat.format(Messages.getString("Logout.result.ok.pattern"), url); //$NON-NLS-1$
-    return;
   }
 
   public void validate(Args args) throws IllegalArgumentException {
