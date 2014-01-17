@@ -134,4 +134,8 @@ public class Server {
   public Collection<String> getApplicableConfigurations(final Collection<String> urls) throws ECommunicationException {
     return getServerFacade().getSuitableConfigurations(urls);
   }
+
+  public void dispose() {
+    mySession.disposeConnections();
+  }
 }

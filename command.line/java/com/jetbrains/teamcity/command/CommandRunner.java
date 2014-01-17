@@ -15,6 +15,7 @@
  */
 package com.jetbrains.teamcity.command;
 
+import com.intellij.util.Consumer;
 import com.jetbrains.teamcity.*;
 import com.jetbrains.teamcity.resources.ICredential;
 import com.jetbrains.teamcity.resources.TCAccess;
@@ -33,6 +34,7 @@ import jetbrains.buildServer.core.runtime.IProgressStatus;
 import jetbrains.buildServer.core.runtime.ProgressStatus;
 import jetbrains.buildServer.core.runtime.RuntimeUtil;
 import jetbrains.buildServer.serverSide.crypt.EncryptUtil;
+import org.jetbrains.annotations.NotNull;
 
 public class CommandRunner {
 
@@ -98,27 +100,35 @@ public class CommandRunner {
     
     final ICommand command = CommandRegistry.getInstance().getCommand(arguments.getCommandId());
     if (command != null) {
-      Server server = null;
       try {
         command.validate(arguments);
         if (command.isConnectionRequired(arguments)) {
-          server = openConnection(arguments, monitor);
-          command.execute(server, arguments, monitor);
-        } else {
+          Server server = null;
+          try {
+            server = openConnection(arguments, monitor);
+            command.execute(server, arguments, monitor);
+          }
+          finally {
+            if (server != null) {
+              server.dispose();
+            }
+          }
+        }
+        else {
           command.execute(null, arguments, monitor);
         }
         // print success result
-        reportResult(command, monitor);
+        reportResult(command);
       } catch (Throwable e) {
         // print error result
         monitor.status(new ProgressStatus(IProgressStatus.ERROR, String.format(Messages.getString("CommandRunner.monitor.error.found"), command.getId())));
-        reportError(server, command, e, monitor);
+        reportError(command, e);
         System.exit(-1);
       }
     } else {
       final ICommand helpCommand = CommandRegistry.getInstance().getCommand(Help.ID);
       helpCommand.execute(null, arguments, monitor);
-      reportResult(helpCommand, monitor);
+      reportResult(helpCommand);
     }
   }
 
@@ -127,7 +137,7 @@ public class CommandRunner {
     System.exit(0);
   }
 
-  private static void reportError(final Server server, final ICommand command, final Throwable e, final IProgressMonitor monitor) {
+  private static void reportError(final ICommand command, final Throwable e) {
     Debug.getInstance().error(CommandRunner.class, e.getMessage(), e);
     final String rootMessage = Util.getRootCause(e).getMessage();
     if (e instanceof UnknownHostException) {
@@ -161,7 +171,7 @@ public class CommandRunner {
     }
   }
 
-  private static void reportResult(ICommand command, IProgressMonitor monitor) {
+  private static void reportResult(ICommand command) {
     if (command.getResultDescription() != null && command.getResultDescription().trim().length() != 0) {
       System.out.println(command.getResultDescription());
     }

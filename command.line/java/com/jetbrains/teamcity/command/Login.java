@@ -34,8 +34,9 @@ public class Login implements ICommand {
     final String user = getUser(args);
     final String password = getPassword(args);
     // try to login
+    Server server = null;
     try {
-      final Server server = new Server(new URL(url));
+      server = new Server(new URL(url));
       monitor.beginTask(MessageFormat.format(Messages.getString("CommandRunner.connecting.step.name"), url)); //$NON-NLS-1$
       server.connect();
       monitor.done();
@@ -45,9 +46,14 @@ public class Login implements ICommand {
       // ok. let's store
       TCAccess.getInstance().setCredential(url, user, password);
       myResultDescription = MessageFormat.format(Messages.getString("Login.result.ok.pattern"), user); //$NON-NLS-1$
-
-    } catch (MalformedURLException e) {
+    }
+    catch (MalformedURLException e) {
       throw new IllegalArgumentException(e);
+    }
+    finally {
+      if (server != null) {
+        server.dispose();
+      }
     }
   }
 
