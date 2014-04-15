@@ -212,14 +212,12 @@ public class RemoteRun implements ICommand {
     final Collection<String> ids = parseConfigurations(buildTypeIds);
     final ArrayList<String> result = new ArrayList<String>();
     for (String id : ids) {
-      if (id.matches("bt\\d+")) {
-        result.add(id);
+      final String internalId = getExternal2InternalMap().get(id);
+      if (internalId != null) {
+        result.add(internalId);
       }
-      else {
-        final String internalId = getExternal2InternalMap().get(id);
-        if (internalId != null) {
-          result.add(internalId);
-        }
+      else if (id.matches("bt\\d+")) {
+        result.add(id);
       }
     }
 
