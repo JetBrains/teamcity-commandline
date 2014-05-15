@@ -46,7 +46,7 @@ Quick start
 		in runtime.  
 		There are several places you can place these files. The first of all it's a folder contains changes you will pass Remote Run to.
 		It's a first place the tool will seek for mapping file in runtime. The tool scans whole parent folder hierarchy a mappings files for.   
-		A Default Teamcity Mapping supported also and expected in the "%HOME%/.TeamCity-CommandLine" folder. File name is same.  
+		A Default TeamCity Mapping supported also and expected in the "%HOME%/.TeamCity-CommandLine" folder. File name is same.
 		You can override these Per-folder and Default mappings with "--config-file <overriding_file>" option of "run" command.
 	
 	NOTE: Especial TeamCity server's plugin'll help you to prepare content of mapping files. 

@@ -55,7 +55,7 @@
     On this page you can generate a configuration file for a <a href="http://svn.jetbrains.org/teamcity/plugins/commandline/trunk/command.line/HOWTO">tool</a> which allows to <strong>run personal builds</strong> from the <strong>command line</strong>.
   </p>
   <p>
-    To operate, this tool requires a <strong>mapping configuration file</strong> which maps local paths in your project to VCS settings in Teamcity.
+    To operate, this tool requires a <strong>mapping configuration file</strong> which maps local paths in your project to VCS settings in TeamCity.
   </p>
 
   <h3 class="header">Create mapping configuration file</h3>
