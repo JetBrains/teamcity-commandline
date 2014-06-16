@@ -469,8 +469,8 @@ public class RemoteRun implements ICommand {
         postMethod.setRequestEntity(new InputStreamRequestEntity(content, patchFile.length()));
         postMethod.setQueryString(new NameValuePair[] { new NameValuePair("userId", String.valueOf(userId)), 
             new NameValuePair("description", myComments), 
-            new NameValuePair("date", String.valueOf(System.currentTimeMillis())), 
-            new NameValuePair("commitType", String.valueOf(PreTestedCommitType.NONE.getId())), });//TODO: make argument
+            new NameValuePair("date", String.valueOf(System.currentTimeMillis())),
+            new NameValuePair("commitType", String.valueOf(PreTestedCommitType.COMMIT_IF_SUCCESSFUL.getId())), });//TODO: make argument
         postMethod.execute(new HttpState(), connection);
       } finally {
         content.close();
