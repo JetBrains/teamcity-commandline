@@ -33,7 +33,7 @@ Quick start
         command persists credentials for target host so you can avoid authorization options for 
         subsequent starts. See help for "login" for more details. 
 
-        All examples below were ran after the "login" was executed.
+        All examples below were run after the "login" was executed.
         
         NOTE: last logged in <url> is treated as Default and will be used if "--host" key is omitted.
         

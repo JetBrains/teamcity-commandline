@@ -407,14 +407,4 @@ public class Util {
     return string;
   }
 
-  public static <T> Collection<T> intersect(Collection<T> first, Collection<T> second) {
-    HashSet<T> out = new HashSet<T>();
-    for (T element : first) {
-      if (second.contains(element)) {
-        out.add(element);
-      }
-    }
-    return out;
-  }
-
 }

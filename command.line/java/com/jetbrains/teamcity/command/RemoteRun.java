@@ -89,6 +89,7 @@ public class RemoteRun implements ICommand {
   static final String PATCHES_FOLDER = System.getProperty("java.io.tmpdir"); 
 
   static final String CHECK_FOR_CHANGES_EARLY_SWITCH = Messages.getString("RemoteRun.checkforchangesearly.runtime.param.long"); 
+  static final String FORCE_COMPATIBILITY_CHECK_SWITCH = Messages.getString("RemoteRun.force.compatibility.check.runtime.param.long");
 
   private Server myServer;
   private String myComments;
@@ -151,7 +152,7 @@ public class RemoteRun implements ICommand {
 
     // collect configurations for running
     final Collection<String> requestedInternalIds = getRequestedConfigurations(args);
-    final Collection<String> internalIds = getApplicableConfigurations(requestedInternalIds, tcResources, monitor);
+    final Collection<String> internalIds = getApplicableConfigurations(requestedInternalIds, tcResources, monitor, args.hasArgument(FORCE_COMPATIBILITY_CHECK_SWITCH));
     if (internalIds.isEmpty()) {
       throw new IllegalArgumentException(String.format("No one of [%s] configurations affected by collected changes",
                                                        StringUtil.join(",", requestedInternalIds)));
@@ -247,8 +248,7 @@ public class RemoteRun implements ICommand {
       if (resource != null && resource.getRepositoryPath() != null) {
         out.add(resource);
       } else {
-        Debug.getInstance().debug(RemoteRun.class, String.format("? \"%s\" has not associated ITCResource(%s) or empty RepositoryPath(%s)", 
-            file, resource, resource != null ? resource.getRepositoryPath() : null));
+        debug("? \"%s\" has not associated ITCResource(%s) or empty RepositoryPath(%s)", file, resource, resource != null ? resource.getRepositoryPath() : null);
       }
     }
     // fire exception if nothing found
@@ -267,7 +267,7 @@ public class RemoteRun implements ICommand {
       if (!myCleanoff) {
         patch.deleteOnExit();
       }
-      Debug.getInstance().debug(this.getClass(), String.format("Patch %s filled with %d bytes", patch.getAbsolutePath(), patch.length())); 
+      debug("Patch %s filled with %d bytes", patch.getAbsolutePath(), patch.length());
       return patch;
 
     } catch (IOException e) {
@@ -283,33 +283,50 @@ public class RemoteRun implements ICommand {
     return null;
   }
 
-  Collection<String> getApplicableConfigurations(final Collection<String> requestedIDs, final Collection<ITCResource> files, final IProgressMonitor monitor) throws ECommunicationException {
-    // get all configurations affected by URLs
-    final HashSet<String> buffer = new HashSet<String>();
-    monitor.beginTask("Collecting configurations for running"); 
+  Collection<String> getApplicableConfigurations(Collection<String> requestedIDs, final Collection<ITCResource> files, final IProgressMonitor monitor, final boolean forceCompatibilityCheck) throws ECommunicationException {
+
+    monitor.beginTask("Collecting configurations for running");
+
+    try {
+      if (!requestedIDs.isEmpty()) {
+        debug("Requested configurations for running: %s", requestedIDs);
+        List<String> intersection = new ArrayList<String>(requestedIDs);
+
+        if (forceCompatibilityCheck) {
+          // make intersection of passed and applicable
+
+          final Collection<String> applicable = collectApplicableConfigurations(monitor, files);
+          debug("Comparing with applicable configurations: %s", applicable);
+
+          intersection.retainAll(applicable);
+          debug("Use configurations for running: %s", intersection);
+        }
+
+        return intersection;
+      }
+      else {
+        // if specific configurations are not specified, run on all applicable configurations
+        final Collection<String> applicable = collectApplicableConfigurations(monitor, files);
+        debug("Using all applicable configurations for running: %s", applicable);
+        return applicable;
+      }
+
+    }
+    finally {
+      monitor.done();
+    }
+  }
+
+  @NotNull
+  private Collection<String> collectApplicableConfigurations(final IProgressMonitor monitor, final Collection<ITCResource> files) throws ECommunicationException {
+
     final HashSet<String> urls = new HashSet<String>();
     for (ITCResource file : files) {
       urls.add(file.getRepositoryPath());
     }
 
-    final Collection<String> applicableInternalIDs = myServer.getApplicableConfigurations(urls);
-
-    Debug.getInstance().debug(this.getClass(), String.format("All applicable configurations: %s", applicableInternalIDs));
-    // make intersection of passed and applicable
-    if (!requestedIDs.isEmpty()) {
-      Debug.getInstance().debug(this.getClass(), String.format("Requested configurations for running: %s", requestedIDs));
-      if (!requestedIDs.isEmpty()) {
-        final Collection<String> intersection = Util.intersect(applicableInternalIDs, requestedIDs);
-        Debug.getInstance().debug(this.getClass(), String.format("Use configurations for running: %s", intersection));
-        return intersection;
-      }
-      return requestedIDs;
-    }
-    // if nothing passed run on all applicable
-    Debug.getInstance().debug(this.getClass(), String.format("Using all applicable configurations for running", ""));
-    buffer.addAll(applicableInternalIDs);
-    monitor.status(new ProgressStatus(IProgressStatus.INFO, MessageFormat.format(Messages.getString("RemoteRun.collected.configuration.done.pattern"), buffer.size(), buffer))); 
-    monitor.done();
+    final Set<String> buffer = new TreeSet<String>(myServer.getApplicableConfigurations(urls));
+    monitor.status(new ProgressStatus(IProgressStatus.INFO, MessageFormat.format(Messages.getString("RemoteRun.collected.configuration.done.pattern"), buffer.size(), buffer)));
     return buffer;
   }
 
@@ -377,13 +394,17 @@ public class RemoteRun implements ICommand {
   }
 
   private void sleep(int millis) {
-    Debug.getInstance().debug(this.getClass(), String.format("Falling asleep for [%s] millis...", millis));
+    debug("Falling asleep for [%s] millis...", millis);
     try {
       Thread.sleep(millis);
     } catch (InterruptedException e) {
-      Debug.getInstance().debug(this.getClass(), e.getMessage());
+      debug(e.getMessage());
     }
 
+  }
+
+  private void debug(final String format, Object ... data) {
+    Debug.getInstance().debug(getClass(), String.format(format, data));
   }
 
   private Object getCommitStatusDescription(final PersonalChangeCommitDecision commitStatus) {
@@ -424,7 +445,7 @@ public class RemoteRun implements ICommand {
       request.setCheckForChangesEarly(checkForChangesEarly);
       batch.add(request);
       final String debugMessage = String.format("Created build request for \"%s\" configuration of changeId=%s, checkForChangesEarly=%s", internalBtId, changeId, checkForChangesEarly);
-      Debug.getInstance().debug(RemoteRun.class, debugMessage); 			
+      debug(debugMessage);
     }
     monitor.beginTask(Messages.getString("RemoteRun.scheduling.build.step.name")); 
     final AddToQueueResult result = myServer.addRemoteRunToQueue(batch);// TODO:
@@ -437,10 +458,10 @@ public class RemoteRun implements ICommand {
       for (final String cfgId : internalBtIds) {
         errors.append(result.getFailureReason(cfgId)).append("\n"); 
       }
-      Debug.getInstance().debug(RemoteRun.class, String.format("Remote Run scheduling failed: %s", errors.toString())); 			
+      debug("Remote Run scheduling failed: %s", errors.toString());
       throw new ERemoteError(errors.toString());
     } else {
-      Debug.getInstance().debug(RemoteRun.class, String.format("Remote Run scheduled successfully.")); 
+      debug("Remote Run scheduled successfully.");
     }
 
     monitor.done();
@@ -498,13 +519,13 @@ public class RemoteRun implements ICommand {
       for (final ITCResource resource : resources) {
         // threat file which is not exist as deleted
         if (resource.getLocal().exists()) {
-          Debug.getInstance().debug(RemoteRun.class, String.format("+ %s", resource.getRepositoryPath())); 
+          debug("+ %s", resource.getRepositoryPath());
           final LowLevelPatchBuilder.WriteFileContent content = new PatchBuilderImpl.StreamWriteFileContent(new BufferedInputStream(new FileInputStream(resource.getLocal())), resource.getLocal().length());
           patcher.changeBinary(resource.getRepositoryPath(), (int) resource.getLocal().length(), content, false);
           modifiedResources.add(resource.getLocal().getPath());
 
         } else {
-          Debug.getInstance().debug(RemoteRun.class, String.format("- %s", resource.getRepositoryPath())); 
+          debug("- %s", resource.getRepositoryPath());
           patcher.delete(resource.getRepositoryPath(), true, false);
           deletedResources.add(resource.getLocal().getPath());
 
@@ -588,22 +609,22 @@ public class RemoteRun implements ICommand {
     if (elements.length > i) {// file's part existing
       final String[] buffer = new String[elements.length - i];
       System.arraycopy(elements, i, buffer, 0, buffer.length);
-      Debug.getInstance().debug(RemoteRun.class, String.format("Read from arguments: %s", Arrays.toString(buffer))); 
+      debug("Read from arguments: %s", Arrays.toString(buffer));
       final Collection<File> files = collectFiles(buffer);
       result.addAll(traverse(files));
 
     } else {
       // try read from stdin
-      Debug.getInstance().debug(RemoteRun.class, "Trying stdin..."); 
+      debug("Trying stdin...");
       final String input = readFromStream(System.in);
       if (input != null && input.trim().length() > 0) {
-        final String[] buffer = input.split("[\n\r]"); 
-        Debug.getInstance().debug(RemoteRun.class, String.format("Read from stdin: %s", Arrays.toString(buffer))); 
+        final String[] buffer = input.split("[\n\r]");
+        debug("Read from stdin: %s", Arrays.toString(buffer));
         final Collection<File> files = collectFiles(buffer);
         result.addAll(traverse(files));
 
       } else { // let's use current directory as root if nothing passed
-        Debug.getInstance().debug(RemoteRun.class, String.format("Stdin is empty. Will use current (%s) folder as root", new File(".")));  //$NON-NLS-2$
+        debug("Stdin is empty. Will use current (%s) folder as root", new File("."));
         result.addAll(traverse(TCC_FILTER.accept(Util.SVN_FILES_FILTER.accept(Util.CVS_FILES_FILTER.accept(Util.getFiles(".")))))); 
 
       }
@@ -614,7 +635,7 @@ public class RemoteRun implements ICommand {
     monitor.status(new ProgressStatus(IProgressStatus.INFO, MessageFormat.format(Messages.getString("RemoteRun.collect.changes.step.result.pattern"), result.size()))); 
     monitor.done(); 
     for (final File collected : result) {
-      Debug.getInstance().debug(RemoteRun.class, String.format("%s", collected));  //$NON-NLS-2$
+      debug("%s", collected);
     }
     return result;
   }
