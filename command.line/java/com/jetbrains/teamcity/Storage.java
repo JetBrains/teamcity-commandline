@@ -16,7 +16,9 @@
 package com.jetbrains.teamcity;
 
 import com.thoughtworks.xstream.XStream;
-import java.io.*;
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.Serializable;
 import java.util.HashMap;
 import java.util.Map;
 import jetbrains.buildServer.messages.XStreamHolder;
@@ -53,10 +55,8 @@ public class Storage {
       final String home = System.getProperty("user.home"); //$NON-NLS-1$
       myStorageFile = home + File.separator + TC_STORAGE_DEFAULT_FILENAME;
     }
-    // create FS
-    // ourStorageFS = new JavaStorageFS(myStorageFile);
+
     ourStorageFS = new XMLStorageFS(myStorageFile);
-    // load storage
     ourStorageFS.load(myStorage);
   }
 
@@ -74,11 +74,6 @@ public class Storage {
   @SuppressWarnings("unchecked")
   public synchronized <T extends Serializable> T get(final IKey<T> key) {
     return (T) myStorage.get(key.getKey());
-  }
-
-  public synchronized void remove(final IKey<?> key) {
-    myStorage.remove(key.getKey());
-    flush();
   }
 
   public synchronized <T extends Serializable> void put(final IKey<T> key, T value, final boolean flush) {
@@ -104,43 +99,6 @@ public class Storage {
     void save(final HashMap<Object, Serializable> storage);
 
     Map<Object, Serializable> load(final HashMap<Object, Serializable> storage);
-  }
-
-  private static class JavaStorageFS implements IStorageFS {
-
-    public JavaStorageFS(String myStorageFile) {
-      this.myStorageFile = myStorageFile;
-    }
-
-    private final String myStorageFile;
-
-    public Map<Object, Serializable> load(HashMap<Object, Serializable> storage) {
-      try {
-        storage.clear();
-        final ObjectInputStream in = new ObjectInputStream(new FileInputStream(getStorageFile()));
-        storage.putAll((HashMap<Object, Serializable>) in.readObject());
-      } catch (FileNotFoundException e) {
-        // do nothing
-      } catch (Exception e) {
-        throw new RuntimeException(e);
-      }
-      return storage;
-    }
-
-    public void save(HashMap<Object, Serializable> storage) {
-      try {
-        final ObjectOutput out = new ObjectOutputStream(new FileOutputStream(getStorageFile()));
-        out.writeObject(storage);
-        out.close();
-      } catch (Exception e) {
-        throw new RuntimeException(e);
-      }
-    }
-
-    private String getStorageFile() {
-      return this.myStorageFile;
-    }
-
   }
 
   private static class XMLStorageFS implements IStorageFS {
