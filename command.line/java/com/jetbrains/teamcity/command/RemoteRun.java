@@ -453,24 +453,38 @@ public class RemoteRun implements ICommand {
       debug(debugMessage);
     }
     monitor.beginTask(Messages.getString("RemoteRun.scheduling.build.step.name")); 
-    final AddToQueueResult result = myServer.addRemoteRunToQueue(batch);// TODO:
-                                                                                    // process
-                                                                                    // Result
-                                                                                    // here
+    final AddToQueueResult result = myServer.addRemoteRunToQueue(batch);
 
-    if (result.hasFailures()) {
-      final StringBuilder errors = new StringBuilder();
-      for (final String cfgId : internalBtIds) {
-        errors.append(result.getFailureReason(cfgId)).append("\n"); 
-      }
-      debug("Remote Run scheduling failed: %s", errors.toString());
-      throw new ERemoteError(errors.toString());
-    } else {
-      debug("Remote Run scheduled successfully.");
-    }
+    processSchedulingResult(internalBtIds, result);
 
     monitor.done();
     return changeId;
+  }
+
+  private void processSchedulingResult(final Collection<String> internalBtIds, final AddToQueueResult result) throws ERemoteError {
+    int addedSuccessfully = 0;
+
+    final StringBuilder errors = new StringBuilder();
+    for (final String cfgId : internalBtIds) {
+      if (result.isSuccessful(cfgId)) {
+        addedSuccessfully++;
+      }
+      else {
+        errors.append(cfgId).append(": ").append(result.getFailureReason(cfgId)).append("\n");
+      }
+    }
+
+    if (errors.length() > 0) {
+      debug("Remote Run scheduling failed: %s", errors.toString());
+    }
+
+    if (addedSuccessfully == 0) {
+      throw new ERemoteError(errors.toString());
+    }
+
+    if (addedSuccessfully > 0) {
+      debug("Remote Run has successfully scheduled " + addedSuccessfully + " builds.");
+    }
   }
 
   long createChangeList(String serverURL, int userId, final File patchFile, final IProgressMonitor monitor) throws ECommunicationException {
