@@ -9,6 +9,7 @@ import jetbrains.buildServer.util.StringUtil;
 import jetbrains.buildServer.vcs.VcsManager;
 import jetbrains.buildServer.web.openapi.ControllerAction;
 import jetbrains.vcs.api.services.tc.VcsMappingElement;
+import org.jdom.Content;
 import org.jdom.Element;
 import org.jetbrains.annotations.NonNls;
 import org.jetbrains.annotations.NotNull;
@@ -42,13 +43,13 @@ public class GetBuildTypeMappingAction implements ControllerAction {
       generator.generateVcsMapping();
       if (generator.getMappings().size() > 0 && ajaxResponse != null) {
         final Element mapping = new Element("mapping");
-        ajaxResponse.addContent(mapping);
+        ajaxResponse.addContent((Content) mapping);
         for (VcsMappingElement mappingElement : generator.getMappings()) {
           final Element mapElement = new Element("map");
           mapElement.setAttribute("from", mappingElement.getFrom());
           mapElement.setAttribute("to", mappingElement.getTo());
           mapElement.setAttribute("comment", mappingElement.getComment());
-          mapping.addContent(mapElement);
+          mapping.addContent((Content) mapElement);
         }
       }
     }
