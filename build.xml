@@ -1,3 +1,4 @@
+
 <project name="jetbrains.teamcity.plugin" basedir="." default="deploy">
 
     <property file="build.properties" />
