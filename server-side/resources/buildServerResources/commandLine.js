@@ -189,7 +189,7 @@ BS.CommandLine = {
 };
 
 
-document.observe("dom:loaded", function() {
+$j(function() {
   BS.CommandLine.fillBuildTypesList();
   BS.CommandLine.installControlHandlers();
 });
