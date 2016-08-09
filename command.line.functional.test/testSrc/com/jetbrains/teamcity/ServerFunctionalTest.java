@@ -35,7 +35,7 @@ public class ServerFunctionalTest extends BaseServerTestCase {
     final XmlRpcSessionManager xmlRpcSessionManager = new XmlRpcSessionManager(myServer.getExecutor());
     final String sessionId = BuildServerCreator.startNewSession(xmlRpcSessionManager, null).getSessionId();
     assertNotNull(sessionId);
-    final XmlRpcAuthenticationServer authServer = new XmlRpcAuthenticationServer(myServer, myFixture.getServerLoginModel(), xmlRpcSessionManager);
+    final XmlRpcAuthenticationServer authServer = new XmlRpcAuthenticationServer(myFixture.getServerLoginModel(), xmlRpcSessionManager);
 
     myWebServer = BuildServerCreator.createAndStartXmlRpcServer();
     myWebServer.addHandler(RemoteAuthenticationServer.REMOTE_AUTH_SERVER, BuildServerCreator.makeSessionInXmlRpcHandler(sessionId, xmlRpcSessionManager, RemoteAuthenticationServer.class, authServer));
