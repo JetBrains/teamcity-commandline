@@ -136,6 +136,6 @@ public class Server {
   }
 
   public void dispose() {
-    mySession.disposeConnections();
+    mySession.dispose();
   }
 }
