@@ -3,6 +3,7 @@ package jetbrains.buildServer.commandline;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import jetbrains.buildServer.controllers.BaseAjaxActionController;
+import jetbrains.buildServer.controllers.GetActionAllowed;
 import jetbrains.buildServer.serverSide.ProjectManager;
 import jetbrains.buildServer.serverSide.SBuildType;
 import jetbrains.buildServer.util.StringUtil;
@@ -15,6 +16,7 @@ import org.jetbrains.annotations.NonNls;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
+@GetActionAllowed
 public class GetBuildTypeMappingAction implements ControllerAction {
   @NonNls private static final String MAPPING_FOR = "mappingFor";
 
