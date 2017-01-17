@@ -251,7 +251,7 @@ public class Build {
         <unjar src="${plugin.build.libs}/serviceMessages.jar" dest="${libs}" overwrite="yes" />
         <unjar src="${plugin.build.libs}/runtime-util.jar" dest="${libs}" overwrite="yes" />
 
-        <unjar src="${plugin.build.libs}/commons-codec-1.3.jar" dest="${libs}" overwrite="yes" />
+        <unjar src="${plugin.build.libs}/commons-codec.jar" dest="${libs}" overwrite="yes" />
         <unjar src="${plugin.build.libs}/commons-httpclient-3.1.jar" dest="${libs}" overwrite="yes" />
         <unjar src="${plugin.build.libs}/commons-logging.jar" dest="${libs}" overwrite="yes" />
         <unjar src="${plugin.build.libs}/log4j-1.2.12.jar" dest="${libs}" overwrite="yes" />
