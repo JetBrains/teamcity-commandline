@@ -15,6 +15,9 @@
         <fileset dir="${junit.jar.location}">
             <include name="**/*.jar" />
         </fileset>
+        <fileset dir="../${plugin.build.libs}">
+            <include name="jdom.jar" />
+        </fileset>
     </path>
 
     <target name="init">
