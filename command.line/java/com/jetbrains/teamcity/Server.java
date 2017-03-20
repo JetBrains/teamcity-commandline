@@ -128,6 +128,7 @@ public class Server {
     final TriggeredByBuilder builder = new TriggeredByBuilder();
     builder.addParameter(TriggeredByBuilder.USER_PARAM_NAME, String.valueOf(getCurrentUser()));
     builder.addParameter(TriggeredByBuilder.IDE_PLUGIN_PARAM_NAME, "Command line remote run");
+    builder.addParameter(TriggeredByBuilder.TYPE_PARAM_NAME, "commandLineRemoteRun");
     return getServerFacade().addToQueue(batch, builder.toString());
   }
 
