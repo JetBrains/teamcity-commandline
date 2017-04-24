@@ -32,7 +32,7 @@ class Help implements ICommand {
     final StringBuffer buffer = new StringBuffer();
 
     buffer.append(MessageFormat.format(Messages.getString("Help.command.header"), //$NON-NLS-1$
-        Build.major, Build.build));
+        Build.build));
 
     final String commandId = args != null && args.getArguments() != null && args.getArguments().length > 0 ? args.getArguments()[0] : null;
     if (args != null && args.getCommandId() != null && args.getCommandId().equals(ID) && commandId != null && !commandId.equals(ID)) {// help
