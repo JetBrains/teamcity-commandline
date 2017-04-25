@@ -189,17 +189,22 @@ public class Platform {
 
   @Override
   public boolean equals(Object obj) {
-    if (obj instanceof Platform) {
-      final Platform other = (Platform) obj;
-      if (getOs().equals(other.getOs())) {
-        if (getArch() != null && other.getArch() != null) {
-          return getArch().equals(other.getArch());
-        }
-        return true;
-      }
-      return false;
-    }
-    return super.equals(obj);
+    if (this == obj) return true;
+    if (!(obj instanceof Platform)) return false;
+
+    final Platform platform = (Platform)obj;
+
+    if (myOs != null ? !myOs.equals(platform.myOs) : platform.myOs != null) return false;
+    if (myArch == null || platform.myArch == null) return true;
+    if (myArch != null ? !myArch.equals(platform.myArch) : platform.myArch != null) return false;
+
+    return true;
   }
 
+  @Override
+  public int hashCode() {
+    int result = myOs != null ? myOs.hashCode() : 0;
+    result = 31 * result + (myArch != null ? myArch.hashCode() : 0);
+    return result;
+  }
 }
