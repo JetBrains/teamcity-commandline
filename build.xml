@@ -177,10 +177,6 @@ public class Build {
 
     <target name="test" depends="test-plugin,test-tcc-jar">
         <ant dir="${tests.project.path}" inheritall="yes" inheritrefs="yes" target="test" />
-
-        <java jar="tmp/tcc.jar"
-              inputstring=""
-              args="login --host 'http://teamcity.jetbrains.com' --user guest"/>
     </target>
 
     <target name="test-tcc-jar" depends="build">
