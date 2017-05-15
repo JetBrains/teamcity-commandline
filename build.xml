@@ -44,7 +44,6 @@
         <echo file="${tool.home}/java/com/jetbrains/teamcity/Build.java">package com.jetbrains.teamcity;
 
 public class Build {
-    public static final String major = "${major.version}";
     public static final String build = "${build.number}";
 }</echo>
 
@@ -255,7 +254,8 @@ public class Build {
         <unjar src="${plugin.build.libs}/commons-httpclient-3.1.jar" dest="${libs}" overwrite="yes" />
         <unjar src="${plugin.build.libs}/commons-logging.jar" dest="${libs}" overwrite="yes" />
         <unjar src="${plugin.build.libs}/log4j-1.2.12.jar" dest="${libs}" overwrite="yes" />
-        
+        <unjar src="${plugin.build.libs}/jdom.jar" dest="${libs}" overwrite="yes" />
+	
         <unjar dest="${libs}" overwrite="yes">
             <fileset dir="${plugin.build.libs}">
                 <include name="**/xmlrpc-*.jar" />
