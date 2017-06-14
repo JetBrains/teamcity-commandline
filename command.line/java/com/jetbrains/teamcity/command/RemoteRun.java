@@ -22,8 +22,6 @@ import com.jetbrains.teamcity.resources.ITCResource;
 import com.jetbrains.teamcity.resources.ITCResourceMatcher;
 import com.jetbrains.teamcity.resources.TCWorkspace;
 import java.io.*;
-import java.security.MessageDigest;
-import java.security.NoSuchAlgorithmException;
 import java.text.MessageFormat;
 import java.util.*;
 import java.util.List;
@@ -36,12 +34,12 @@ import jetbrains.buildServer.serverSide.userChanges.PersonalChangeCommitDecision
 import jetbrains.buildServer.serverSide.userChanges.PersonalChangeDescriptor;
 import jetbrains.buildServer.serverSide.userChanges.PreTestedCommitType;
 import jetbrains.buildServer.util.Converter;
+import jetbrains.buildServer.util.FileUtil;
 import jetbrains.buildServer.util.StringUtil;
 import jetbrains.buildServer.util.filters.Filter;
 import jetbrains.buildServer.vcs.patches.LowLevelPatchBuilder;
 import jetbrains.buildServer.vcs.patches.LowLevelPatchBuilderImpl;
 import jetbrains.buildServer.vcs.patches.PatchBuilderImpl;
-import org.apache.commons.codec.binary.Base64;
 import org.apache.commons.httpclient.*;
 import org.apache.commons.httpclient.methods.InputStreamRequestEntity;
 import org.apache.commons.httpclient.methods.PostMethod;
@@ -86,9 +84,7 @@ public class RemoteRun implements ICommand {
   static final String NO_WAIT_SWITCH = Messages.getString("RemoteRun.nowait.runtime.param"); 
   static final String NO_WAIT_SWITCH_LONG = Messages.getString("RemoteRun.nowait.runtime.param.long"); 
 
-  static final String PATCHES_FOLDER = System.getProperty("java.io.tmpdir"); 
-
-  static final String CHECK_FOR_CHANGES_EARLY_SWITCH = Messages.getString("RemoteRun.checkforchangesearly.runtime.param.long"); 
+  static final String CHECK_FOR_CHANGES_EARLY_SWITCH = Messages.getString("RemoteRun.checkforchangesearly.runtime.param.long");
   static final String FORCE_COMPATIBILITY_CHECK_SWITCH = Messages.getString("RemoteRun.force.compatibility.check.runtime.param.long");
   static final String FORCE_CLEAN_SWITCH = Messages.getString("RemoteRun.force.clean.param.long");
 
@@ -580,16 +576,8 @@ public class RemoteRun implements ICommand {
 
   }
 
-  static File createPatchFile(String url) {
-    File stateLocation = new File(PATCHES_FOLDER == null ? "." : PATCHES_FOLDER); 
-    try {
-      url = new String(Base64.encodeBase64(MessageDigest.getInstance("MD5").digest(url.getBytes()))); 
-    } catch (NoSuchAlgorithmException e) {
-      //
-    }
-    File file = new File(stateLocation, url + ".patch"); 
-    file.getParentFile().mkdirs();
-    return file;
+  static File createPatchFile(String urlDigest) throws IOException {
+    return FileUtil.createTempFile("tcc.jar-", ".patch");
   }
 
   Collection<File> getFiles(Args args, IProgressMonitor monitor) throws IllegalArgumentException {
