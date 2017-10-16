@@ -22,7 +22,6 @@ import com.jetbrains.teamcity.resources.ITCResource;
 import com.jetbrains.teamcity.resources.ITCResourceMatcher;
 import com.jetbrains.teamcity.resources.TCWorkspace;
 import java.io.*;
-import java.text.MessageFormat;
 import java.util.*;
 import java.util.List;
 import javax.naming.directory.InvalidAttributesException;
@@ -45,6 +44,7 @@ import org.apache.commons.httpclient.methods.InputStreamRequestEntity;
 import org.apache.commons.httpclient.methods.PostMethod;
 import org.jetbrains.annotations.NotNull;
 
+import static java.text.MessageFormat.format;
 import static jetbrains.buildServer.util.CollectionsUtil.filterAndConvertCollection;
 
 public class RemoteRun implements ICommand {
@@ -65,28 +65,28 @@ public class RemoteRun implements ICommand {
   static final int SLEEP_INTERVAL = 1000 * 5;
   static final int DEFAULT_TIMEOUT = 1000 * 60 * 60;
 
-  static final String ID = Messages.getString("RemoteRun.command.id"); 
+  static final String ID = getMsg("RemoteRun.command.id");
 
-  static final String OVERRIDING_MAPPING_FILE_PARAM = Messages.getString("RemoteRun.overriding.config.file.argument"); 
+  static final String OVERRIDING_MAPPING_FILE_PARAM = getMsg("RemoteRun.overriding.config.file.argument");
 
-  static final String CONFIGURATION_PARAM = Messages.getString("RemoteRun.config.runtime.param"); 
-  static final String CONFIGURATION_PARAM_LONG = Messages.getString("RemoteRun.config.runtime.param.long"); 
+  static final String CONFIGURATION_PARAM = getMsg("RemoteRun.config.runtime.param");
+  static final String CONFIGURATION_PARAM_LONG = getMsg("RemoteRun.config.runtime.param.long");
 
-  static final String PROJECT_PARAM = Messages.getString("RemoteRun.project.runtime.param"); 
-  static final String PROJECT_PARAM_LONG = Messages.getString("RemoteRun.project.runtime.param.long"); 
+  static final String PROJECT_PARAM = getMsg("RemoteRun.project.runtime.param");
+  static final String PROJECT_PARAM_LONG = getMsg("RemoteRun.project.runtime.param.long");
 
-  static final String MESSAGE_PARAM = Messages.getString("RemoteRun.message.runtime.param"); 
-  static final String MESSAGE_PARAM_LONG = Messages.getString("RemoteRun.message.runtime.param.long"); 
+  static final String MESSAGE_PARAM = getMsg("RemoteRun.message.runtime.param");
+  static final String MESSAGE_PARAM_LONG = getMsg("RemoteRun.message.runtime.param.long");
 
-  static final String TIMEOUT_PARAM = Messages.getString("RemoteRun.timeout.runtime.param"); 
-  static final String TIMEOUT_PARAM_LONG = Messages.getString("RemoteRun.timeout.runtime.param.long"); 
+  static final String TIMEOUT_PARAM = getMsg("RemoteRun.timeout.runtime.param");
+  static final String TIMEOUT_PARAM_LONG = getMsg("RemoteRun.timeout.runtime.param.long");
 
-  static final String NO_WAIT_SWITCH = Messages.getString("RemoteRun.nowait.runtime.param"); 
-  static final String NO_WAIT_SWITCH_LONG = Messages.getString("RemoteRun.nowait.runtime.param.long"); 
+  static final String NO_WAIT_SWITCH = getMsg("RemoteRun.nowait.runtime.param");
+  static final String NO_WAIT_SWITCH_LONG = getMsg("RemoteRun.nowait.runtime.param.long");
 
-  static final String CHECK_FOR_CHANGES_EARLY_SWITCH = Messages.getString("RemoteRun.checkforchangesearly.runtime.param.long");
-  static final String FORCE_COMPATIBILITY_CHECK_SWITCH = Messages.getString("RemoteRun.force.compatibility.check.runtime.param.long");
-  static final String FORCE_CLEAN_SWITCH = Messages.getString("RemoteRun.force.clean.param.long");
+  static final String CHECK_FOR_CHANGES_EARLY_SWITCH = getMsg("RemoteRun.checkforchangesearly.runtime.param.long");
+  static final String FORCE_COMPATIBILITY_CHECK_SWITCH = getMsg("RemoteRun.force.compatibility.check.runtime.param.long");
+  static final String FORCE_CLEAN_SWITCH = getMsg("RemoteRun.force.clean.param.long");
 
   private Server myServer;
   private String myComments;
@@ -165,11 +165,11 @@ public class RemoteRun implements ICommand {
 
     // process result
     if (isNoWait) {
-      myResultDescription = MessageFormat.format(Messages.getString("RemoteRun.schedule.result.ok.pattern"), String.valueOf(chaneListId)); 
+      myResultDescription = format(getMsg("RemoteRun.schedule.result.ok.pattern"), String.valueOf(chaneListId));
 
     } else {
       final PersonalChangeDescriptor result = waitForSuccessResult(chaneListId, myTimeout, monitor);
-      myResultDescription = MessageFormat.format(Messages.getString("RemoteRun.build.result.ok.pattern"), String.valueOf(chaneListId), result.getPersonalChangeStatus()); 
+      myResultDescription = format(getMsg("RemoteRun.build.result.ok.pattern"), String.valueOf(chaneListId), result.getPersonalChangeStatus());
     }
   }
 
@@ -241,7 +241,7 @@ public class RemoteRun implements ICommand {
 
 
   Collection<ITCResource> getTCResources(final TCWorkspace workspace, final Collection<File> files, final IProgressMonitor monitor) throws IllegalArgumentException {
-    monitor.beginTask(Messages.getString("RemoteRun.mapping.step.name")); 
+    monitor.beginTask(getMsg("RemoteRun.mapping.step.name"));
     final HashSet<ITCResource> out = new HashSet<ITCResource>(files.size());
     for (final File file : files) {
       final ITCResource resource = workspace.getTCResource(file);
@@ -253,9 +253,9 @@ public class RemoteRun implements ICommand {
     }
     // fire exception if nothing found
     if (out.isEmpty()) {
-      throw new IllegalArgumentException(String.format(Messages.getString("RemoteRun.no.one.mappings.found.error.message"), files.size())); 
+      throw new IllegalArgumentException(String.format(getMsg("RemoteRun.no.one.mappings.found.error.message"), files.size()));
     }
-    monitor.status(new ProgressStatus(IProgressStatus.INFO, String.format(Messages.getString("RemoteRun.mapping.step.done.message"), out.size(), files.size())));
+    monitor.status(new ProgressStatus(IProgressStatus.INFO, String.format(getMsg("RemoteRun.mapping.step.done.message"), out.size(), files.size())));
     monitor.done(); 
     return out;
   }
@@ -326,7 +326,7 @@ public class RemoteRun implements ICommand {
     }
 
     final Set<String> buffer = new TreeSet<String>(myServer.getApplicableConfigurations(urls));
-    monitor.status(new ProgressStatus(IProgressStatus.INFO, MessageFormat.format(Messages.getString("RemoteRun.collected.configuration.done.pattern"), buffer.size(), buffer)));
+    monitor.status(new ProgressStatus(IProgressStatus.INFO, format(getMsg("RemoteRun.collected.configuration.done.pattern"), buffer.size(), buffer)));
     return buffer;
   }
 
@@ -347,40 +347,42 @@ public class RemoteRun implements ICommand {
 
   PersonalChangeDescriptor waitForSuccessResult(final long changeListId, final long timeOut, IProgressMonitor monitor) throws ECommunicationException, ERemoteError {
     sleep(3000);
-    monitor.beginTask(Messages.getString("RemoteRun.wait.for.build.step.name")); 
+    monitor.beginTask(getMsg("RemoteRun.wait.for.build.step.name"));
     final long startTime = System.currentTimeMillis();
     UserChangeStatus prevCurrentStatus = null;
     while ((System.currentTimeMillis() - startTime) < timeOut) {
       final TeamServerSummaryData summary = myServer.getSummary();
       for (final UserChangeInfoData data : summary.getPersonalChanges()) {
+
         if (data.getPersonalDesc() != null && data.getPersonalDesc().getId() == changeListId) {
           // check builds status
           final UserChangeStatus currentStatus = data.getChangeStatus();
           if (!currentStatus.equals(prevCurrentStatus)) {
             prevCurrentStatus = currentStatus;
-            System.out.print(MessageFormat.format(Messages.getString("RemoteRun.wait.for.build.statuschanged.step.name"), getBuildStatusDescription(currentStatus)));
-//            monitor.status(new ProgressStatus(IProgressStatus.INFO, MessageFormat.format(Messages.getString("RemoteRun.wait.for.build.statuschanged.step.name"), getBuildStatusDescription(currentStatus)))); 
-//            monitor.worked(); 
+
+            System.out.print(getBuildStatusDescription(currentStatus));
           }
+
           if (UserChangeStatus.FAILED_WITH_RESPONSIBLE == currentStatus || UserChangeStatus.FAILED == currentStatus || UserChangeStatus.CANCELED == currentStatus) {
             System.out.println();
-            throw new ERemoteError(MessageFormat.format(Messages.getString("RemoteRun.build.failed.error.pattern"), getBuildStatusDescription(currentStatus))); 
+            throw new ERemoteError(format(getMsg("RemoteRun.build.failed.error.pattern"), getBuildStatusDescription(currentStatus)));
           }
-          // check commit status
-          final PersonalChangeDescriptor descriptor = data.getPersonalDesc();
-          PersonalChangeCommitDecision commitStatus = descriptor.getPersonalChangeStatus();
-          if (PersonalChangeCommitDecision.COMMIT == commitStatus) {
-            System.out.println();            
+
+          if (UserChangeStatus.RUNNING_FAILED == currentStatus) {
+            System.out.println(format(getMsg("RemoteRun.build.failed.error.pattern"), getBuildStatusDescription(currentStatus)));
+            System.out.println();
+          }
+
+          if (UserChangeStatus.CHECKED == currentStatus) {
+            // Successful finish
+            System.out.println();
             // OK
             monitor.done();
-            return descriptor;
-
-          } else if (PersonalChangeCommitDecision.DO_NOT_COMMIT == commitStatus) {
-            System.out.println();            
-            // build is OK, but commit is not allowed
-            throw new ERemoteError(MessageFormat.format(Messages.getString("RemoteRun.build.ok.commit.rejected.error.pattern"), getCommitStatusDescription(commitStatus))); 
+            return data.getPersonalDesc();
           }
+
         }
+
       }
       try {
         System.out.print(".");
@@ -390,7 +392,12 @@ public class RemoteRun implements ICommand {
       }
     }
     // so, timeout exceed
-    throw new RuntimeException(MessageFormat.format(Messages.getString("RemoteRun.wait.for.build.timeout.exceed.error"), myTimeout, changeListId)); 
+    throw new RuntimeException(format(getMsg("RemoteRun.wait.for.build.timeout.exceed.error"), myTimeout, changeListId));
+  }
+
+  @NotNull
+  private static String getMsg(final String key) {
+    return Messages.getString(key);
   }
 
   private void sleep(int millis) {
@@ -414,25 +421,25 @@ public class RemoteRun implements ICommand {
   private Object getBuildStatusDescription(final UserChangeStatus currentStatus) {
 
     if (UserChangeStatus.CANCELED == currentStatus) {
-      return Messages.getString("RemoteRun.UserChangeStatus.CANCELED"); 
+      return getMsg("RemoteRun.UserChangeStatus.CANCELED");
 
     } else if (UserChangeStatus.CHECKED == currentStatus) {
-      return Messages.getString("RemoteRun.UserChangeStatus.CHECKED"); 
+      return getMsg("RemoteRun.UserChangeStatus.CHECKED");
 
     } else if (UserChangeStatus.FAILED == currentStatus) {
-      return Messages.getString("RemoteRun.UserChangeStatus.FAILED"); 
+      return getMsg("RemoteRun.UserChangeStatus.FAILED");
 
     } else if (UserChangeStatus.FAILED_WITH_RESPONSIBLE == currentStatus) {
-      return Messages.getString("RemoteRun.UserChangeStatus.FAILED_WITH_RESPONSIBLE"); 
+      return getMsg("RemoteRun.UserChangeStatus.FAILED_WITH_RESPONSIBLE");
 
     } else if (UserChangeStatus.PENDING == currentStatus) {
-      return Messages.getString("RemoteRun.UserChangeStatus.PENDING"); 
+      return getMsg("RemoteRun.UserChangeStatus.PENDING");
 
     } else if (UserChangeStatus.RUNNING_FAILED == currentStatus) {
-      return Messages.getString("RemoteRun.UserChangeStatus.RUNNING_FAILED"); 
+      return getMsg("RemoteRun.UserChangeStatus.RUNNING_FAILED");
 
     } else if (UserChangeStatus.RUNNING_SUCCESSFULY == currentStatus) {
-      return Messages.getString("RemoteRun.UserChangeStatus.RUNNING_SUCCESSFULLY"); 
+      return getMsg("RemoteRun.UserChangeStatus.RUNNING_SUCCESSFULLY");
 
     }
     return currentStatus;
@@ -448,7 +455,7 @@ public class RemoteRun implements ICommand {
       final String debugMessage = String.format("Created build request for \"%s\" configuration of changeId=%s, checkForChangesEarly=%s, forceCleanCheckout=%s", internalBtId, changeId, checkForChangesEarly, forceCleanCheckout);
       debug(debugMessage);
     }
-    monitor.beginTask(Messages.getString("RemoteRun.scheduling.build.step.name")); 
+    monitor.beginTask(getMsg("RemoteRun.scheduling.build.step.name"));
     final AddToQueueResult result = myServer.addRemoteRunToQueue(batch);
 
     processSchedulingResult(internalBtIds, result);
@@ -485,7 +492,7 @@ public class RemoteRun implements ICommand {
 
   long createChangeList(String serverURL, int userId, final File patchFile, final IProgressMonitor monitor) throws ECommunicationException {
     try {
-      monitor.beginTask(Messages.getString("RemoteRun.send.patch.step.name")); 
+      monitor.beginTask(getMsg("RemoteRun.send.patch.step.name"));
       final SimpleHttpConnectionManager manager = new SimpleHttpConnectionManager();
       HostConfiguration hostConfiguration = new HostConfiguration();
       hostConfiguration.setHost(new URI(serverURL, false));
@@ -506,7 +513,7 @@ public class RemoteRun implements ICommand {
         postMethod.setQueryString(new NameValuePair[] { new NameValuePair("userId", String.valueOf(userId)), 
             new NameValuePair("description", myComments), 
             new NameValuePair("date", String.valueOf(System.currentTimeMillis())),
-            new NameValuePair("commitType", String.valueOf(PreTestedCommitType.COMMIT_IF_SUCCESSFUL.getId())), });//TODO: make argument
+            new NameValuePair("commitType", String.valueOf(PreTestedCommitType.NONE.getId())), });
         postMethod.execute(new HttpState(), connection);
       } finally {
         content.close();
@@ -528,7 +535,7 @@ public class RemoteRun implements ICommand {
     final HashSet<String> modifiedResources = new HashSet<String>();
     final HashSet<String> deletedResources = new HashSet<String>();
     try {
-      monitor.beginTask(Messages.getString("RemoteRun.preparing.patch.step.name")); 
+      monitor.beginTask(getMsg("RemoteRun.preparing.patch.step.name"));
       os = new DataOutputStream(new BufferedOutputStream(new FileOutputStream(patchFile)));
       patcher = new LowLevelPatchBuilderImpl(os);
       for (final ITCResource resource : resources) {
@@ -581,7 +588,7 @@ public class RemoteRun implements ICommand {
   }
 
   Collection<File> getFiles(Args args, IProgressMonitor monitor) throws IllegalArgumentException {
-    monitor.beginTask(Messages.getString("RemoteRun.collect.changes.step.name")); 
+    monitor.beginTask(getMsg("RemoteRun.collect.changes.step.name"));
     final String[] elements = args.getArguments();
     int i = 0;// skip command
     while (i < elements.length) {
@@ -637,9 +644,9 @@ public class RemoteRun implements ICommand {
       }
     }
     if (result.size() == 0) {
-      throw new IllegalArgumentException(Messages.getString("RemoteRun.no.files.collected.for.remoterun.error.message")); 
+      throw new IllegalArgumentException(getMsg("RemoteRun.no.files.collected.for.remoterun.error.message"));
     }
-    monitor.status(new ProgressStatus(IProgressStatus.INFO, MessageFormat.format(Messages.getString("RemoteRun.collect.changes.step.result.pattern"), result.size()))); 
+    monitor.status(new ProgressStatus(IProgressStatus.INFO, format(getMsg("RemoteRun.collect.changes.step.result.pattern"), result.size())));
     monitor.done(); 
     for (final File collected : result) {
       debug("%s", collected);
@@ -701,7 +708,7 @@ public class RemoteRun implements ICommand {
 
   public String getUsageDescription() {
     return String.format(
-        Messages.getString("RemoteRun.help.usage.pattern"), 
+      getMsg("RemoteRun.help.usage.pattern"),
         getCommandDescription(), getId(), CONFIGURATION_PARAM, CONFIGURATION_PARAM_LONG, CONFIGURATION_PARAM, CONFIGURATION_PARAM_LONG,
         PROJECT_PARAM, PROJECT_PARAM_LONG, MESSAGE_PARAM, MESSAGE_PARAM_LONG, TIMEOUT_PARAM, TIMEOUT_PARAM_LONG, OVERRIDING_MAPPING_FILE_PARAM,
         NO_WAIT_SWITCH, NO_WAIT_SWITCH_LONG, CHECK_FOR_CHANGES_EARLY_SWITCH, FORCE_COMPATIBILITY_CHECK_SWITCH, FORCE_CLEAN_SWITCH
@@ -709,7 +716,7 @@ public class RemoteRun implements ICommand {
   }
 
   public String getCommandDescription() {
-    return Messages.getString("RemoteRun.help.description"); 
+    return getMsg("RemoteRun.help.description");
   }
 
   public String getResultDescription() {
@@ -718,7 +725,7 @@ public class RemoteRun implements ICommand {
 
   public void validate(Args args) throws IllegalArgumentException {
     if (args == null || !args.hasArgument(MESSAGE_PARAM, MESSAGE_PARAM_LONG)) {
-      throw new IllegalArgumentException(MessageFormat.format(Messages.getString("RemoteRun.missing.message.para.error.pattern"), MESSAGE_PARAM, MESSAGE_PARAM_LONG)); 
+      throw new IllegalArgumentException(format(getMsg("RemoteRun.missing.message.para.error.pattern"), MESSAGE_PARAM, MESSAGE_PARAM_LONG));
     }
   }
 
