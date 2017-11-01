@@ -47,7 +47,7 @@ public class TestServer extends Server {
   public static class TestBuildTypeData extends BuildTypeData {
 
     public TestBuildTypeData(String id, ProjectData project) {
-      super(false, id, id, null, project.getName(), project.getProjectId(), project.getExternalId(), Collections.singletonList("<unknown>"), id, "<unknown>", CheckoutType.MANUAL,
+      super(id, id, null, project.getName(), project.getProjectId(), project.getExternalId(), Collections.singletonList("<unknown>"), id, "<unknown>", CheckoutType.MANUAL,
             createStatusDescriptor(), null, false, Collections.<String, String>emptyMap(), Collections.<Option, Object>emptyMap());
       project.getBuildTypes().add(this);
     }
