@@ -197,7 +197,7 @@ public class Build {
 
     </target>
 
-    <target name="prepare-artifacts" description="Extract libraries from TeamCity distributive">
+    <target name="prepare-artifacts" description="Extract libraries from TeamCity distribution">
 
         <!-- unpack existing destributive-->
         <untar compression="gzip" dest="${distribution.dir}">
