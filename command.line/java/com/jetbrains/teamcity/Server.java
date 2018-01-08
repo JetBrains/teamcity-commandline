@@ -15,19 +15,30 @@
  */
 package com.jetbrains.teamcity;
 
+import com.jetbrains.teamcity.command.Messages;
+import java.io.*;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import jetbrains.buildServer.*;
+import jetbrains.buildServer.core.runtime.IProgressMonitor;
+import jetbrains.buildServer.core.runtime.IProgressStatus;
+import jetbrains.buildServer.core.runtime.ProgressStatus;
 import jetbrains.buildServer.serverProxy.RemoteServerFacade;
 import jetbrains.buildServer.serverProxy.RemoteServerFacadeImpl;
 import jetbrains.buildServer.serverProxy.SessionXmlRpcTarget;
 import jetbrains.buildServer.serverProxy.impl.SessionXmlRpcTargetImpl;
 import jetbrains.buildServer.serverSide.TriggeredByBuilder;
 import jetbrains.buildServer.serverSide.auth.AuthenticationFailedException;
+import jetbrains.buildServer.serverSide.userChanges.PreTestedCommitType;
+import jetbrains.buildServer.util.ExceptionUtil;
 import jetbrains.buildServer.xmlrpc.RemoteCallException;
 import jetbrains.buildServer.xmlrpc.XmlRpcTarget.Cancelable;
+import org.apache.commons.codec.binary.Base64;
+import org.apache.commons.httpclient.*;
+import org.apache.commons.httpclient.methods.InputStreamRequestEntity;
+import org.apache.commons.httpclient.methods.PostMethod;
 import org.jetbrains.annotations.NotNull;
 
 public class Server {
@@ -135,6 +146,75 @@ public class Server {
   public Collection<String> getApplicableConfigurations(final Collection<String> urls) throws ECommunicationException {
     return getServerFacade().getSuitableConfigurations(urls);
   }
+
+  public long createChangeList(@NotNull final File patchFile, @NotNull final String comment, @NotNull final IProgressMonitor monitor) throws ECommunicationException {
+
+    try {
+      monitor.beginTask(Messages.getString("RemoteRun.send.patch.step.name"));
+      HttpConnection connection = getHttpConnection();
+
+      final PostMethod postMethod = new PostMethod(createUploadPatchUrl());
+      final BufferedInputStream content = new BufferedInputStream(new FileInputStream(patchFile));
+
+      try {
+        addAuthorizationHeader(postMethod);
+
+        postMethod.setRequestEntity(new InputStreamRequestEntity(content, patchFile.length()));
+        postMethod.setQueryString(new NameValuePair[] { new NameValuePair("userId", String.valueOf(getCurrentUser())),
+          new NameValuePair("description", comment),
+          new NameValuePair("date", String.valueOf(System.currentTimeMillis())),
+          new NameValuePair("commitType", String.valueOf(PreTestedCommitType.NONE.getId())), });
+        postMethod.execute(new HttpState(), connection);
+      } finally {
+        content.close();
+      }
+      // post requests to queue
+      final String response = postMethod.getResponseBodyAsString();
+      connection.close();
+
+      monitor.status(new ProgressStatus(IProgressStatus.INFO, String.format("sent %d bytes", patchFile.length())));
+      monitor.done();
+      return Long.parseLong(response);
+
+    } catch (IOException e) {
+      throw new ECommunicationException(e);
+    }
+  }
+
+  @NotNull
+  private String createUploadPatchUrl() {
+    String result = getURL();
+    if (!result.endsWith("/")) {
+      result += "/";
+    }
+    result += "uploadChanges.html";
+    return result;
+  }
+
+  @NotNull
+  private HttpConnection getHttpConnection() throws IOException {
+    final SimpleHttpConnectionManager manager = new SimpleHttpConnectionManager();
+    HostConfiguration hostConfiguration = new HostConfiguration();
+    hostConfiguration.setHost(new URI(getURL(), false));
+    HttpConnection connection = manager.getConnection(hostConfiguration);
+
+    if (!connection.isOpen()) {
+      connection.open();
+    }
+    return connection;
+  }
+
+  private void addAuthorizationHeader(@NotNull PostMethod method) {
+    final String crePair = mySession.getUsername() + ":" + mySession.getPassword();
+    try {
+      String encoded = new String(Base64.encodeBase64(crePair.getBytes("US-ASCII")), "US-ASCII"); // we expect ASCII login name and password here
+      method.addRequestHeader("Authorization", "Basic " + encoded);
+    } catch (UnsupportedEncodingException e) {
+      ExceptionUtil.rethrowAsRuntimeException(e);
+    }
+  }
+
+
 
   public void dispose() {
     mySession.dispose();

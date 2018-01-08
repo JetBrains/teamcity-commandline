@@ -1,30 +1,20 @@
 package com.jetbrains.teamcity.command;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertTrue;
-
-import java.io.ByteArrayInputStream;
-import java.io.File;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.Iterator;
-import java.util.TreeSet;
-
-import jetbrains.buildServer.core.runtime.RuntimeUtil;
-import jetbrains.buildServer.util.FileUtil;
-
-import org.junit.AfterClass;
-import org.junit.BeforeClass;
-import org.junit.Test;
-
 import com.jetbrains.teamcity.TestServer;
 import com.jetbrains.teamcity.TestingUtil;
 import com.jetbrains.teamcity.resources.ITCResource;
 import com.jetbrains.teamcity.resources.ITCResourceMatcher;
 import com.jetbrains.teamcity.resources.TCWorkspace;
+import java.io.ByteArrayInputStream;
+import java.io.File;
+import java.util.*;
+import jetbrains.buildServer.core.runtime.RuntimeUtil;
+import jetbrains.buildServer.util.FileUtil;
+import org.junit.AfterClass;
+import org.junit.BeforeClass;
+import org.junit.Test;
+
+import static org.junit.Assert.*;
 
 public class RemoteRunTest {
 
@@ -81,7 +71,7 @@ public class RemoteRunTest {
       {// file under TC
         final Collection<ITCResource> resources = ourCommand.getTCResources(new TCWorkspace(new File(".")), Collections.singletonList(controlledFile), RuntimeUtil.NULL_MONITOR);
         System.out.println(String.format("TW_9694(): Collected resources: %s", resources));
-        File patch = ourCommand.createPatch("http://any.com", resources, RuntimeUtil.NULL_MONITOR);
+        File patch = ourCommand.createPatch(resources, RuntimeUtil.NULL_MONITOR);
         System.out.println(String.format("TW_9694(): Patch size = %s", patch.length()));
         assertTrue(patch.length() > 10);
       }
@@ -95,7 +85,7 @@ public class RemoteRunTest {
           }
         }, Arrays.asList(controlledFile, uncontrolledFile), RuntimeUtil.NULL_MONITOR);
         System.out.println(String.format("TW_9694(): Collected resources: %s", resources));
-        File patch = ourCommand.createPatch("http://any.com", resources, RuntimeUtil.NULL_MONITOR);
+        File patch = ourCommand.createPatch(resources, RuntimeUtil.NULL_MONITOR);
         System.out.println(String.format("TW_9694(): Patch size = %s", patch.length()));
         assertTrue(patch.length() > 10);
       }

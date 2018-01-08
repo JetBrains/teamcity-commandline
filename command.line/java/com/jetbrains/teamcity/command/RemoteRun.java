@@ -31,7 +31,6 @@ import jetbrains.buildServer.core.runtime.IProgressStatus;
 import jetbrains.buildServer.core.runtime.ProgressStatus;
 import jetbrains.buildServer.serverSide.userChanges.PersonalChangeCommitDecision;
 import jetbrains.buildServer.serverSide.userChanges.PersonalChangeDescriptor;
-import jetbrains.buildServer.serverSide.userChanges.PreTestedCommitType;
 import jetbrains.buildServer.util.Converter;
 import jetbrains.buildServer.util.FileUtil;
 import jetbrains.buildServer.util.StringUtil;
@@ -39,9 +38,6 @@ import jetbrains.buildServer.util.filters.Filter;
 import jetbrains.buildServer.vcs.patches.LowLevelPatchBuilder;
 import jetbrains.buildServer.vcs.patches.LowLevelPatchBuilderImpl;
 import jetbrains.buildServer.vcs.patches.PatchBuilderImpl;
-import org.apache.commons.httpclient.*;
-import org.apache.commons.httpclient.methods.InputStreamRequestEntity;
-import org.apache.commons.httpclient.methods.PostMethod;
 import org.jetbrains.annotations.NotNull;
 
 import static java.text.MessageFormat.format;
@@ -62,14 +58,14 @@ public class RemoteRun implements ICommand {
     }
   };
 
-  static final int SLEEP_INTERVAL = 1000 * 5;
-  static final int DEFAULT_TIMEOUT = 1000 * 60 * 60;
+  private static final int SLEEP_INTERVAL = 1000 * 5;
+  private static final int DEFAULT_TIMEOUT = 1000 * 60 * 60;
 
   static final String ID = getMsg("RemoteRun.command.id");
 
   static final String OVERRIDING_MAPPING_FILE_PARAM = getMsg("RemoteRun.overriding.config.file.argument");
 
-  static final String CONFIGURATION_PARAM = getMsg("RemoteRun.config.runtime.param");
+  private static final String CONFIGURATION_PARAM = getMsg("RemoteRun.config.runtime.param");
   static final String CONFIGURATION_PARAM_LONG = getMsg("RemoteRun.config.runtime.param.long");
 
   static final String PROJECT_PARAM = getMsg("RemoteRun.project.runtime.param");
@@ -79,17 +75,17 @@ public class RemoteRun implements ICommand {
   static final String MESSAGE_PARAM_LONG = getMsg("RemoteRun.message.runtime.param.long");
 
   static final String TIMEOUT_PARAM = getMsg("RemoteRun.timeout.runtime.param");
-  static final String TIMEOUT_PARAM_LONG = getMsg("RemoteRun.timeout.runtime.param.long");
+  private static final String TIMEOUT_PARAM_LONG = getMsg("RemoteRun.timeout.runtime.param.long");
 
-  static final String NO_WAIT_SWITCH = getMsg("RemoteRun.nowait.runtime.param");
+  private static final String NO_WAIT_SWITCH = getMsg("RemoteRun.nowait.runtime.param");
   static final String NO_WAIT_SWITCH_LONG = getMsg("RemoteRun.nowait.runtime.param.long");
 
   static final String CHECK_FOR_CHANGES_EARLY_SWITCH = getMsg("RemoteRun.checkforchangesearly.runtime.param.long");
-  static final String FORCE_COMPATIBILITY_CHECK_SWITCH = getMsg("RemoteRun.force.compatibility.check.runtime.param.long");
-  static final String FORCE_CLEAN_SWITCH = getMsg("RemoteRun.force.clean.param.long");
+  private static final String FORCE_COMPATIBILITY_CHECK_SWITCH = getMsg("RemoteRun.force.compatibility.check.runtime.param.long");
+  private static final String FORCE_CLEAN_SWITCH = getMsg("RemoteRun.force.clean.param.long");
 
   private Server myServer;
-  private String myComments;
+  private String myComment;
   private String myResultDescription;
 
   private boolean isNoWait = false;
@@ -121,7 +117,7 @@ public class RemoteRun implements ICommand {
     myServer = server;
 
     // comment
-    myComments = args.getArgument(MESSAGE_PARAM, MESSAGE_PARAM_LONG);
+    myComment = args.getArgument(MESSAGE_PARAM, MESSAGE_PARAM_LONG);
 
     // wait/no wait for build result
     if (args.hasArgument(NO_WAIT_SWITCH, NO_WAIT_SWITCH_LONG)) {
@@ -145,7 +141,7 @@ public class RemoteRun implements ICommand {
     final Collection<ITCResource> tcResources = getTCResources(workspace, files, monitor);
 
     // prepare patch
-    final File patchFile = createPatch(myServer.getURL(), tcResources, monitor);
+    final File patchFile = createPatch(tcResources, monitor);
 
     // collect configurations for running
     final Collection<String> requestedInternalIds = getRequestedConfigurations(args);
@@ -155,7 +151,7 @@ public class RemoteRun implements ICommand {
                                                        StringUtil.join(",", requestedInternalIds)));
     }
     // prepare changes list
-    final long chaneListId = createChangeList(myServer.getURL(), myServer.getCurrentUser(), patchFile, monitor);
+    final long chaneListId = myServer.createChangeList(patchFile, myComment, monitor);
 
     // fire RR
     scheduleRemoteRun(internalIds, chaneListId,
@@ -260,9 +256,9 @@ public class RemoteRun implements ICommand {
     return out;
   }
 
-  File createPatch(String url, Collection<ITCResource> resources, IProgressMonitor monitor) throws ECommunicationException {
+  File createPatch(Collection<ITCResource> resources, IProgressMonitor monitor) throws ECommunicationException {
     try {
-      final File emptyPatchFile = createPatchFile(url);
+      final File emptyPatchFile = createPatchFile();
       final File patch = fillPatch(emptyPatchFile, resources, monitor);
       if (!myCleanoff) {
         patch.deleteOnExit();
@@ -283,7 +279,10 @@ public class RemoteRun implements ICommand {
     return null;
   }
 
-  Collection<String> getApplicableConfigurations(Collection<String> requestedIDs, final Collection<ITCResource> files, final IProgressMonitor monitor, final boolean forceCompatibilityCheck) throws ECommunicationException {
+  private Collection<String> getApplicableConfigurations(Collection<String> requestedIDs,
+                                                         final Collection<ITCResource> files,
+                                                         final IProgressMonitor monitor,
+                                                         final boolean forceCompatibilityCheck) throws ECommunicationException {
 
     monitor.beginTask("Collecting configurations for running");
 
@@ -345,7 +344,7 @@ public class RemoteRun implements ICommand {
     return Collections.unmodifiableSet(out);
   }
 
-  PersonalChangeDescriptor waitForSuccessResult(final long changeListId, final long timeOut, IProgressMonitor monitor) throws ECommunicationException, ERemoteError {
+  private PersonalChangeDescriptor waitForSuccessResult(final long changeListId, final long timeOut, IProgressMonitor monitor) throws ECommunicationException, ERemoteError {
     sleep(3000);
     monitor.beginTask(getMsg("RemoteRun.wait.for.build.step.name"));
     final long startTime = System.currentTimeMillis();
@@ -445,7 +444,7 @@ public class RemoteRun implements ICommand {
     return currentStatus;
   }
 
-  private long scheduleRemoteRun(final Collection<String> internalBtIds, final long changeId, boolean checkForChangesEarly, final boolean forceCleanCheckout, final IProgressMonitor monitor) throws ECommunicationException, ERemoteError {
+  private void scheduleRemoteRun(final Collection<String> internalBtIds, final long changeId, boolean checkForChangesEarly, final boolean forceCleanCheckout, final IProgressMonitor monitor) throws ECommunicationException, ERemoteError {
     final ArrayList<AddToQueueRequest> batch = new ArrayList<AddToQueueRequest>();
     for (final String internalBtId : internalBtIds) {
       final AddToQueueRequest request = new AddToQueueRequest(internalBtId, changeId);
@@ -461,7 +460,6 @@ public class RemoteRun implements ICommand {
     processSchedulingResult(internalBtIds, result);
 
     monitor.done();
-    return changeId;
   }
 
   private void processSchedulingResult(final Collection<String> internalBtIds, final AddToQueueResult result) throws ERemoteError {
@@ -490,46 +488,7 @@ public class RemoteRun implements ICommand {
     }
   }
 
-  long createChangeList(String serverURL, int userId, final File patchFile, final IProgressMonitor monitor) throws ECommunicationException {
-    try {
-      monitor.beginTask(getMsg("RemoteRun.send.patch.step.name"));
-      final SimpleHttpConnectionManager manager = new SimpleHttpConnectionManager();
-      HostConfiguration hostConfiguration = new HostConfiguration();
-      hostConfiguration.setHost(new URI(serverURL, false));
-      HttpConnection connection = manager.getConnection(hostConfiguration);
-
-      if (!connection.isOpen()) {
-        connection.open();
-      }
-      String _uri = serverURL;
-      if (!serverURL.endsWith("/")) { 
-        _uri += "/"; 
-      }
-      _uri += "uploadChanges.html"; 
-      final PostMethod postMethod = new PostMethod(_uri);
-      final BufferedInputStream content = new BufferedInputStream(new FileInputStream(patchFile));
-      try {
-        postMethod.setRequestEntity(new InputStreamRequestEntity(content, patchFile.length()));
-        postMethod.setQueryString(new NameValuePair[] { new NameValuePair("userId", String.valueOf(userId)), 
-            new NameValuePair("description", myComments), 
-            new NameValuePair("date", String.valueOf(System.currentTimeMillis())),
-            new NameValuePair("commitType", String.valueOf(PreTestedCommitType.NONE.getId())), });
-        postMethod.execute(new HttpState(), connection);
-      } finally {
-        content.close();
-      }
-      // post requests to queue
-      final String response = postMethod.getResponseBodyAsString();
-      monitor.status(new ProgressStatus(IProgressStatus.INFO, String.format("sent %d bytes", patchFile.length())));       
-      monitor.done();
-      return Long.parseLong(response);
-
-    } catch (IOException e) {
-      throw new ECommunicationException(e);
-    }
-  }
-
-  File fillPatch(final File patchFile, final Collection<ITCResource> resources, final IProgressMonitor monitor) throws IOException, ECommunicationException {
+  private File fillPatch(final File patchFile, final Collection<ITCResource> resources, final IProgressMonitor monitor) throws IOException {
     DataOutputStream os = null;
     LowLevelPatchBuilderImpl patcher = null;
     final HashSet<String> modifiedResources = new HashSet<String>();
@@ -583,7 +542,7 @@ public class RemoteRun implements ICommand {
 
   }
 
-  static File createPatchFile(String urlDigest) throws IOException {
+  private static File createPatchFile() throws IOException {
     return FileUtil.createTempFile("tcc.jar-", ".patch");
   }
 
@@ -654,7 +613,7 @@ public class RemoteRun implements ICommand {
     return result;
   }
 
-  Collection<File> traverse(final Collection<File> files) {
+  private Collection<File> traverse(final Collection<File> files) {
     TreeSet<File> out = new TreeSet<File>(new Comparator<File>() {
       public int compare(File o1, File o2) {
         return o1.compareTo(o2);
