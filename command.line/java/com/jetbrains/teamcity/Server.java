@@ -33,6 +33,7 @@ import jetbrains.buildServer.serverSide.TriggeredByBuilder;
 import jetbrains.buildServer.serverSide.auth.AuthenticationFailedException;
 import jetbrains.buildServer.serverSide.userChanges.PreTestedCommitType;
 import jetbrains.buildServer.util.ExceptionUtil;
+import jetbrains.buildServer.version.ServerVersionHolder;
 import jetbrains.buildServer.xmlrpc.RemoteCallException;
 import jetbrains.buildServer.xmlrpc.XmlRpcTarget.Cancelable;
 import org.apache.commons.codec.binary.Base64;
@@ -55,11 +56,17 @@ public class Server {
   public void connect() throws ECommunicationException {
     try {
       final int timeout = getTimeout();
-      mySession = new SessionXmlRpcTargetImpl(myUrl.toExternalForm(), "Command Line Tool", timeout);
+      mySession = new SessionXmlRpcTargetImpl(myUrl.toExternalForm(), getUserAgent(), timeout);
       Debug.getInstance().debug(Server.class, String.format("XmlRpc session %s created. Timeout set to %s", mySession.describeMe(), timeout));
     } catch (Throwable e) {
       throw new ECommunicationException(String.format("Could not connect to server %s", myUrl), Util.getRootCause(e));
     }
+  }
+
+  @NotNull
+  private static String getUserAgent() {
+    final String version = ServerVersionHolder.getVersion().getDisplayVersion();
+    return "Command Line Tool/" + version;
   }
 
   private int getTimeout() {
@@ -149,15 +156,19 @@ public class Server {
 
   public long createChangeList(@NotNull final File patchFile, @NotNull final String comment, @NotNull final IProgressMonitor monitor) throws ECommunicationException {
 
+    HttpConnection connection = null;
     try {
       monitor.beginTask(Messages.getString("RemoteRun.send.patch.step.name"));
-      HttpConnection connection = getHttpConnection();
+      connection = getHttpConnection();
 
       final PostMethod postMethod = new PostMethod(createUploadPatchUrl());
       final BufferedInputStream content = new BufferedInputStream(new FileInputStream(patchFile));
 
       try {
         addAuthorizationHeader(postMethod);
+        postMethod.setRequestHeader("Connection", "close");
+        postMethod.setRequestHeader("Accept", "text/plain");
+        postMethod.addRequestHeader("User-Agent", mySession.getUserAgent());
 
         postMethod.setRequestEntity(new InputStreamRequestEntity(content, patchFile.length()));
         postMethod.setQueryString(new NameValuePair[] { new NameValuePair("userId", String.valueOf(getCurrentUser())),
@@ -170,7 +181,6 @@ public class Server {
       }
       // post requests to queue
       final String response = postMethod.getResponseBodyAsString();
-      connection.close();
 
       monitor.status(new ProgressStatus(IProgressStatus.INFO, String.format("sent %d bytes", patchFile.length())));
       monitor.done();
@@ -178,6 +188,10 @@ public class Server {
 
     } catch (IOException e) {
       throw new ECommunicationException(e);
+    } finally {
+      if (connection != null) {
+        connection.close();
+      }
     }
   }
 
@@ -193,7 +207,7 @@ public class Server {
 
   @NotNull
   private HttpConnection getHttpConnection() throws IOException {
-    final SimpleHttpConnectionManager manager = new SimpleHttpConnectionManager();
+    final SimpleHttpConnectionManager manager = new SimpleHttpConnectionManager(true);
     HostConfiguration hostConfiguration = new HostConfiguration();
     hostConfiguration.setHost(new URI(getURL(), false));
     HttpConnection connection = manager.getConnection(hostConfiguration);
