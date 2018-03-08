@@ -302,8 +302,7 @@ public class Util {
   }
 
   public static String readConsoleInput(String prompt, boolean secure) {
-    final byte minorVersion = getJavaVersion()[1];
-    if (!secure || minorVersion < 6) {
+    if (!secure) {
       if (prompt != null) {
         System.out.print(prompt);
       }
@@ -336,14 +335,6 @@ public class Util {
       // do nothing
     }
     return readConsoleInput(prompt, false);// read anyway
-  }
-
-  public static byte[] getJavaVersion() {
-    byte[] out = new byte[2];
-    final String[] tokens = System.getProperty("java.version", "1.5").split("\\.");
-    out[0] = Byte.parseByte(tokens[0]);
-    out[1] = Byte.parseByte(tokens[1]);
-    return out;
   }
 
   public static String toPortableString(final String path) {
