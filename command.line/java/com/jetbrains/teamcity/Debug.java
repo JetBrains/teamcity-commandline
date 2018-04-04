@@ -15,14 +15,10 @@
  */
 package com.jetbrains.teamcity;
 
-import java.io.PrintStream;
-import java.util.HashMap;
-import java.util.Map;
 import org.apache.log4j.Logger;
+import org.jetbrains.annotations.Nullable;
 
 public class Debug {
-
-  private static final Map<String, Logger> ourLoggers = new HashMap<String, Logger>();
 
   private boolean debugMode = false;
 
@@ -43,44 +39,24 @@ public class Debug {
   }
 
   public void debug(final Class<?> clazz, final String message) {
-    internalLog(clazz, message, System.err);
+    internalLog(clazz, message, null);
   }
 
   public void error(final Class<?> clazz, final String message) {
-    internalLog(clazz, message, System.err);
+    internalLog(clazz, message, null);
   }
 
   public void error(final Class<?> clazz, final String message, final Throwable t) {
-    internalThrowable(clazz, message, t, System.err);
+    internalLog(clazz, message, t);
   }
 
-  private void internalLog(final Class<?> clazz, final String message, PrintStream dest) {
-    final Logger logger = getLogger(clazz);
-    logger.debug(message);
+  private void internalLog(final Class<?> clazz, final String message, @Nullable Throwable t) {
+    Logger.getLogger(clazz).debug(message, t);
     if (debugMode) {
-      dest.println(String.format("%s: %s", clazz.getSimpleName(), message));
-    }
-  }
-
-  private void internalThrowable(final Class<?> clazz, final String message, Throwable t, PrintStream dest) {
-    final Logger logger = getLogger(clazz);
-    logger.debug(message, t);
-    if (debugMode) {
-      dest.println(String.format("%s: %s", clazz.getSimpleName(), message));
+      System.err.println(String.format("%s: %s", clazz.getSimpleName(), message));
       if (t != null) {
-        t.printStackTrace(dest);
+        t.printStackTrace(System.err);
       }
     }
   }
-
-  private Logger getLogger(Class<?> clazz) {
-    final String key = clazz.getName();
-    if (ourLoggers.containsKey(key)) {
-      return ourLoggers.get(key);
-    }
-    final Logger logger = Logger.getLogger(clazz);
-    ourLoggers.put(key, logger);
-    return logger;
-  }
-
 }
