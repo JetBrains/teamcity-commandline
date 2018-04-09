@@ -61,7 +61,11 @@ public class RemoteServerFacadeImpl extends RemoteBuildServerImpl implements Rem
         try {
           return XStreamUtil.unzipAndDeserializeObject(serializedStr);
         } catch (Exception e) {
-          throw new RuntimeException(e);
+          if (serializedStr != null) {
+            Debug.getInstance().debug(CommandRunner.class, "Error unzipping and deserializing response: " + new String(serializedStr));
+          }
+
+          throw new RuntimeException("Error unzipping and deserializing response: " + e.getMessage(), e);
         }
       }
 
