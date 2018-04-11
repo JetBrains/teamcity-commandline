@@ -30,10 +30,10 @@ import jetbrains.buildServer.core.runtime.IProgressMonitor;
 import jetbrains.buildServer.core.runtime.IProgressStatus;
 import jetbrains.buildServer.core.runtime.ProgressStatus;
 import jetbrains.buildServer.serverSide.userChanges.PersonalChangeCommitDecision;
-import jetbrains.buildServer.serverSide.userChanges.PersonalChangeDescriptor;
 import jetbrains.buildServer.util.Converter;
 import jetbrains.buildServer.util.FileUtil;
 import jetbrains.buildServer.util.StringUtil;
+import jetbrains.buildServer.util.ThreadUtil;
 import jetbrains.buildServer.util.filters.Filter;
 import jetbrains.buildServer.vcs.patches.LowLevelPatchBuilder;
 import jetbrains.buildServer.vcs.patches.LowLevelPatchBuilderImpl;
@@ -94,6 +94,11 @@ public class RemoteRun implements ICommand {
 
   private boolean myCleanoff;
 
+  private Map<String, String> myConfigExternal2InternalMap;
+
+  private volatile ECommunicationException myRecentSummaryError;
+  private int mySummaryFailureCount;
+
   static {
     Args.registerArgument(MESSAGE_PARAM, String.format(".*%s\\s+\\S.*", MESSAGE_PARAM)); 
     Args.registerArgument(MESSAGE_PARAM_LONG, String.format(".*%s\\s+\\S.*", MESSAGE_PARAM_LONG)); 
@@ -110,8 +115,6 @@ public class RemoteRun implements ICommand {
     Args.registerArgument(OVERRIDING_MAPPING_FILE_PARAM, String.format(".*%s\\s+\\S.*", OVERRIDING_MAPPING_FILE_PARAM)); 
 
   }
-
-  private Map<String, String> myConfigExternal2InternalMap;
 
   public void execute(final Server server, Args args, final IProgressMonitor monitor) throws EAuthorizationException, ECommunicationException, ERemoteError, InvalidAttributesException {
     myServer = server;
@@ -161,11 +164,11 @@ public class RemoteRun implements ICommand {
 
     // process result
     if (isNoWait) {
-      myResultDescription = format(getMsg("RemoteRun.schedule.result.ok.pattern"), String.valueOf(chaneListId));
+      myResultDescription = String.format("Build for Change %d scheduled successfully", chaneListId);
 
     } else {
-      final PersonalChangeDescriptor result = waitForSuccessResult(chaneListId, myTimeout, monitor);
-      myResultDescription = format(getMsg("RemoteRun.build.result.ok.pattern"), String.valueOf(chaneListId), result.getPersonalChangeStatus());
+      waitForSuccessResult(chaneListId, myTimeout, monitor);
+      myResultDescription = String.format("Build for Change %d run successfully", chaneListId);
     }
   }
 
@@ -344,14 +347,25 @@ public class RemoteRun implements ICommand {
     return Collections.unmodifiableSet(out);
   }
 
-  private PersonalChangeDescriptor waitForSuccessResult(final long changeListId, final long timeOut, IProgressMonitor monitor) throws ECommunicationException, ERemoteError {
+  private void waitForSuccessResult(final long changeListId, final long timeOut, IProgressMonitor monitor) throws ERemoteError {
     sleep(3000);
-    monitor.beginTask(getMsg("RemoteRun.wait.for.build.step.name"));
+    monitor.beginTask("Waiting for Remote Run to finish");
     final long startTime = System.currentTimeMillis();
     UserChangeStatus prevCurrentStatus = null;
     while ((System.currentTimeMillis() - startTime) < timeOut) {
-      final TeamServerSummaryData summary = myServer.getSummary();
-      for (final UserChangeInfoData data : summary.getPersonalChanges()) {
+
+      final List<UserChangeInfoData> personalChanges = getPersonalChanges();
+      if (personalChanges == null) {
+        if (processFailureAndContinue()) {
+          continue;
+        }
+        else {
+          throw new RuntimeException("Error obtaining remote run status after multiple attempts", myRecentSummaryError);
+        }
+      }
+      mySummaryFailureCount = 0;
+
+      for (final UserChangeInfoData data : personalChanges) {
 
         if (data.getPersonalDesc() != null && data.getPersonalDesc().getId() == changeListId) {
           // check builds status
@@ -364,12 +378,11 @@ public class RemoteRun implements ICommand {
 
           if (UserChangeStatus.FAILED_WITH_RESPONSIBLE == currentStatus || UserChangeStatus.FAILED == currentStatus || UserChangeStatus.CANCELED == currentStatus) {
             System.out.println();
-            throw new ERemoteError(format(getMsg("RemoteRun.build.failed.error.pattern"), getBuildStatusDescription(currentStatus)));
+            throw new ERemoteError("Remote Run failed: build status=" + getBuildStatusDescription(currentStatus));
           }
 
           if (UserChangeStatus.RUNNING_FAILED == currentStatus) {
-            System.out.println(format(getMsg("RemoteRun.build.failed.error.pattern"), getBuildStatusDescription(currentStatus)));
-            System.out.println();
+            System.out.println("Remote Run failed: build status=" + getBuildStatusDescription(currentStatus));
           }
 
           if (UserChangeStatus.CHECKED == currentStatus) {
@@ -377,21 +390,38 @@ public class RemoteRun implements ICommand {
             System.out.println();
             // OK
             monitor.done();
-            return data.getPersonalDesc();
+            return;
           }
 
         }
 
       }
-      try {
-        System.out.print(".");
-        Thread.sleep(SLEEP_INTERVAL);
-      } catch (InterruptedException e) {
-        throw new RuntimeException(e);
-      }
+      System.out.print(".");
+      ThreadUtil.sleep(SLEEP_INTERVAL);
     }
     // so, timeout exceed
-    throw new RuntimeException(format(getMsg("RemoteRun.wait.for.build.timeout.exceed.error"), myTimeout, changeListId));
+    throw new RuntimeException(String.format("Stopped waiting for Remote Run %s, timeout exceeded: %dms", myTimeout, changeListId));
+  }
+
+  private boolean processFailureAndContinue() {
+    mySummaryFailureCount ++;
+    if (mySummaryFailureCount <= 7) {
+      final int seconds = 2 << mySummaryFailureCount;
+      System.out.println(" Failure accessing server [" + myRecentSummaryError.getMessage() + "]; next attempt in " + seconds + " seconds");
+      ThreadUtil.sleep(1000 * seconds);
+      return true;
+    }
+    return false;
+  }
+
+  private List<UserChangeInfoData> getPersonalChanges() {
+    try {
+      return myServer.getSummary().getPersonalChanges();
+    } catch (ECommunicationException e) {
+      Debug.getInstance().error(getClass(), "Unable to get data summary from server", e);
+      myRecentSummaryError = e;
+      return null;
+    }
   }
 
   @NotNull
@@ -454,7 +484,7 @@ public class RemoteRun implements ICommand {
       final String debugMessage = String.format("Created build request for \"%s\" configuration of changeId=%s, checkForChangesEarly=%s, forceCleanCheckout=%s", internalBtId, changeId, checkForChangesEarly, forceCleanCheckout);
       debug(debugMessage);
     }
-    monitor.beginTask(getMsg("RemoteRun.scheduling.build.step.name"));
+    monitor.beginTask("Scheduling personal build");
     final AddToQueueResult result = myServer.addRemoteRunToQueue(batch);
 
     processSchedulingResult(internalBtIds, result);
@@ -494,7 +524,7 @@ public class RemoteRun implements ICommand {
     final HashSet<String> modifiedResources = new HashSet<String>();
     final HashSet<String> deletedResources = new HashSet<String>();
     try {
-      monitor.beginTask(getMsg("RemoteRun.preparing.patch.step.name"));
+      monitor.beginTask("Preparing patch");
       os = new DataOutputStream(new BufferedOutputStream(new FileOutputStream(patchFile)));
       patcher = new LowLevelPatchBuilderImpl(os);
       for (final ITCResource resource : resources) {

@@ -157,11 +157,15 @@ public class RemoteServerFacadeImpl extends RemoteBuildServerImpl implements Rem
     } catch (Exception e) {
       Debug.getInstance().error(CommandRunner.class, "Remote call failed: " + command.describe(), e);
 
-      final String remote = getRemoteProtocolVersion();
-      final String local = getLocalProtocolVersion();
-      Debug.getInstance().debug(CommandRunner.class, String.format("Checking protocol compatibility. Found local=%s, remote=%s", local, remote));
-      if (!remote.equals(local)) {
-        throw new ECommunicationException(String.format(Messages.getString("CommandRunner.incompatible.plugin.error.message.pattern"), remote, local));
+      try {
+        final String remote = getRemoteProtocolVersion();
+        final String local = getLocalProtocolVersion();
+        Debug.getInstance().debug(CommandRunner.class, String.format("Checking protocol compatibility. Found local=%s, remote=%s", local, remote));
+        if (!remote.equals(local)) {
+          throw new ECommunicationException(String.format(Messages.getString("CommandRunner.incompatible.plugin.error.message.pattern"), remote, local));
+        }
+      } catch (Exception e1) {
+        Debug.getInstance().error(CommandRunner.class, "Error checking server version", e1);
       }
 
       throw new ECommunicationException(e);

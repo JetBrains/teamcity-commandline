@@ -15,7 +15,6 @@
  */
 package com.jetbrains.teamcity;
 
-import com.jetbrains.teamcity.command.Messages;
 import java.io.*;
 import java.net.URL;
 import java.util.ArrayList;
@@ -158,7 +157,7 @@ public class Server {
 
     HttpConnection connection = null;
     try {
-      monitor.beginTask(Messages.getString("RemoteRun.send.patch.step.name"));
+      monitor.beginTask("Sending patch to TeamCity Server");
       connection = getHttpConnection();
 
       final PostMethod postMethod = new PostMethod(createUploadPatchUrl());
