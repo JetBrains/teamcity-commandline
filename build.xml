@@ -117,7 +117,7 @@ public class Build {
 
         <mkdir dir="${basedir}/server-side/tmp" />
 
-        <javac destdir="${basedir}/server-side/tmp" debug="on" target="1.5">
+        <javac destdir="${basedir}/server-side/tmp" debug="on" target="1.8">
             <src path="${basedir}/server-side/src" />
             <classpath refid="command.line.libs" />
         </javac>
