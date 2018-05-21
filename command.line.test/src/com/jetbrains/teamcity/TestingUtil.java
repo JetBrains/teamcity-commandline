@@ -2,9 +2,7 @@ package com.jetbrains.teamcity;
 
 import java.io.File;
 import java.io.IOException;
-
 import jetbrains.buildServer.util.FileUtil;
-
 import org.junit.Test;
 
 public class TestingUtil {
@@ -27,8 +25,10 @@ public class TestingUtil {
 		//dirs
 		File root = new File("rootTestFolder");
 		//clean to be sure
-		FileUtil.delete(root);
-		
+		if (root.exists()) {
+			FileUtil.delete(root);
+		}
+
 		root.mkdir();
 		System.out.println(String.format("TestingUtil.createFS(): %s created", root));
 		
