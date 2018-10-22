@@ -35,16 +35,22 @@ public class Util {
   private static final Pattern ASTERISK_PATTERN = Pattern.compile(".*"); //$NON-NLS-1$
 
   public static String getArgumentValue(final String[] args, final String... arguments) {
+    final List<String> res = getArgumentValues(args, arguments);
+    return res.size() == 1 ? res.get(0) : null;
+  }
+
+  public static List<String> getArgumentValues(final String[] args, final String... arguments) {
+    final ArrayList<String> result = new ArrayList<String>();
     for (int i = 0; i < args.length; i++) {
       for (String argument : arguments) {
         if (argument != null) {
           if (args[i].toLowerCase().trim().equals(argument.toLowerCase().trim()) && args.length > (i + 1)) {
-            return args[i + 1].trim();
+            result.add(args[i + 1].trim());
           }
         }
       }
     }
-    return null;
+    return result;
   }
 
   public static boolean hasArgument(final String[] args, final String... arguments) {

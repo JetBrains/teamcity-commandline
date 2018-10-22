@@ -47,7 +47,7 @@ class CommandRegistry {
   void registerCommands() {
     // register default
     register(new Help());
-    register(new List());
+    register(new ListCommand());
     register(new Login());
     register(new Logout());
     register(new RemoteRun());

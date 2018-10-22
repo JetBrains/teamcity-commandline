@@ -1,5 +1,6 @@
 package com.jetbrains.teamcity.command;
 
+import java.util.Arrays;
 import org.junit.Test;
 
 import static org.junit.Assert.*;
@@ -212,6 +213,15 @@ public class ArgsTest {
       assertTrue(value);
     }
 
+  }
+
+  @Test
+  public void getArgValues() {
+
+    assertEquals(Arrays.asList("foo=bar", "s=d"), new Args("run --param foo=bar --param s=d").getArgValues(RemoteRun.BUILD_PARAM_SWITCH));
+    assertEquals(Arrays.asList("foo=bar"), new Args("run --param foo=bar --param").getArgValues("--param"));
+    assertEquals(Arrays.asList(), new Args("run --param2 foo=bar --param2").getArgValues("--param"));
+    
   }
 
   @Test

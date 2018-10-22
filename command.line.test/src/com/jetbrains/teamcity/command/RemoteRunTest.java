@@ -241,4 +241,51 @@ public class RemoteRunTest {
 
   }
 
+  @Test
+  public void should_parse_build_params_bad_patterns() throws Exception {
+    Map<String, String> map = RemoteRun.convertToMapAndUnescape(Arrays.<String>asList());
+    assertTrue(map.isEmpty());
+
+    final String[] bad_patterns = {
+      "ddd", "-ddd", "=ddd", " =ddd", "=", " = "
+    };
+
+    for (String bad_pattern : bad_patterns) {
+      map = RemoteRun.convertToMapAndUnescape(Arrays.asList(bad_pattern));
+      assertTrue("Should be bad: '" + bad_pattern + "'", map.isEmpty());
+    }
+
+  }
+
+  @Test
+  public void should_parse_build_params_good_patterns() throws Exception {
+
+    final String[] good_patterns = {
+      "a=b", " a=b", " a =b"
+    };
+
+    for (String pattern : good_patterns) {
+      final Map<String, String> map = RemoteRun.convertToMapAndUnescape(Arrays.asList(pattern));
+      assertEquals(1, map.size());
+      assertEquals("b", map.get("a"));
+    }
+
+    final Map<String, String> map2 = RemoteRun.convertToMapAndUnescape(Arrays.asList("a=b", " c = d= "));
+    assertEquals(2, map2.size());
+    assertEquals("b", map2.get("a"));
+    assertEquals(" d= ", map2.get("c"));
+
+  }
+
+  @Test
+  public void should_parse_build_params_escape_newline() throws Exception {
+
+    // We allow to add newlines as |n and real | should be escaped as ||
+    final Map<String, String> map = RemoteRun.convertToMapAndUnescape(Arrays.asList("a=b|nc", "c=||n"));
+    assertEquals(2, map.size());
+    assertEquals("b\nc", map.get("a"));
+    assertEquals("|n", map.get("c"));
+
+  }
+
 }

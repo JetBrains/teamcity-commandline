@@ -27,7 +27,7 @@ import jetbrains.buildServer.BuildTypeData;
 import jetbrains.buildServer.ProjectData;
 import jetbrains.buildServer.core.runtime.IProgressMonitor;
 
-public class List implements ICommand {
+public class ListCommand implements ICommand {
 
   private static final String EMPTY = Messages.getString("List.empty.description"); //$NON-NLS-1$
 

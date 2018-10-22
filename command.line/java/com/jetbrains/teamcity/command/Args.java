@@ -19,7 +19,9 @@ import com.jetbrains.teamcity.Util;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.LinkedList;
+import java.util.List;
 import java.util.regex.Pattern;
+import org.jetbrains.annotations.NotNull;
 
 public class Args {
 
@@ -136,4 +138,13 @@ public class Args {
     return isSilentOn;
   }
 
+  /**
+   * Return list of values for arguments which support them, like --param name1=value --param name2=value2
+   * In the case above, array of "name1=value","name2=value2" will be returned
+   * @param argName
+   * @return see above
+   */
+  public List<String> getArgValues(@NotNull String argName) {
+    return Util.getArgumentValues(myArgs, argName);
+  }
 }
