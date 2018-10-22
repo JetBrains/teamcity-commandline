@@ -83,6 +83,7 @@ public class RemoteRun implements ICommand {
   static final String CHECK_FOR_CHANGES_EARLY_SWITCH = getMsg("RemoteRun.checkforchangesearly.runtime.param.long");
   private static final String FORCE_COMPATIBILITY_CHECK_SWITCH = getMsg("RemoteRun.force.compatibility.check.runtime.param.long");
   private static final String FORCE_CLEAN_SWITCH = getMsg("RemoteRun.force.clean.param.long");
+  private static final String REBUILD_DEPS_SWITCH = getMsg("RemoteRun.rebuild.dependencies");
 
   private Server myServer;
   private String myComment;
@@ -160,6 +161,7 @@ public class RemoteRun implements ICommand {
     scheduleRemoteRun(internalIds, chaneListId,
                       args.hasArgument(CHECK_FOR_CHANGES_EARLY_SWITCH),
                       args.hasArgument(FORCE_CLEAN_SWITCH),
+                      args.hasArgument(REBUILD_DEPS_SWITCH),
                       monitor);
 
     // process result
@@ -474,12 +476,14 @@ public class RemoteRun implements ICommand {
     return currentStatus;
   }
 
-  private void scheduleRemoteRun(final Collection<String> internalBtIds, final long changeId, boolean checkForChangesEarly, final boolean forceCleanCheckout, final IProgressMonitor monitor) throws ECommunicationException, ERemoteError {
+  private void scheduleRemoteRun(final Collection<String> internalBtIds, final long changeId, boolean checkForChangesEarly,
+                                 final boolean forceCleanCheckout, boolean rebuildDependencies, final IProgressMonitor monitor) throws ECommunicationException, ERemoteError {
     final ArrayList<AddToQueueRequest> batch = new ArrayList<AddToQueueRequest>();
     for (final String internalBtId : internalBtIds) {
       final AddToQueueRequest request = new AddToQueueRequest(internalBtId, changeId);
       request.setCheckForChangesEarly(checkForChangesEarly);
       request.setCleanSources(forceCleanCheckout);
+      request.setRebuildDependencies(rebuildDependencies);
       batch.add(request);
       final String debugMessage = String.format("Created build request for \"%s\" configuration of changeId=%s, checkForChangesEarly=%s, forceCleanCheckout=%s", internalBtId, changeId, checkForChangesEarly, forceCleanCheckout);
       debug(debugMessage);
@@ -700,7 +704,7 @@ public class RemoteRun implements ICommand {
       getMsg("RemoteRun.help.usage.pattern"),
         getCommandDescription(), getId(), CONFIGURATION_PARAM, CONFIGURATION_PARAM_LONG, CONFIGURATION_PARAM, CONFIGURATION_PARAM_LONG,
         PROJECT_PARAM, PROJECT_PARAM_LONG, MESSAGE_PARAM, MESSAGE_PARAM_LONG, TIMEOUT_PARAM, TIMEOUT_PARAM_LONG, OVERRIDING_MAPPING_FILE_PARAM,
-        NO_WAIT_SWITCH, NO_WAIT_SWITCH_LONG, CHECK_FOR_CHANGES_EARLY_SWITCH, FORCE_COMPATIBILITY_CHECK_SWITCH, FORCE_CLEAN_SWITCH
+        NO_WAIT_SWITCH, NO_WAIT_SWITCH_LONG, CHECK_FOR_CHANGES_EARLY_SWITCH, FORCE_COMPATIBILITY_CHECK_SWITCH, FORCE_CLEAN_SWITCH, REBUILD_DEPS_SWITCH
     );
   }
 
