@@ -49,7 +49,6 @@ public class Build {
 
         <javac destdir="${tmp}/bin" debug="on" target="1.5"  excludes="jetbrains/buildServer/tools/**,jetbrains/buildServer/core/runtime/osgx/**">
             <src path="${tool.home}/java" />
-            <src path="${tool.home}/src"/>
         </javac>
         <copy todir="${tmp}/bin">
             <fileset dir="${tool.home}/java">
