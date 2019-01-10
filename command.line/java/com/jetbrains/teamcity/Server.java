@@ -43,6 +43,7 @@ import org.jetbrains.annotations.NotNull;
 
 public class Server {
 
+  public static final String UPLOAD_URL = "uploadChanges.html";
   private final URL myUrl;
   private SessionXmlRpcTarget mySession;
   private RemoteServerFacade myServerFacade;
@@ -178,6 +179,12 @@ public class Server {
       } finally {
         content.close();
       }
+
+      if (postMethod.getStatusCode() >= 400) {
+        throw new ECommunicationException("Error creating change list on server with /" + UPLOAD_URL + ": " + postMethod.getResponseBodyAsString() +
+                                          "; take a look at TeamCity/logs/teamcity-server.log file for details. HTTP Status code: " + postMethod.getStatusCode());
+      }
+
       // post requests to queue
       final String response = postMethod.getResponseBodyAsString();
 
@@ -200,7 +207,7 @@ public class Server {
     if (!result.endsWith("/")) {
       result += "/";
     }
-    result += "uploadChanges.html";
+    result += UPLOAD_URL;
     return result;
   }
 
