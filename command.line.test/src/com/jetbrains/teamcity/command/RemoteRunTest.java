@@ -69,7 +69,7 @@ public class RemoteRunTest {
     try {
       final File controlledFile = new File("java" + File.separator + "resources", "java.resources");
       {// file under TC
-        final Collection<ITCResource> resources = ourCommand.getTCResources(new TCWorkspace(new File(".")), Collections.singletonList(controlledFile), RuntimeUtil.NULL_MONITOR);
+        final Collection<ITCResource> resources = ourCommand.getTCResources(new TCWorkspace(), Collections.singletonList(controlledFile), RuntimeUtil.NULL_MONITOR);
         System.out.println(String.format("TW_9694(): Collected resources: %s", resources));
         File patch = ourCommand.createPatch(resources, RuntimeUtil.NULL_MONITOR);
         System.out.println(String.format("TW_9694(): Patch size = %s", patch.length()));
@@ -78,7 +78,7 @@ public class RemoteRunTest {
 
       {// file is not under TC: disable default config
         File uncontrolledFile = new File("java", "1.java");
-        final Collection<ITCResource> resources = ourCommand.getTCResources(new TCWorkspace(new File(".")) {
+        final Collection<ITCResource> resources = ourCommand.getTCResources(new TCWorkspace() {
           @Override
           protected File getGlobalAdminFile() {
             return null;

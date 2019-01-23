@@ -35,8 +35,7 @@ public class FileBasedMatcher implements ITCResourceMatcher {
     }
   };
 
-  File myFile;
-  private final List<String> myItems;
+  private final File myFile;
   private final TreeMap<String, String> myRulesMap = new TreeMap<String, String>(PATH_SORTER);
 
   public static FileBasedMatcher create(final File rootFolder, final Map<File, String> localToRepo) throws IllegalArgumentException {
@@ -86,12 +85,12 @@ public class FileBasedMatcher implements ITCResourceMatcher {
     try {
       myFile = file.getAbsoluteFile();
       // parse content
-      myItems = FileUtil.readFile(myFile);
-      if (myItems.isEmpty()) {
+      final List<String> items = FileUtil.readFile(myFile);
+      if (items.isEmpty()) {
         throw new IllegalArgumentException(MessageFormat.format("\"{0}\" is empty", myFile));
       }
       // will build ordered by full path map for next local files mapping
-      for (final String item : myItems) {
+      for (final String item : items) {
         final String[] columns = item.trim().split(FIELD_DEVIDER);
         if (columns.length < 2) {
           throw new IllegalArgumentException(MessageFormat.format("\"{0}\" format is wrong", myFile));
@@ -118,19 +117,15 @@ public class FileBasedMatcher implements ITCResourceMatcher {
 
   public Matching getMatching(final File file) throws IllegalArgumentException {
     try {
-      final String absolutePath = Util.toPortableString(file.getCanonicalFile().getAbsolutePath());
-      for (final String path : myRulesMap.keySet()) {
-        if (absolutePath.startsWith(path)) {
-          final String prefix = myRulesMap.get(path);
-          final String relativePath = absolutePath.substring(path.length() + 1/*
-                                                                               * do
-                                                                               * not
-                                                                               * include
-                                                                               * slash
-                                                                               */, absolutePath.length());// TODO:
-                                                                                                          // check
-                                                                                                          // +1
-          return new MatchingImpl(prefix, relativePath);
+      final String filePath = Util.toPortableString(file.getCanonicalFile().getAbsolutePath());
+      for (final String rulePath : myRulesMap.keySet()) {
+        if (filePath.startsWith(rulePath)) {
+
+          String relativePath = FileUtil.getRelativePath(rulePath, filePath, '/');
+          if (".".equals(relativePath)) relativePath = "";
+          if (relativePath == null || relativePath.startsWith("..")) continue;
+          
+          return new MatchingImpl(myRulesMap.get(rulePath), relativePath);
         }
       }
       return null;
@@ -162,7 +157,8 @@ public class FileBasedMatcher implements ITCResourceMatcher {
 
   @Override
   public String toString() {
-    final StringBuffer buffer = new StringBuffer();
+    final StringBuilder buffer = new StringBuilder();
+    buffer.append("File: ").append(myFile.getAbsolutePath()).append(":\n");
     for (Map.Entry<String, String> entry : myRulesMap.entrySet()) {
       buffer.append(entry.getKey()).append(FIELD_DEVIDER).append(entry.getValue()).append("\n");
     }
