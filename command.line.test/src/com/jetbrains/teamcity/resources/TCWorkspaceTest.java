@@ -7,11 +7,10 @@ import static org.junit.Assert.assertTrue;
 
 import java.io.File;
 
+import java.io.IOException;
 import jetbrains.buildServer.util.FileUtil;
 
-import org.junit.AfterClass;
-import org.junit.BeforeClass;
-import org.junit.Test;
+import org.junit.*;
 
 import com.jetbrains.teamcity.TestingUtil;
 
@@ -19,39 +18,37 @@ import com.jetbrains.teamcity.TestingUtil;
 public class TCWorkspaceTest {
 	
 	private static TCWorkspace ourTestWorkspace;
+	private File root;
 
 	@BeforeClass
-	public static void setup(){
-		ourTestWorkspace = new TCWorkspace(new File(System.getProperty("user.dir")), null);
+	public static void setup() {
+		ourTestWorkspace = new TCWorkspace();
 	}
-	
-	@AfterClass
-	public static void shutdown(){
-		
+
+	@Before
+	public void setUp() throws IOException {
+		root = TestingUtil.createFS();
 	}
-	
+
+	@After
+	public void tearDown() {
+		TestingUtil.releaseFS(root);
+	}
+
 	@Test
 	public void getAdminFileFor_error_handling() throws Exception {
-		//null
-		try{
-			TCWorkspace.getMatcherFor(null);
-			assertTrue("Exception must be thrown", true);
-		} catch (IllegalArgumentException e){
-			//okj
-		}
-		//root 
-		final File fsRoot = TestingUtil.getFSRoot();
-		assertNull(TCWorkspace.getMatcherFor(fsRoot));
+
+		//root
+		File root = TestingUtil.getFSRoot();
+		assertNull(TCWorkspace.getMatcherFor(root));
 		//file in root 
-		TCWorkspace.getMatcherFor(new File(fsRoot, "file.txt"));// no exception
+		TCWorkspace.getMatcherFor(new File(root, "file.txt"));// no exception
 		
 	}
 	
 	@Test
 	public void getAdminFileFor_functionality() throws Exception {
-		final File root = TestingUtil.createFS();
-		try{
-			
+
 			File file = new File(root, "java/resources/java.resources");
 			assertNull("Admin file found for: " + file, TCWorkspace.getMatcherFor(file));// still_not_created
 			
@@ -64,14 +61,10 @@ public class TCWorkspaceTest {
 			File javaResource = new File(root, "java/resources/java.resources");
 			assertNotNull("No Admin file found for: " + javaResource, TCWorkspace.getMatcherFor(javaResource));// in_hierarchy
 			
-		} finally {
-			TestingUtil.releaseFS(root);
-		}
 	}
 	
 	@Test
 	public void getMatching_relative() throws Exception {
-		final File root = TestingUtil.createFS();
 		final File globalAdminFile = new File(root, TCWorkspace.TCC_ADMIN_FILE + ".test.admin." + System.currentTimeMillis());
 		try{
 			//create global Admin
@@ -95,43 +88,47 @@ public class TCWorkspaceTest {
 			
 		} finally {
 			globalAdminFile.deleteOnExit();
-			TestingUtil.releaseFS(root);
 		}
+	}
+
+	@Test
+	public void testNPE_when_matching_TW_58901() throws IOException {
+		FileUtil.writeFileAndReportErrors(new File(root, TCWorkspace.TCC_ADMIN_FILE),
+										  "u-boot=perforce://perforce:1666:////Products/TRUNK/3800Core/u-boot-3802\n");
+		final File local = new File(root, "u-boot");
+		local.mkdir();
+
+		final ITCResource tcResource = new TCWorkspace().getTCResource(local);
+		assertEquals(tcResource.getLocal().getAbsoluteFile(), local.getAbsoluteFile());
+		assertEquals(tcResource.getRepositoryPath(), "perforce://perforce:1666:////Products/TRUNK/3800Core/u-boot-3802/");
 	}
 	
 	@Test
-	public void getResource_error_handling() throws Exception {
-		//null
-		try{
-			ourTestWorkspace.getTCResource(null);
-			assertTrue("Exception must be thrown", true);
-		} catch (IllegalArgumentException e){
-			//okj
-		}
+	public void testNPE_when_matching_TW_58901_noMatch() throws IOException {
+		FileUtil.writeFileAndReportErrors(new File(root, TCWorkspace.TCC_ADMIN_FILE),
+										  "u-boot=perforce://perforce:1666:////Products/TRUNK/3800Core/u-boot-3802\n");
+		final File local = new File(root, "u-boot1");
+		local.mkdir();
+
+		assertNull(new TCWorkspace().getTCResource(local));
 	}
-	
+
 	@Test
 	public void getResource_per_folder_relative_path() throws Exception {
-		final File root = TestingUtil.createFS();
-		try{
+
 			final File rootAdminFile = new File(root, TCWorkspace.TCC_ADMIN_FILE);
             FileUtil.writeFileAndReportErrors(rootAdminFile, ".=//depo/test/\n");
 			getResource_test_paths(root);
-		} finally {
-			TestingUtil.releaseFS(root);
-		}
+
 	}
 	
 	@Test
 	public void getResource_per_folder_absolute_path() throws Exception {
-		final File root = TestingUtil.createFS();
-		try{
+
 			final File rootAdminFile = new File(root, TCWorkspace.TCC_ADMIN_FILE);
-            FileUtil.writeFileAndReportErrors(rootAdminFile, new File(".").getCanonicalFile().getAbsolutePath() + "=//depo/test/\n");
+            FileUtil.writeFileAndReportErrors(rootAdminFile, root.getCanonicalFile().getAbsolutePath() + "=//depo/test/\n");
 			getResource_test_paths(root);
-		} finally {
-			TestingUtil.releaseFS(root);
-		}
+
 	}
 	
 	
@@ -157,13 +154,12 @@ public class TCWorkspaceTest {
 	
 	@Test
 	public void getResource_global_absolute_path() throws Exception {
-		final File root = TestingUtil.createFS();
 		final File testGlobalAdminFile = new File(TCWorkspace.TCC_GLOBAL_ADMIN_FILE + ".test");
 		try{
 			//create global Admin
 			final File testRootFolder = root.getCanonicalFile();
             FileUtil.writeFileAndReportErrors(testGlobalAdminFile, testRootFolder.getAbsolutePath() + "=//depo/test/\n");
-			final TCWorkspace workspace = new TCWorkspace(testRootFolder, null/*new FileBasedMatcher(globalAdminFile)*/){
+			final TCWorkspace workspace = new TCWorkspace(null/*new FileBasedMatcher(globalAdminFile)*/){
 				@Override
 				protected File getGlobalAdminFile() {
 					return testGlobalAdminFile;
@@ -182,18 +178,16 @@ public class TCWorkspaceTest {
 			assertEquals("//depo/test/java/resources/java.resources", itcResource.getRepositoryPath());// in_hierarchy
 		} finally {
 			testGlobalAdminFile.deleteOnExit();
-			TestingUtil.releaseFS(root);
 		}
 	}
 	
 	@Test
 	public void getResource_global_overrided_with_per_folder() throws Exception {
-		final File root = TestingUtil.createFS();
 		final File testGlobalAdminFile = new File(TCWorkspace.TCC_GLOBAL_ADMIN_FILE + ".test");
 		try{
 			//create global Admin
             FileUtil.writeFileAndReportErrors(testGlobalAdminFile, root.getCanonicalFile().getAbsolutePath() + "=//depo/test/\n");
-			final TCWorkspace workspace = new TCWorkspace(root, null){
+			final TCWorkspace workspace = new TCWorkspace(null){
 				@Override
 				protected File getGlobalAdminFile() {
 					return testGlobalAdminFile;
@@ -209,7 +203,6 @@ public class TCWorkspaceTest {
 			assertEquals("//depo/test/CPLUSPLUS/src/resources/cpp.resources", itcResource.getRepositoryPath());// in_hierarchy
 		} finally {
 			testGlobalAdminFile.deleteOnExit();
-			TestingUtil.releaseFS(root);
 		}
 	}
 	

@@ -136,7 +136,7 @@ public class RemoteRun implements ICommand {
     // do not clean after run
     myCleanoff = args.isCleanOff();
 
-    final TCWorkspace workspace = new TCWorkspace(Util.getCurrentDirectory(), getOverridingMatcher(args));
+    final TCWorkspace workspace = new TCWorkspace(getOverridingMatcher(args));
 
     // collect files
     final Collection<File> files = getFiles(args, monitor);
@@ -640,19 +640,13 @@ public class RemoteRun implements ICommand {
       }
     }
 
-    final TreeSet<File> result = new TreeSet<File>(new Comparator<File>() {
-      public int compare(File o1, File o2) {
-        return o1.compareTo(o2);
-      }
-    });
+    Collection<File> result;
 
     if (elements.length > i) {// file's part existing
       final String[] buffer = new String[elements.length - i];
       System.arraycopy(elements, i, buffer, 0, buffer.length);
       debug("Read from arguments: %s", Arrays.toString(buffer));
-      final Collection<File> files = collectFiles(buffer);
-      result.addAll(traverse(files));
-
+      result = collectFiles(buffer);
     } else {
       // try read from stdin
       debug("Trying stdin...");
@@ -660,18 +654,19 @@ public class RemoteRun implements ICommand {
       if (input != null && input.trim().length() > 0) {
         final String[] buffer = input.split("[\n\r]");
         debug("Read from stdin: %s", Arrays.toString(buffer));
-        final Collection<File> files = collectFiles(buffer);
-        result.addAll(traverse(files));
+        result = collectFiles(buffer);
 
       } else { // let's use current directory as root if nothing passed
         debug("Stdin is empty. Will use current (%s) folder as root", new File("."));
-        result.addAll(traverse(TCC_FILTER.accept(Util.SVN_FILES_FILTER.accept(Util.CVS_FILES_FILTER.accept(Util.getFiles(".")))))); 
-
+        result = TCC_FILTER.accept(Util.SVN_FILES_FILTER.accept(Util.CVS_FILES_FILTER.accept(Util.getFiles("."))));
       }
     }
     if (result.size() == 0) {
       throw new IllegalArgumentException(getMsg("RemoteRun.no.files.collected.for.remoterun.error.message"));
     }
+    
+    result = normalizePaths(result);
+
     monitor.status(new ProgressStatus(IProgressStatus.INFO, format(getMsg("RemoteRun.collect.changes.step.result.pattern"), result.size())));
     monitor.done(); 
     for (final File collected : result) {
@@ -680,7 +675,7 @@ public class RemoteRun implements ICommand {
     return result;
   }
 
-  private Collection<File> traverse(final Collection<File> files) {
+  private Collection<File> normalizePaths(final Collection<File> files) {
     TreeSet<File> out = new TreeSet<File>(new Comparator<File>() {
       public int compare(File o1, File o2) {
         return o1.compareTo(o2);

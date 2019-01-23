@@ -3,6 +3,7 @@ package com.jetbrains.teamcity;
 import java.io.File;
 import java.io.IOException;
 import jetbrains.buildServer.util.FileUtil;
+import org.jetbrains.annotations.NotNull;
 import org.junit.Test;
 
 public class TestingUtil {
@@ -73,8 +74,10 @@ public class TestingUtil {
 		
 	}
 	
-	public static void releaseFS(File root){
-		FileUtil.delete(root);
+	public static void releaseFS(@NotNull File root){
+		if (root.exists()) {
+			FileUtil.delete(root);
+		}
 	}
 	
 	

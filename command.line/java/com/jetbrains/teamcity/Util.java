@@ -350,10 +350,6 @@ public class Util {
     return null;
   }
 
-  public static File getCurrentDirectory() {
-    return new File(System.getProperty("user.dir"));
-  }
-
   public static String encode(String src) {
     boolean decoded = false;
     int length = src.length();
@@ -389,6 +385,11 @@ public class Util {
     return (ch - 'A') + 0x0A;
   }
 
+  /**
+   * @param string to be trimmed on the right
+   * @param tokens if present, all tokens from the list will be removed from the end of the string
+   * @return trimmed string
+   */
   public static String trim(String string, final String... tokens) {
     if (string != null) {
       string = string.trim();
