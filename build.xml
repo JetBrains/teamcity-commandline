@@ -164,7 +164,7 @@ public class Build {
         </condition>
 
         <filter token="Plugin_Version" value="${build.number}"/>
-        <filter token="Plugin_Vendor" value="JetBrains, s.r.o."/>
+        <filter token="Plugin_Vendor" value="JetBrains"/>
         <filter token="Plugin_Vendor_Url" value="http://www.jetbrains.com"/>
         <copy file="${basedir}/server-side/teamcity-plugin-dist.xml"
               tofile="${basedir}/server-side/teamcity-plugin.xml"
