@@ -215,7 +215,7 @@ public class RuntimeUtil {
             i++;
           }
           if (i < className.length()) {
-            className = className.substring(i, className.length());
+            className = className.substring(i);
             try {
               final Class<?> clazz = Class.forName(className);
               return new URI(clazz.newInstance().toString());

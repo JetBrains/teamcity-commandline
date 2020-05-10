@@ -695,7 +695,7 @@ public class RemoteRun implements ICommand {
       if (!path.startsWith("@")) { 
         files = Util.getFiles(path);
       } else {
-        files = Util.getFiles(new File(path.substring(1, path.length())));
+        files = Util.getFiles(new File(path.substring(1)));
       }
       // filter out system files
       out.addAll(TCC_FILTER.accept(Util.SVN_FILES_FILTER.accept(Util.CVS_FILES_FILTER.accept(files))));
