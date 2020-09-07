@@ -50,7 +50,7 @@ Quick start
 		You can override these Per-folder and Default mappings with "--config-file <overriding_file>" option of "run" command.
 	
 	NOTE: Especial TeamCity server's plugin'll help you to prepare content of mapping files. 
-		  Look at "My Settings & Tools/CommandLineRemoteRun/Configure".
+		  Look at "My Profile/CommandLineRemoteRun/Configure".
          
         
     Discover TeamCity Server structure:

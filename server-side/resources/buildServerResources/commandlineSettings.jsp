@@ -30,7 +30,7 @@
 
   <script type="text/javascript">
     BS.Navigation.items = [
-      { title: "My Settings & Tools",
+      { title: "My Profile",
         url: "profile.html",
         selected:false
       },
@@ -97,7 +97,7 @@
       <li><strong>VCS path</strong>. This path points to a location under VCS root and is formatted according to TeamCity formatting rules.
         It usually comprises identifier of the VCS repository and a path within this repository.</li>
     </ol>
-      
+
     <h3 style="clear: both;" class="header">Steps to run personal build from command line:</h3>
     <ol>
       <li>Install <a href="http://java.com">Java JRE 1.5.+</a> on your machine, make sure <code>java</code> is available in the command line</li>
