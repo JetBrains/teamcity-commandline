@@ -1,27 +1,36 @@
 
 TeamCity command line remote run tool allows you to start Personal Builds from the command line.
-[Plugin page in marketplace](https://plugins.jetbrains.com/plugin/9101-command-line-remote-run-tool)
 
-### Plugin usage
+TeamCity Command Line Remote Run tool allows running Personal Builds from the command line 
+(Windows, Linux, Mac are supported, provided a JRE is installed).
 
-Make sure  Java JRE 1.8.+ is installed on your machine.
+The tool has no integration with a version control. It starts a personal build for the supplied list of files, 
+and uses a special mapping file to match local files on the developer machine with build agent checkout directory.
 
-#### Basics
+The server supports running personal builds for the sources stored under Subversion, CVS, Perforce and Git.
+
+See [plugin page in marketplace](https://plugins.jetbrains.com/plugin/9101-command-line-remote-run-tool)
+
+## Usage
+
+First, make sure  Java JRE 1.8.+ is installed on your machine.
+
+### Basics
 
 After [installing the plugin](https://www.jetbrains.com/help/teamcity/installing-additional-plugins.html), 
 navigate to  **My Profile | TeamCity Tools side panel | Command Line Remote Run** 
-and click download to save the `tcc.jar` file to your file system.
+and click *download* to save the `tcc.jar` file to your file system.
         
 The tool is run with the `java -jar <path to tcc.jar> <command> <options>` command.
 
 The list of available commands is available upon `java -jar <path to tcc.jar> help`
 
-To get command description, run `java -jar <path to tcc.jar> help <command>`
+To see description for a specific command, run `java -jar <path to tcc.jar> help <command>`
                
 To work correctly, the tool requires a mapping from local directory paths to VCS settings in TeamCity. 
-This mapping should be stored to **`.teamcity-mappings.properties`** configuration file. See below on how to create this file.
+This mapping should be stored to `.teamcity-mappings.properties` configuration file. See below on how to create this file.
 
-#### Login to TeamCity:
+### Login to TeamCity:
 
     java -jar <path to tcc.jar> login --host <server URL> --user <username>
 
@@ -29,7 +38,7 @@ You will be prompted to enter the password. The "login" command persists credent
 authorization options for subsequent starts. The last logged in `<server URL>` is treated as the default one and 
 will be used if the `--host` key is omitted. You will need to specify the server URL for the `run` command only.
 
-#### Run a remote build
+### Run a remote build
 
 To run a remote build, the tool also requires:
 
@@ -48,7 +57,7 @@ Collect the required information and run a remote build on the specified list of
 By default, the "run" command will wait for the build to finish and returns the code corresponding to the status of the build. 
 This exit code can be used to perform a commit. See `java -jar <path to tcc.jar> help run` for more options. 
 
-#### Creating `.teamcity-mapping.properties` file
+### Creating `.teamcity-mapping.properties` file
 
 The plugin provides a web UI configuration page which helps to create the `.teamcity-mapping.properties` file.
 
