@@ -16,5 +16,19 @@
     <orderEntry type="module" module-name="messages" />
     <orderEntry type="library" name="commons-beanutils-core" level="project" />
     <orderEntry type="library" name="commons-logging" level="project" />
+    <orderEntry type="module" module-name="vcs-plugin-api" exported="" />
+    <orderEntry type="module" module-name="common" exported="" />
+    <orderEntry type="module" module-name="patches" exported="" />
+    <orderEntry type="module" module-name="server-common-api" exported="" />
+    <orderEntry type="module" module-name="vcs-api" exported="" />
+    <orderEntry type="module" module-name="common-graph" exported="" />
+    <orderEntry type="module" module-name="common-vcs" exported="" />
+    <orderEntry type="module" module-name="patches-low" exported="" />
+    <orderEntry type="library" name="xmlrpc-2.0" level="project" />
+    <orderEntry type="library" name="commons-httpclient" level="project" />
+    <orderEntry type="library" name="commons-codec" level="project" />
+    <orderEntry type="module" module-name="patches" />
+    <orderEntry type="module" module-name="patches-low" />
+    <orderEntry type="module" module-name="runtime-util" />
   </component>
 </module>
