@@ -1,0 +1,8 @@
+<!DOCTYPE suite SYSTEM "http://testng.org/testng-1.0.dtd">
+<suite name="Command line tool functional tests">
+  <test name="Command line tool functional tests">
+    <classes>
+      <class name="com.jetbrains.teamcity.ServerFunctionalTest"/>
+    </classes>
+  </test>
+</suite>

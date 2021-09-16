@@ -1,6 +1,7 @@
+**/*.iml
 dist/
 teamcity_distr/
 tmp.plugin.build.libs/
 tmp/
-
+target
 
