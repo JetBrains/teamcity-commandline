@@ -28,6 +28,10 @@
       <groupId>${project.groupId}</groupId>
       <artifactId>command.line</artifactId>
     </dependency>
+    <dependency>
+      <groupId>${project.groupId}</groupId>
+      <artifactId>server-test-core</artifactId>
+    </dependency>
   </dependencies>
   <build>
     <sourceDirectory>${project.basedir}/src</sourceDirectory>
