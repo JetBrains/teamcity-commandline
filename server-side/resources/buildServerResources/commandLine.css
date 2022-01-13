@@ -8,7 +8,7 @@
 }
 
 #mappingTable td {
-  vertical-align: top;  
+  vertical-align: top;
 }
 
 #mappingTable .fromInput {
@@ -51,15 +51,15 @@ pre, code {
 
 div.errorDup {
   font-size: 80%;
-  color: #c22731;
+  color: #a90f1a;
 }
 
 input.duplicated {
-  background-color: #ffffcc; 
+  background-color: #ffffcc;
 }
 
 input.duplicate {
-  background-color: #ffdddd; 
+  background-color: #ffdddd;
 }
 
 h3.header {
