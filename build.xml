@@ -47,7 +47,7 @@ public class Build {
     public static final String build = "${build.number}";
 }</echo>
 
-        <javac destdir="${tmp}/bin" debug="on" target="1.5"  excludes="jetbrains/buildServer/tools/**,jetbrains/buildServer/core/runtime/osgx/**">
+        <javac destdir="${tmp}/bin" debug="on" target="1.8"  excludes="jetbrains/buildServer/tools/**,jetbrains/buildServer/core/runtime/osgx/**">
             <src path="${tool.home}/java" />
         </javac>
         <copy todir="${tmp}/bin">
