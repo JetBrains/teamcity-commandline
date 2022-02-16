@@ -19,6 +19,7 @@ import com.thoughtworks.xstream.XStream;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.Serializable;
+import java.nio.file.NoSuchFileException;
 import java.util.HashMap;
 import java.util.Map;
 import jetbrains.buildServer.messages.XStreamHolder;
@@ -131,7 +132,7 @@ public class Storage {
         storage.clear();
         final String content = FileUtil.readText(new File(getStorageFile()));
         storage.putAll((Map<?, ? extends Serializable>) deserializeObject(content));
-      } catch (FileNotFoundException e) {
+      } catch (FileNotFoundException|NoSuchFileException e) {
         // do nothing
       } catch (Exception e) {
         throw new RuntimeException(e);
