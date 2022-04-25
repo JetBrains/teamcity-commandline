@@ -1,18 +1,15 @@
 package com.jetbrains.teamcity.resources;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertTrue;
-
+import com.jetbrains.teamcity.TestingUtil;
 import java.io.File;
-
 import java.io.IOException;
 import jetbrains.buildServer.util.FileUtil;
+import org.junit.After;
+import org.junit.Before;
+import org.junit.BeforeClass;
+import org.junit.Test;
 
-import org.junit.*;
-
-import com.jetbrains.teamcity.TestingUtil;
+import static org.junit.Assert.*;
 
 
 public class TCWorkspaceTest {
@@ -28,6 +25,10 @@ public class TCWorkspaceTest {
 	@Before
 	public void setUp() throws IOException {
 		root = TestingUtil.createFS();
+
+		File file = new File(TCWorkspace.TCC_GLOBAL_ADMIN_FILE + ".test");
+		file.mkdirs();
+		FileUtil.delete(file);
 	}
 
 	@After
