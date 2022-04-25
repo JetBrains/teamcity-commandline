@@ -226,23 +226,19 @@ public class Build {
             </fileset>
         </copy>
 
-        <mkdir dir="${tmp}/eclipse-plugin" />
-        <unzip dest="${tmp}/eclipse-plugin" overwrite="yes" src="${distribution.dir}/TeamCity/webapps/ROOT/WEB-INF/plugins/eclipse-plugin-distributor.zip"/>
+        <mkdir dir="${tmp}/idea-plugin" />
 
-        <!-- unjar eclipse's plugin bundled libs -->
-        <unjar dest="${plugin.build.libs}" overwrite="yes">
-            <fileset dir="${tmp}/eclipse-plugin/update-site/plugins">
-                <include name="**/jetbrains.teamcity.core_*.jar" />
-            </fileset>
+        <unzip src="${distribution.dir}/TeamCity/webapps/ROOT/WEB-INF/plugins/intellij-plugin-distributor.zip" dest="${tmp}/idea-plugin" overwrite="yes">
             <patternset>
-                <include name="**/lib/ide-common.jar" />
+                <include name="bin/TeamCity-IDEAplugin.zip"/>
             </patternset>
-        </unjar>
-        <move todir="${plugin.build.libs}">
-            <fileset dir="${plugin.build.libs}/lib">
-                <include name="**/*.jar" />
-            </fileset>
-        </move>
+        </unzip>
+        <unzip src="${tmp}/idea-plugin/bin/TeamCity-IDEAplugin.zip" dest="${plugin.build.libs}" overwrite="yes">
+            <mapper type="flatten" />
+            <patternset>
+                <include name="**/ide-common.jar"/>
+            </patternset>
+        </unzip>
 
     </target>
 
