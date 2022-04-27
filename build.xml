@@ -269,9 +269,9 @@ public class Build {
         <unjar src="${plugin.build.libs}/commons-codec.jar" dest="${libs}" overwrite="yes" />
         <unjar src="${plugin.build.libs}/commons-httpclient-3.1.jar" dest="${libs}" overwrite="yes" />
         <unjar src="${plugin.build.libs}/commons-logging.jar" dest="${libs}" overwrite="yes" />
-        <unjar src="${plugin.build.libs}/log4j-core-2.17.0.jar" dest="${libs}" overwrite="yes" />
-        <unjar src="${plugin.build.libs}/log4j-api-2.17.0.jar" dest="${libs}" overwrite="yes" />
-        <unjar src="${plugin.build.libs}/log4j-1.2-api-2.17.0.jar" dest="${libs}" overwrite="yes" />
+        <unjar src="${plugin.build.libs}/log4j-core-2.17.2.jar" dest="${libs}" overwrite="yes" />
+        <unjar src="${plugin.build.libs}/log4j-api-2.17.2.jar" dest="${libs}" overwrite="yes" />
+        <unjar src="${plugin.build.libs}/log4j-1.2-api-2.17.2.jar" dest="${libs}" overwrite="yes" />
         <unjar src="${plugin.build.libs}/jdom.jar" dest="${libs}" overwrite="yes" />
 	
         <unjar dest="${libs}" overwrite="yes">
