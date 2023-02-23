@@ -18,6 +18,7 @@ package com.jetbrains.teamcity;
 import java.io.*;
 import java.net.URL;
 import java.util.ArrayList;
+import java.util.Base64;
 import java.util.Collection;
 import java.util.List;
 import jetbrains.buildServer.*;
@@ -35,7 +36,6 @@ import jetbrains.buildServer.util.ExceptionUtil;
 import jetbrains.buildServer.version.ServerVersionHolder;
 import jetbrains.buildServer.xmlrpc.RemoteCallException;
 import jetbrains.buildServer.xmlrpc.XmlRpcTarget.Cancelable;
-import org.apache.commons.codec.binary.Base64;
 import org.apache.commons.httpclient.*;
 import org.apache.commons.httpclient.methods.InputStreamRequestEntity;
 import org.apache.commons.httpclient.methods.PostMethod;
@@ -227,7 +227,7 @@ public class Server {
   private void addAuthorizationHeader(@NotNull PostMethod method) {
     final String crePair = mySession.getUsername() + ":" + mySession.getPassword();
     try {
-      String encoded = new String(Base64.encodeBase64(crePair.getBytes("US-ASCII")), "US-ASCII"); // we expect ASCII login name and password here
+      String encoded = Base64.getEncoder().encodeToString(crePair.getBytes("US-ASCII")); // we expect ASCII login name and password here
       method.addRequestHeader("Authorization", "Basic " + encoded);
     } catch (UnsupportedEncodingException e) {
       ExceptionUtil.rethrowAsRuntimeException(e);

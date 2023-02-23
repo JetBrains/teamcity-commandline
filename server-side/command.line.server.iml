@@ -44,5 +44,6 @@
     <orderEntry type="module" module-name="web-test-core" />
     <orderEntry type="module" module-name="server-test-core" />
     <orderEntry type="module" module-name="web" />
+    <orderEntry type="module" module-name="migration" />
   </component>
 </module>
