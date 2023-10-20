@@ -10,7 +10,6 @@ import jetbrains.buildServer.serverSide.impl.BaseServerTestCase;
 import jetbrains.buildServer.serverSide.impl.XmlRpcSessionManager;
 import jetbrains.buildServer.serverSide.impl.auth.XmlRpcAuthenticationServer;
 import jetbrains.buildServer.users.SUser;
-import org.apache.xmlrpc.WebServer2;
 import org.testng.annotations.AfterMethod;
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
@@ -21,7 +20,7 @@ public class ServerFunctionalTest extends BaseServerTestCase {
   private static final String PASSWORD = "password";
 
   private SUser myUser;
-  private WebServer2 myWebServer;
+  private WebServer myWebServer;
   private ServerFacadeWrapper myServerFacade;
 
   @Override
