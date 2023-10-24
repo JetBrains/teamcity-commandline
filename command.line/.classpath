@@ -12,7 +12,7 @@
 	<classpathentry kind="lib" path="lib/patches-impl.jar"/>
 	<classpathentry kind="lib" path="lib/runtime-util.jar"/>
 	<classpathentry kind="lib" path="lib/util.jar"/>
-	<classpathentry kind="lib" path="lib/xmlrpc-0.3.0.jar"/>
+	<classpathentry kind="lib" path="lib/xmlrpc-0.4.0.jar"/>
 	<classpathentry kind="lib" path="lib/xpp3-1.1.4c.jar"/>
 	<classpathentry kind="lib" path="lib/xstream-1.4-20110423.112604-3.jar"/>
 	<classpathentry kind="lib" path="lib/remote-server-proxy.jar"/>
