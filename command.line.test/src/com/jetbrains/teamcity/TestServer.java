@@ -10,7 +10,6 @@ import jetbrains.buildServer.BuildTypeStatusDescriptorData;
 import jetbrains.buildServer.ProjectData;
 import jetbrains.buildServer.StatusDescriptor;
 import jetbrains.buildServer.messages.Status;
-import jetbrains.buildServer.util.Option;
 import org.junit.Test;
 
 public class TestServer extends Server {
@@ -48,7 +47,7 @@ public class TestServer extends Server {
 
     public TestBuildTypeData(String id, ProjectData project) {
       super(id, id, null, project.getName(), project.getProjectId(), project.getExternalId(), Collections.singletonList("<unknown>"), id, "<unknown>", CheckoutType.MANUAL,
-            createStatusDescriptor(), null, false, Collections.<String, String>emptyMap(), Collections.<Option, Object>emptyMap());
+            createStatusDescriptor(), null, false, Collections.emptyMap(), Collections.emptyMap());
       project.getBuildTypes().add(this);
     }
 
