@@ -1,7 +1,9 @@
 [![official JetBrains project](https://jb.gg/badges/official-flat-square.svg)](https://confluence.jetbrains.com/display/ALL/JetBrains+on+GitHub)
 
-> [!NOTE]  
-> This plugin is **no longer supported**. Please consider using [Direct Patch Upload](https://www.jetbrains.com/help/teamcity/personal-build.html#Direct+Patch+Upload) via REST API as an alternative.
+
+> This plugin is **no longer supported**. Use REST API to [upload patches directly](https://www.jetbrains.com/help/teamcity/personal-build.html#Direct+Patch+Upload) instead.
+> 
+{type="note"}
 
 TeamCity command line remote run tool allows you to start Personal Builds from the command line.
 
