@@ -1,7 +1,7 @@
 [![official JetBrains project](https://jb.gg/badges/official-flat-square.svg)](https://confluence.jetbrains.com/display/ALL/JetBrains+on+GitHub)
 
 
-> This plugin is **no longer supported**. Use REST API to [upload patches directly](https://www.jetbrains.com/help/teamcity/personal-build.html#Direct+Patch+Upload) instead.
+> This plugin is **no longer supported**. Use REST API to [upload plugins directly](https://www.jetbrains.com/help/teamcity/personal-build.html#Direct+Patch+Upload) instead.
 > 
 {type="note"}
 
