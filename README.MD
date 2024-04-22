@@ -1,5 +1,10 @@
 [![official JetBrains project](https://jb.gg/badges/official-flat-square.svg)](https://confluence.jetbrains.com/display/ALL/JetBrains+on+GitHub)
 
+
+> This plugin is **no longer supported**. Use REST API to [upload plugins directly](https://www.jetbrains.com/help/teamcity/personal-build.html#Direct+Patch+Upload) instead.
+> 
+{type="note"}
+
 TeamCity command line remote run tool allows you to start Personal Builds from the command line.
 
 TeamCity Command Line Remote Run tool allows running Personal Builds from the command line 
