@@ -7,7 +7,7 @@ import jetbrains.buildServer.controllers.MockRequest;
 import jetbrains.buildServer.controllers.MockResponse;
 import jetbrains.buildServer.util.XmlUtil;
 import jetbrains.buildServer.vcs.VcsClientMapping;
-import org.jdom.Element;
+import org.jdom2.Element;
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
 
