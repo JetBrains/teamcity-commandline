@@ -47,5 +47,6 @@
     <orderEntry type="module" module-name="web" />
     <orderEntry type="module" module-name="web-core" />
     <orderEntry type="module" module-name="migration" />
+    <orderEntry type="module" module-name="idea-openapi" />
   </component>
 </module>
